@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32228.343
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeightChecking", "WeightChecking\WeightChecking.csproj", "{128A07EE-4022-4DD6-9154-F34229C5F7C0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{128A07EE-4022-4DD6-9154-F34229C5F7C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{128A07EE-4022-4DD6-9154-F34229C5F7C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{128A07EE-4022-4DD6-9154-F34229C5F7C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{128A07EE-4022-4DD6-9154-F34229C5F7C0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D0DA10C9-9975-46AF-9F2B-415FCC95DDD4}
+	EndGlobalSection
+EndGlobal

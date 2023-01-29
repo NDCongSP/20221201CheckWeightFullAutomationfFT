@@ -1,0 +1,830 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PLCPi</name>
+    </assembly>
+    <members>
+        <member name="T:PLCPiProject.ADC">
+            <summary>
+            Đối tượng tương tác với module AI
+            để đọc giá trị analog từ 5 kênh áp (0-4) 0-10VDC
+            và 8 kênh dòng (5-12) 4-20mA
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.ADC.DocAI1Kenh(System.Int16,System.Double,System.Double,System.Double,System.Double)">
+             <summary>
+            Đọc giá trị ADC từ 1 kênh trên module AI và biến đổi sang giá trị đại lượng đo. Có 13 kênh AI, trong đó: kênh 0-4: 0-10VDC; 5-12: 4-20 mA. 
+             Giá trị trả về kiểu string là giá trị Analog
+             </summary>
+             <param name="Channel">kênh muốn đọc Channel = 0,1,2,....,12</param>
+             <param name="X0">Giá trị phân giải ADC nhỏ nhất (kênh 0-10VDC: X0 = 0; kênh 4-20mA: X0 = 204)</param>
+             <param name="Y0">Giá trị nhỏ nhất của đại lượng đo</param>
+             <param name="X1">Giá trị phân giải ADC lớn nhất, trường hợp module AI 10 bit thì X1 = 1024</param>
+             <param name="Y1">Giá trị lớn nhất của đại lượng đo</param>
+             <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.ADC.DocAI">
+             <summary>
+             Đọc giá trị đồng loạt 13 kênh từ module AI (chưa biến đổi sang đại lượng đo). Có 13 kênh AI, trong đó: kênh 0-4: 0-10VDC; 5-12: 4-20 mA.
+            Trả về mảng kiểu double 13 phần tử, chứa giá trị ADC. Phần tử 0-4: là giá trị ADC của 5 kênh AI 0-10VDC; phần tử 5-12: là giá trị ADC của 8 kênh AI 4-20mA
+             </summary>
+             <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.ADC.Scale(System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Biến đổi giá trị ADC đọc về sang đại lượng đo bằng phương pháp biến đổi tuyến tính
+            </summary>
+            <param name="X0">giá trị MỐC ADC thứ nhất</param>
+            <param name="Y0">giá trị quy ra đại lượng đo tương ứng MỐC thứ nhất</param>
+            <param name="X1">giá trị MỐC ADC thứ hai</param>
+            <param name="Y1">giá trị quy ra đại lượng đo tương ứng MỐC thứ hai</param>
+            <param name="x">giá trị ADC cần chuyển đổi</param>
+            <returns>giá trị đại lượng đo trả về tương ứng với giá trị ADC x</returns>
+        </member>
+        <member name="P:PLCPiProject.ModbusRTUMaster.ResponseTimeout">
+            <summary>
+            Cài đặt thời gian TimeOut 
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.ModbusRTUMaster.KetNoi(System.String,System.Int32,System.Int32,System.IO.Ports.Parity,System.IO.Ports.StopBits)">
+            <summary>
+            Tạo kết nối đếm modbus RTU Slave.
+            </summary>
+            <param name="portName">Port Serial của modbus.</param>
+            <param name="baudRate">Tốc độ Baud.</param>
+            <param name="databits">Số bít dữ liệu.</param>
+            <param name="parity">Chẵn lẻ.</param>
+            <param name="stopBits">stopBits.</param>
+            <returns>Trả về trạng thái kiểu bool, nếu true là thành công, false thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.ModbusRTUMaster.NgatKetNoi">
+            <summary>
+            Ngắt kết nối đến Slave.
+            </summary>
+            <returns>Trả về trạng thái kiểu bool, nếu true là thành công, false thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.ModbusRTUMaster.WriteHoldingRegisters(System.Byte,System.UInt16,System.UInt16,System.Byte[])">
+            <summary>
+            Ghi giá trị xuống các thanh ghi holding.
+            </summary>
+            <param name="address">ID của Slave.</param>
+            <param name="start">Vị trí thanh ghi bắt đầu ghi.</param>
+            <param name="registers">Số thanh ghi muốn ghi.</param>
+            <param name="values">Mảng kiểu byte chứa giá trị để ghi xuống holding register.</param>
+            <returns>Trả về trạng thái kiểu bool, nếu true là thành công, false thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.ModbusRTUMaster.ReadHoldingRegisters(System.Byte,System.UInt16,System.UInt16,System.Byte[]@)">
+            <summary>
+            Đọc thanh ghi holding.
+            </summary>
+            <param name="address">ID của Slave.</param>
+            <param name="start">Vị trí thanh ghi bắt đầu đọc.</param>
+            <param name="registers">Số thanh ghi muốn đọc.</param>
+            <param name="values">Mảng kiểu byte, truyền vào để chứa các giá trị đọc về</param>
+            <returns>Trả về trạng thái kiểu bool, nếu true là thành công, false thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.ModbusRTUMaster.WriteSingleCoil(System.Byte,System.UInt16,System.Boolean)">
+            <summary>
+            Ghi giá trị xuống 1 coil của Slave.
+            </summary>
+            <param name="address">ID của Slave.</param>
+            <param name="start">Vị trí coil muốn ghi.</param>
+            <param name="value">Giá trị muốn ghi ( true hoặc false).</param>
+            <returns>Trả về trạng thái kiểu bool, nếu true là thành công, false thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.ModbusRTUMaster.WriteMultipleCoils(System.Byte,System.UInt16,System.UInt16,System.Boolean[])">
+            <summary>
+            Ghi giá trị xuống nhiều coil.
+            </summary>
+            <param name="address">ID của Slave.</param>
+            <param name="start">Vị trí Coil bắt đầu ghi.</param>
+            <param name="coils">số coil muốn ghi tính từ vị trí bắt đầu.</param>
+            <param name="values">Mảng giá trị kiểu Bool, để ghi xuống coil</param>
+            <returns>Trả về trạng thái kiểu bool, nếu true là thành công, false thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.ModbusRTUMaster.ReadCoils(System.Byte,System.UInt16,System.UInt16,System.Boolean[]@)">
+            <summary>
+            Đọc cuộn coil.
+            </summary>
+            <param name="address">ID của Slave.</param>
+            <param name="start">Vị trí bắt đầu đọc.</param>
+            <param name="coils">Số cuộn coil muốn đọc.</param>
+            <param name="values">Mảng kiểu bool, truyền vào để chứa các giá trị đọc về.</param>
+            <returns>Trả về trạng thái kiểu bool, nếu true là thành công, false thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.ModbusRTUMaster.ReadDiscreteInputContact(System.Byte,System.UInt16,System.UInt16,System.Boolean[]@)">
+            <summary>
+            Đọc các ngõ vào rời rạc.
+            </summary>
+            <param name="address">ID của Slave.</param>
+            <param name="start">Vị trí bắt đầu đọc.</param>
+            <param name="inputs">Số ngõ vào rời rạc muốn đọc.</param>
+            <param name="values">Mảng kiểu bool, truyền vào để chứa các giá trị đọc về.</param>
+            <returns>Trả về trạng thái kiểu bool, nếu true là thành công, false thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.ModbusRTUMaster.ReadInputRegisters(System.Byte,System.UInt16,System.UInt16,System.Byte[]@)">
+            <summary>
+            Đọc các thanh ghi ngõ vào.
+            </summary>
+            <param name="address">ID của Slave.</param>
+            <param name="start">Vị trí bắt đầu đọc.</param>
+            <param name="registers">Số thanh ghi ngõ vào muốn đọc.</param>
+            <param name="values">Mảng kiểu byte, truyền vào để chứa các giá trị đọc về.</param>
+            <returns>Trả về trạng thái kiểu bool, nếu true là thành công, false thất bại.</returns>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excIllegalFunction">
+            <summary>Constant for exception illegal function.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excIllegalDataAdr">
+            <summary>Constant for exception illegal data address.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excIllegalDataVal">
+            <summary>Constant for exception illegal data value.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excServerDeviceFailure">
+            <summary>Constant for exception Server device failure.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excAck">
+            <summary>Constant for exception acknowledge.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excServerIsBusy">
+            <summary>Constant for exception Server is busy/booting up.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excGatePathUnavailable">
+            <summary>Constant for exception gate path unavailable.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excExceptionNotConnected">
+            <summary>Constant for exception not connected.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excExceptionConnectionLost">
+            <summary>Constant for exception connection lost.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excExceptionTimeout">
+            <summary>Constant for exception response timeout.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excExceptionOffset">
+            <summary>Constant for exception wrong offset.</summary>
+        </member>
+        <member name="F:PLCPiProject.ModbusTCPClient.excSendFailt">
+            <summary>Constant for exception send failt.</summary>
+        </member>
+        <member name="T:PLCPiProject.ModbusTCPClient.ResponseData">
+            <summary>Response data event. This event is called when new data arrives</summary>
+        </member>
+        <member name="E:PLCPiProject.ModbusTCPClient.OnResponseData">
+            <summary>Response data event. This event is called when new data arrives</summary>
+        </member>
+        <member name="T:PLCPiProject.ModbusTCPClient.ExceptionData">
+            <summary>Exception data event. This event is called when the data is incorrect</summary>
+        </member>
+        <member name="E:PLCPiProject.ModbusTCPClient.OnException">
+            <summary>Exception data event. This event is called when the data is incorrect</summary>
+        </member>
+        <member name="P:PLCPiProject.ModbusTCPClient.timeout">
+            <summary>Response timeout. If the Server didn't answers within in this time an exception is called.</summary>
+            <value>The default value is 500ms.</value>
+        </member>
+        <member name="P:PLCPiProject.ModbusTCPClient.refresh">
+            <summary>Refresh timer for Server answer. The class is polling for answer every X ms.</summary>
+            <value>The default value is 10ms.</value>
+        </member>
+        <member name="P:PLCPiProject.ModbusTCPClient.connected">
+            <summary>Shows if a connection is active.</summary>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.KetNoi(System.String,System.UInt16)">
+            <summary>
+            Bắt đầu kết nối tới modbus Server.
+            </summary>
+            <param name="ip">IP adress của modbus Server.</param>
+            <param name="port">Port number của modbus Server. Mặc định sử dụng port 502.</param>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.NgatKetNoi">
+            <summary>Ngắt kết nối đến Server.</summary>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.Finalize">
+            <summary>Destroy master instance.</summary>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.Dispose">
+            <summary>Destroy master instance</summary>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.ReadCoils(System.UInt16,System.UInt16,System.UInt16,System.Byte[]@)">
+            <summary>
+            Đọc coil(1-9999).
+            </summary>
+            <param name="id">ID của Server, mặc đinh là 0.</param>
+            <param name="startAddress">Địa chỉ bắt đầu đọc data.</param>
+            <param name="numInputs">Số data muốn đọc tính từ địa chỉ bắt đầu đọc.</param>
+            <param name="values">Mảng kiểu byte, truyền vào để chứa kết quả đọc về, nếu mảng = null nghĩa là đọc không thành công.</param>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.ReadDiscreteInputs(System.UInt16,System.UInt16,System.UInt16,System.Byte[]@)">
+            <summary>
+            Đọc vùng nhớ discrete inputs từ Server.
+            </summary>
+            <param name="id">ID của Server, mặc đinh là 0.</param>
+            <param name="startAddress">Địa chỉ bắt đầu đọc data.</param>
+            <param name="numInputs">Số data muốn đọc tính từ địa chỉ bắt đầu đọc.</param>
+            <param name="values">Mảng kiểu byte, truyền vào để chứa kết quả đọc về, nếu mảng = null nghĩa là đọc không thành công.</param>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.ReadHoldingRegister(System.UInt16,System.UInt16,System.UInt16,System.Byte[]@)">
+            <summary>
+            Đọc vùng nhớ holding register từ Server.
+            </summary>
+            <param name="id">ID của Server, mặc đinh là 0.</param>
+            <param name="startAddress">Địa chỉ bắt đầu đọc data.</param>
+            <param name="numInputs">Số data muốn đọc tính từ địa chỉ bắt đầu đọc.</param>
+            <param name="values">Mảng kiểu byte, truyền vào để chứa kết quả đọc về, nếu mảng = null nghĩa là đọc không thành công.</param>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.ReadInputRegister(System.UInt16,System.UInt16,System.UInt16,System.Byte[]@)">
+            <summary>
+            Đọc input registers từ Server.
+            </summary>
+            <param name="id">ID của Server, mặc đinh là 0.</param>
+            <param name="startAddress">Địa chỉ bắt đầu đọc data.</param>
+            <param name="numInputs">Số data muốn đọc tính từ địa chỉ bắt đầu đọc.</param>
+            <param name="values">Mảng kiểu byte, truyền vào để chứa kết quả đọc về, nếu mảng = null nghĩa là đọc không thành công.</param>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.WriteSingleCoil(System.UInt16,System.UInt16,System.Boolean,System.Byte[]@)">
+            <summary>
+            Ghi giá trị xuống 1 coil của Server.
+            </summary>
+            <param name="id">ID của Server, mặc đinh là 0</param>
+            <param name="startAddress">Địa chỉ của ciol muốn ghi</param>
+            <param name="OnOff">giá trị ghi xuống coil( true hoặc false)</param>
+            <param name="result">Kết quả, nếu mảng = null nghĩa là ghi không thành công.</param>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.WriteMultipleCoils(System.UInt16,System.UInt16,System.UInt16,System.Byte[],System.Byte[]@)">
+            <summary>Ghi nhiều Coil 1 lúc.</summary>
+            <param name="id">ID của Server.</param>        
+            <param name="startAddress">Địa chỉ bắt đầu ghi.</param>
+            <param name="numBits">Số Coil muốn ghi.</param>
+            <param name="values">Mảng giá trị để ghi xuống, kiểu byte, mỗi phần tử chứa giá trị của 8 coil.</param>
+            <param name="result">Kết quả, nếu mảng = null nghĩa là ghi không thành công.</param>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.WriteSingleRegister(System.UInt16,System.UInt16,System.Byte[],System.Byte[]@)">
+            <summary>Ghi 1 thanh ghi.</summary>
+            <param name="id">ID của Server.</param>       
+            <param name="startAddress">Địa chỉ bắt đầu ghi.</param>
+            <param name="values">Mảng giá trị để ghi xuống, kiểu byte.</param>
+            <param name="result">Kết quả, nếu mảng = null nghĩa là ghi không thành công.</param>
+        </member>
+        <member name="M:PLCPiProject.ModbusTCPClient.WriteMultipleRegister(System.UInt16,System.UInt16,System.Byte[],System.Byte[]@)">
+            <summary>Ghi nhiều thanh ghi 1 lúc.</summary>
+            <param name="id">ID của Server.</param>        
+            <param name="startAddress">Địa chỉ bắt đầu ghi.</param>
+            <param name="values">Mảng giá trị để ghi xuống, kiểu byte.</param>
+            <param name="result">Kết quả, nếu mảng = null nghĩa là ghi không thành công.</param>
+        </member>
+        <member name="T:PLCPiProject.mySQLLogger">
+            <summary>
+            Log data vào cơ sở dữ liệu mySQL
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.mySQLLogger.TaoKetNoi(System.String,System.String)">
+            <summary>
+            Khởi tạo kết nối đến CSDL mySQL
+            </summary>
+            <param name="TenChuoiKetNoi">có dạng "Server = servername;Uid = username;Pwd = password"</param>
+            <param name="TenDatabase">tên Database trong cơ sở dữ liệu</param>
+        </member>
+        <member name="M:PLCPiProject.mySQLLogger.TaoBang(System.String,System.String[])">
+            <summary>
+            Tạo bảng để log dữ liệu vào. Nếu trùng tên bảng thì bảng cũ sẽ bị xóa, thay bằng bảng mới.
+            Nếu Database chưa tạo thì sẽ tạo mới database theo tên đã truyền vào khi tạo kết nối.
+            </summary>
+            <param name="TenBang">Tên bảng muốn tạo.</param>
+            <param name="MangTenCot">Mảng chứa tên các cột muốn tạo trong bảng.</param>
+            <returns>Trả về trạng thái kiểu string. Nếu kết quả trả về = "GOOD" tạo bảng thành công; = "BAD" tạo bảng thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.mySQLLogger.GhiDuLieuVaoBang(System.String,System.String[])">
+            <summary>
+            Ghi dữ liệu mới vào bảng.
+            </summary>
+            <param name="TenBang">Tên bảng cần ghi dữ liệu.</param>
+            <param name="MangGiaTRi">Mảng giá trị tương ứng với các cột trong bảng bắt đầu từ cột đầu tiên.</param>
+            <returns>Trả về trạng thái kiểu string. Nếu kết quả trả về = "GOOD" ghi thành công; = "BAD" ghi thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.mySQLLogger.TruyvanBaocao(System.String,System.String[],System.String,System.String,System.String)">
+            <summary>
+            Truy vấn dữ liệu từ bảng. Dữ liệu trả về dạng DataTable.
+            </summary>
+            <param name="TenBang">Tên bảng cần truy vấn</param>
+            <param name="MangTenCot">Mảng tên các cột cần lấy dữ liệu. Nếu bằng {"*"}  thì lấy dữ liệu ở tất cả các cột. </param>
+            <param name="TenCotDinhVi">Tên cột cần truy vấn</param>
+            <param name="GiaTriDau">Giá trị đầu của điều kiện truy vấn</param>
+            <param name="GiaTriCuoi">Giá trị cuối của điều kiện truy vấn</param>
+            <returns>Trả về kết quả kiểu DataTable. Nếu kết quả trả về = null thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.mySQLLogger.LayThoiGian">
+            <summary>
+            Dùng lấy thời gian thực từ hệ thống đúng format của mySQL có dạng "yyyy-MM-dd hh:mm:ss"
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:PLCPiProject.DHT21">
+            <summary>
+            Đối tượng tương tác với cảm biến nhiệt độ độ ẩm DHT21
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.DHT21.DocNhietDo">
+            <summary>
+            Đọc nhiệt độ từ cảm biến DHT21. Trả về dữ liệu kiểu string. 
+            </summary>
+            <returns>trả về giá trị nhiệt độ kiểu string. Nếu dữ liệu trả về là 'BAD' nghĩa là lõi kết nối với cảm biến.</returns>
+        </member>
+        <member name="M:PLCPiProject.DHT21.DocDoAm">
+            <summary>
+            Đọc độ ẩm từ cảm biến DHT21. Trả về dữ liệu kiểu string. 
+            </summary>
+            <returns>trả về giá trị độ ẩm kiểu string. Nếu dữ liệu trả về là 'BAD' nghĩa là lõi kết nối với cảm biến.</returns>
+        </member>
+        <member name="M:PLCPiProject.DHT21.DocNhietDoDoAm">
+            <summary>
+            Đọc nhiệt độ và độ ẩm từ cảm biến DHT21. Trả về mảng dữ liệu kiểu string[].        
+            </summary>
+            <returns>trả về mảng giá trị nhiệt độ độ ẩm.Nếu dữ liệu trả về là {'BAD','BAD'} nghĩa là lỗi kết nối với cảm biến.</returns>
+        </member>
+        <member name="M:PLCPiProject.DHT21.Run_Python">
+            <summary>
+            method chạy chương trình python đọc nhiệt độ độ ẩm từ DHT21
+            </summary>
+        </member>
+        <member name="T:PLCPiProject.Doc_Thoi_Gian">
+            <summary>
+            Đối tượng cho phép thao tác với thời gian thực của PLCPi
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.Doc_Thoi_Gian.DocThoiGian">
+            <summary>
+            Lấy thời gian thực từ hệ điều hành Raspbian. Trả về mảng 6 phần tử kiểu string
+            Time_Array = {ngày, tháng, năm, giờ, phút, giây}
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.Doc_Thoi_Gian.CaiDat(System.String)">
+            <summary>
+             Cài đặt lại thời gian cho hệ điều hành Raspbian.
+            </summary>
+            <param name="DateTime">thời gian muốn cài đặt, có định dạng: "dd-MM-yyyy HH:mm:ss" . Ví dụ: "25-03-2015 21:50:00"</param>
+        </member>
+        <member name="M:PLCPiProject.Doc_Thoi_Gian.CaiDatRTC_DS1307">
+             <summary>
+             Cài đặt thời gian cho IC nuôi thời gian DS 1307
+             IC này giữ thời gian thực cho PLCPi khi PLCPi bị mất điện 
+             và khi có điện lại hệ điều hành Raspbian của PLCPi sẽ tự động lấy thời gian thực từ Ds1307
+             nếu PLCPi không kết nối internet.
+            PLCPi sẽ lấy thời gian từ Network Timer Server nếu PLCPi có kết nối internet khi khởi động lên
+             </summary>
+        </member>
+        <member name="T:PLCPiProject.DS18B20">
+            <summary>
+            Đọc nhiệt độ từ cảm biến truyền thông chuẩn 1 dây (1 wire) DS18b20
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.DS18B20.DocNhietDo(System.String)">
+            <summary>
+            Đoc nhiệt độ từ cảm biến DS18B20.
+            </summary>
+            <param name="Id_DS18B20">ID của DS18B20.</param>
+            <returns>Trả về giá trị nhiệt độ kiểu string. nếu trả về là "BAD" nghĩa là bị lỗi khi đọc cảm biến.</returns>
+        </member>
+        <member name="M:PLCPiProject.Email.SendEmail">
+            <summary>
+            Gửi Email
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.PhoneCall.GoiDienThoai(System.String)">
+            <summary>
+            method gọi điện thoại từ GSM modem của USB 3G.
+            </summary>
+            <param name="STD">Số điện thoại muốn gọi tới.</param>
+            <returns>Trả về trạng thái, nếu là "GOOD" thành công, "BAD" thất bại.</returns>
+        </member>
+        <member name="T:PLCPiProject.PLCPi">
+            <summary>
+            Đối tượng tổng thể, quản lý lập trình điều khiển giám sát và thu thập dữ liệu của PLCPi
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.AI">
+            <summary>
+            Đối tượng tương tác ngõ vào AI của PLCPi
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.DS18B20">
+            <summary>
+            Đối tượng tương tác cảm biến nhiệt độ DS18b20
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.ThoiGian">
+            <summary>
+            Đối tượng làm việc với thời gian thực
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.DHT21">
+            <summary>
+            Đối tượng tương tác cảm biến nhiệt độ độ ẩm DHT21
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.S7Ethernet">
+            <summary>
+            Đối tượng quản lý truyền thông S7 Ethernet TCPIP / Profinet
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.mySQLLogger">
+            <summary>
+            Đối tượng quản lý tính năng lưu trữ dữ liệu vào mySQL và truy vấn báo cáo
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.SQLLogger">
+            <summary>
+            Đối tượng quản lý tính năng lưu trữ dữ liệu vào SQL Server và truy vấn báo cáo
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.PhoneCall">
+            <summary>
+            Đối tượng quản lý tính năng gọi điện thoại từ GSM modem của USB 3G
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.SMS">
+            <summary>
+            Đối tượng quản lý tính năng gửi SMS từ GSM modem của USB 3G
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.Email">
+            <summary>
+            Đối tượng quản lý tính năng gửi Email
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.ModbusRTUMaster">
+            <summary>
+            Đối tượng quản lý tính năng modbus RTU Master
+            </summary>
+        </member>
+        <member name="P:PLCPiProject.PLCPi.ModbusTCPClient">
+            <summary>
+            Đối tượng quản lý tính năng modbus TCP Client
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:PLCPiProject.PLCPi.GetBoolAt(System.Byte[],System.Int32,System.Int32)" -->
+        <member name="M:PLCPiProject.PLCPi.GetUshortAt(System.Byte[],System.Int32)">
+            <summary>
+            Đọc về giá trị kiểu Word không dấu(Ushort), giá trị từ 0 – 65535. 2 byte
+            </summary>
+            <param name="buffer">mảng chứa các phần tử kiểu byte đưa vào để chuyển đổi</param>
+            <param name="pos">vị trí byte bắt dầu chuyển đổi</param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.GetShortAt(System.Byte[],System.Int32)">
+            <summary>
+            Đọc về giá trị kiểu Word có dấu(short), giá trị từ -32768 đến 32767. 2 byte
+            </summary>
+            <param name="buffer">mảng chứa các phần tử kiểu byte đưa vào để chuyển đổi</param>
+            <param name="pos">vị trí byte bắt dầu chuyển đổi</param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.GetUintAt(System.Byte[],System.Int32)">
+            <summary>
+            Đọc về giá trị kiểu DWord không dấu(Uint), giá trị từ 0 đến 4.294.967.295, 4 byte
+            </summary>
+            <param name="buffer">mảng chứa các phần tử kiểu byte đưa vào để chuyển đổi</param>
+            <param name="pos"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.GetIntAt(System.Byte[],System.Int32)">
+            <summary>
+            Đọc về giá trị kiểu DWord có dấu(int), giá trị từ –2.147.483.647 đến 2.147.483.647, 4 byte
+            </summary>
+            <param name="buffer">mảng chứa các phần tử kiểu byte đưa vào để chuyển đổi</param>
+            <param name="pos">vị trí byte bắt dầu chuyển đổi</param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.GetFloatAt(System.Byte[],System.Int32)">
+            <summary>
+            Đọc về giá trị kiểu float. 4 byte
+            </summary>
+            <param name="buffer">mảng chứa các phần tử kiểu byte đưa vào để chuyển đổi</param>
+            <param name="pos">vị trí byte bắt dầu chuyển đổi</param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.GetUint_LSB_At(System.Byte[],System.Int32)">
+            <summary>
+            Đọc về giá trị kiểu DWord không dấu(Uint), giá trị từ 0 đến 4.294.967.295, 4 byte. Dạng first word low.
+            </summary>
+            <param name="buffer">mảng chứa các phần tử kiểu byte đưa vào để chuyển đổi.</param>
+            <param name="pos">vị trí byte bắt dầu chuyển đổi.</param>
+            <returns>Trả về giá trị là 1 số DWord.</returns>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.GetIntAt_LSB_At(System.Byte[],System.Int32)">
+            <summary>
+            Đọc về giá trị kiểu DWord có dấu(int), giá trị từ –2.147.483.647 đến 2.147.483.647, 4 byte. Dạng first word low.
+            </summary>
+            <param name="buffer">mảng chứa các phần tử kiểu byte đưa vào để chuyển đổi.</param>
+            <param name="pos">vị trí byte bắt dầu chuyển đổi.</param>
+            <returns>Trả về giá trị là 1 số Int.</returns>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.GetFloatAt_LSB_At(System.Byte[],System.Int32)">
+            <summary>
+            Đọc về giá trị kiểu float. 4 byte. Dạng first word low.
+            </summary>
+            <param name="buffer">mảng chứa các phần tử kiểu byte đưa vào để chuyển đổi.</param>
+            <param name="pos">vị trí byte bắt dầu chuyển đổi.</param>
+            <returns>Trả về giá trị là 1 số Float.</returns>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.SetBit(System.Byte[],System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Ghi giá trị kiểu bit xuống mảng byte
+            </summary>
+            <param name="Buffer">mảng Byte cần ghi giá trị vào</param>
+            <param name="Pos">vị trí byte bắt muốn ghi</param>
+            <param name="Bit">vị trí bit muốn ghi trong byte</param>
+            <param name="Value">giá trị kiểu int. Co giá trị là 0 hoặc 1</param>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.SetWord(System.Byte[],System.Int32,System.UInt16)">
+            <summary>
+            ghi số ushort vào mảng Byte
+            </summary>
+            <param name="Buffer">mảng Byte cần ghi giá trị vào</param>
+            <param name="Pos">vị trí byte bắt đầu ghi</param>
+            <param name="Value">giá trị kiểu ushort( 0 - 65535)</param>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.SetInt(System.Byte[],System.Int32,System.Int16)">
+            <summary>
+            ghi số short vào mảng Byte
+            </summary>
+            <param name="Buffer"></param>
+            <param name="Pos"></param>
+            <param name="Value"></param>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.SetDWord(System.Byte[],System.Int32,System.UInt32)">
+            <summary>
+            ghi số uint vào mảng Byte
+            </summary>
+            <param name="Buffer">mảng Byte cần ghi giá trị vào</param>
+            <param name="Pos">vị trí byte bắt đầu ghi</param>
+            <param name="Value">giá trị kiểu Float</param>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.SetDint(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            ghi số int vào mảng Byte
+            </summary>
+            <param name="Buffer">mảng Byte cần ghi giá trị vào</param>
+            <param name="Pos">vị trí byte bắt đầu ghi</param>
+            <param name="Value">giá trị kiểu int</param>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.SetFloat(System.Byte[],System.Int32,System.Single)">
+            <summary>
+            ghi số Float vào mảng Byte
+            </summary>
+            <param name="Buffer">mảng Byte cần ghi giá trị vào.</param>
+            <param name="Pos">vị trí byte bắt đầu ghi.</param>
+            <param name="Value">giá trị kiểu Float.</param>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.SetDWord_LSB(System.Byte[],System.Int32,System.UInt32)">
+            <summary>
+            ghi số uint vào mảng Byte. Dạng First word low.
+            </summary>
+            <param name="Buffer">mảng Byte cần ghi giá trị vào.</param>
+            <param name="Pos">vị trí byte bắt đầu ghi.</param>
+            <param name="Value">giá trị kiểu uint.</param>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.SetDint_LSB(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            ghi số int vào mảng Byte. Dạng First word low.
+            </summary>
+            <param name="Buffer">mảng Byte cần ghi giá trị vào.</param>
+            <param name="Pos">vị trí byte bắt đầu ghi.</param>
+            <param name="Value">giá trị kiểu int.</param>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.SetFloat_LSB(System.Byte[],System.Int32,System.Single)">
+            <summary>
+            ghi số Float vào mảng Byte. Dạng First word low.
+            </summary>
+            <param name="Buffer">mảng Byte cần ghi giá trị vào.</param>
+            <param name="Pos">vị trí byte bắt đầu ghi.</param>
+            <param name="Value">giá trị kiểu float.</param>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.#ctor">
+            <summary>
+            Khởi tạo đối tượng PLCPi
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.PLCPi.Finalize">
+            <summary>
+            Dispose đối tượng
+            </summary>
+        </member>
+        <member name="T:PLCPiProject.SMS">
+            <summary>
+            Đối tượng tương tác với GSM modem của USB 3G
+            </summary>
+        </member>
+        <member name="F:PLCPiProject.SMS.Port_USB3G">
+            <summary>
+            Cổng USB 3G
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.SMS.GuiSMS(System.String,System.String)">
+            <summary>
+            Method gửi SMS từ GSM modem của USB 3G. Trả về trạng thái gửi. Nếu chuỗi trả vê là "Good"  là thành công, "Bad" thất bại.
+            </summary>
+            <param name="SDT">Chuỗi chứa các số điện thoại cần gửi SMS. Mỗi số cách nhau bởi dấu','. VD: 0909123456,0983456789,01686666777, ...</param>
+            <param name="NoiDung">Nội dung của SMS.</param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.SMS.DocSMS">
+            <summary>
+            Đọc SMS.Trả về mảng string[] chứa nội dung của các tin nhắn. Nếu mảng trả về !=null và phần tử đầu tiên của mảng !="Rong",.
+            nghĩa là có SMS đọc về. Nếu mảng trả về !=null và phần tử đầu tiên của mảng =="Rong", nghĩa là không có SMS đọc về.
+             Nếu mảng trả về ==null  nghĩa là bị Lỗi.
+            </summary>
+            <returns>Trả về mảng string[] chứa nội dung của các tin nhắn. Nếu mảng trả về = null nghĩa là bị lỗi.</returns>
+        </member>
+        <member name="M:PLCPiProject.SMS.ATCommand(System.String)">
+            <summary>
+            method thực thi các lệnh AT Command.
+            </summary>
+            <param name="congcom">Com port.</param>
+            <param name="command">Lệnh cần thực hiện.</param>
+            <returns>Trả về kiểu string chứa các dữ liệu kết quả khi thực hiện lệnh.</returns>
+        </member>
+        <member name="T:PLCPiProject.S7_Ethernet">
+            <summary>
+            Đối tượng quản lý truyền thông S7 Ethernet TCPIP/ Profinet cho PLCPi
+            Bao gồm S7 Server và S7 Client
+            </summary>
+        </member>
+        <member name="F:PLCPiProject.S7_Ethernet.Client">
+            <summary>
+            S7 Ethernet / Profinet Client
+            </summary>
+        </member>
+        <member name="F:PLCPiProject.S7_Ethernet.Server">
+            <summary>
+            S7 Ethernet/ Profinet Server
+            </summary>
+        </member>
+        <member name="T:PLCPiProject.Snap7_Client">
+            <summary>
+            Đối tượng S7 Ethernet TCPIP/ Profinet Client
+            </summary>
+        </member>
+        <member name="F:PLCPiProject.Snap7_Client.SoLanDoc">
+            <summary>
+            Số lần thực hiện 1 lệnh đọc, mục đích để chống nhiễu trên đường truyền kém
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Client.KetNoi(System.String)">
+            <summary>
+            khởi động Snap7 Client. Trả về trạng thái kết nối kiểu string. 
+            Nếu dữ liệu trả về = "GOOD": thành công. Nếu dữ liệu trả về khác "GOOD": thất bại
+            </summary>
+            <param name="ip">địa chỉ IP của Server "0.0.0.0"</param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Client.NgatKetNoi">
+            <summary>
+            Dừng Snap7 Client. Trả về trạng thái kết nối kiểu string. 
+            Nếu dữ liệu trả về = "GOOD": thành công. Nếu dữ liệu trả về khác "GOOD": thất bại
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Client.DocDB(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Đọc vùng nhớ DB. Trả về đối tượng gồm: 1.MangGiaTri kiểu byte: chứa các giá trị đọc được từ vùng nhớ DB; 2.TrangThai kiểu string: để ta biết được việc 
+            đọc vùng nhớ thành công hay thất bại, nếu TrangThai = "GOOD" thành công, TrangThai != "GOOD" thất bại
+            </summary>
+            <param name="DB_Num">vị trí của vùng nhớ DB mà ta muốn đọc, là một số kiểu Int. Bắt đầu từ 1,2,3,.... VD: truyền vào số 1 thì sẽ đọc vùng DB1</param>
+            <param name="BatDau">Vị trí Byte bắt đầu đọc</param>
+            <param name="SoByte">Số Byte muốn đọc</param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Client.DocQB(System.Int32,System.Int32)">
+            <summary>
+            Đọc vùng nhớ AB(vùng nhớ ngõ ra). Trả về đối tượng gồm: 1.MangGiaTri kiểu byte: chứa các giá trị đọc được từ vùng nhớ AB; 2.TrangThai kiểu string: để ta biết được việc 
+            đọc vùng nhớ thành công hay thất bại, nếu TrangThai = "GOOD" thành công, TrangThai != "GOOD" thất bại
+            </summary>
+            <param name="BatDau">Vị trí Byte bắt đầu đọc</param>
+            <param name="SoByte">Số Byte muốn đọc</param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Client.DocIB(System.Int32,System.Int32)">
+            <summary>
+            Đọc vùng nhớ EB(vùng nhớ ngõ vào). Trả về đối tượng gồm: 1.MangGiaTri kiểu byte: chứa các giá trị đọc được từ vùng nhớ EB; 2.TrangThai kiểu string: để ta biết được việc 
+            đọc vùng nhớ thành công hay thất bại, nếu TrangThai = "GOOD" thành công, TrangThai != "GOOD" thất bại
+            </summary>
+            <param name="BatDau">Vị trí Byte bắt đầu đọc</param>
+            <param name="SoByte">Số Byte muốn đọc</param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Client.DocMB(System.Int32,System.Int32)">
+            <summary>
+            Đọc vùng nhớ MB. Trả về đối tượng gồm: 1.MangGiaTri kiểu byte: chứa các giá trị đọc được từ vùng nhớ MB; 2.TrangThai kiểu string: để ta biết được việc 
+            đọc vùng nhớ thành công hay thất bại, nếu TrangThai = "GOOD" thành công, TrangThai != "GOOD" thất bại
+            </summary>
+            <param name="BatDau">Vị trí Byte bắt đầu đọc</param>
+            <param name="SoByte">Số Byte muốn đọc</param>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Client.GhiDB(System.Int32,System.Int32,System.Int32,System.Byte[])">
+            <summary>
+            Ghi dữ liệu xuống Data Block
+            </summary>
+            <param name="DB_Num">vị trí của vùng nhớ DB mà ta muốn ghi, là một số kiểu Int. Bắt đầu từ 1,2,3,.... VD: truyền vào số 1 thì sẽ ghi vùng DB1</param>
+            <param name="BatDau">Vị trí Byte bắt đầu ghi</param>
+            <param name="SoByte">Số Byte muốn ghi</param>
+            <param name="Value">mảng chứ dữ liệu ghi xuống DB, kiểu Byte</param>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Client.GhiQB(System.Int32,System.Int32,System.Byte[])">
+            <summary>
+            Ghi dữ liệu xuống Ngõ ra
+            </summary>
+            <param name="BatDau">Vị trí Byte bắt đầu ghi</param>
+            <param name="SoByte">Số Byte muốn ghi</param>
+            <param name="Value">mảng chứa dữ liệu ghi xuống ngõ ra, kiểu Byte</param>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Client.GhiIB(System.Int32,System.Int32,System.Byte[])">
+            <summary>
+            Ghi dữ liệu xuống Ngõ vào
+            </summary>
+            <param name="BatDau">Vị trí Byte bắt đầu ghi</param>
+            <param name="SoByte">Số Byte muốn ghi</param>
+            <param name="Value">mảng chứ dữ liệu ghi xuống ngõ vào, kiểu Byte</param>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Client.GhiMB(System.Int32,System.Int32,System.Byte[])">
+            <summary>
+            Ghi dữ liệu xuống MB.
+            </summary>
+            <param name="BatDau">Vị trí Byte bắt đầu ghi.</param>
+            <param name="SoByte">Số Byte muốn ghi.</param>
+            <param name="Value">mảng chứa dữ liệu ghi xuống MB, kiểu Byte.</param>
+        </member>
+        <member name="T:PLCPiProject.DocS7">
+            <summary>
+            Dinh nghia lop tra ve cua doc DB
+            </summary>
+        </member>
+        <member name="T:PLCPiProject.Snap7_Server">
+            <summary>
+            Đối tượng S7 Ethernet TCPIP/ Profinet Server
+            </summary>
+        </member>
+        <member name="F:PLCPiProject.Snap7_Server.DataBlock">
+            <summary>
+            S7 Server có 1024 khối Datablock (DB) từ 0-1024
+            </summary>
+        </member>
+        <member name="M:PLCPiProject.Snap7_Server.Khoitao">
+            <summary>
+            Chạy Server. trả về trạng thái kết nối kiểu String. 
+            Nếu String trả vê là "GOOD" là kết nối thành công. 
+            Còn String trả về khác "GOOD" là kết nối bị lỗi
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:PLCPiProject.SQLLogger.TaoKetNoi(System.String,System.String)">
+            <summary>
+            Khởi tạo kết nối đến CSDL mySQL
+            </summary>
+            <param name="TenChuoiKetNoi">có dạng "Server = servername;Uid = username;Pwd = password"</param>
+            <param name="TenDatabase">tên Database trong cơ sở dữ liệu</param>
+        </member>
+        <member name="M:PLCPiProject.SQLLogger.TaoBang(System.String,System.String[])">
+            <summary>
+            Tạo bảng để log dữ liệu vào. Nếu trùng tên bảng thì bảng cũ sẽ bị xóa, thay bằng bảng mới.
+            Nếu Database chưa tạo thì sẽ tạo mới database theo tên đã truyền vào khi tạo kết nối.
+            </summary>
+            <param name="TenBang">Tên bảng muốn tạo.</param>
+            <param name="MangTenCot">Mảng chứa tên các cột muốn tạo trong bảng.</param>
+            <returns>Trả về trạng thái kiểu string. Nếu kết quả trả về = "GOOD" tạo bảng thành công; = "BAD" tạo bảng thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.SQLLogger.GhiDuLieuVaoBang(System.String,System.String[])">
+            <summary>
+            Ghi dữ liệu mới vào bảng.
+            </summary>
+            <param name="TenBang">Tên bảng cần ghi dữ liệu.</param>
+            <param name="MangGiaTRi">Mảng giá trị tương ứng với các cột trong bảng bắt đầu từ cột đầu tiên.</param>
+            <returns>Trả về trạng thái kiểu string. Nếu kết quả trả về = "GOOD" ghi thành công; = "BAD" ghi thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.SQLLogger.TruyvanBaocao(System.String,System.String[],System.String,System.String,System.String)">
+            <summary>
+            Truy vấn dữ liệu từ bảng. Dữ liệu trả về dạng DataTable.
+            </summary>
+            <param name="TenBang">Tên bảng cần truy vấn.</param>
+            <param name="MangTenCot">Mảng tên các cột cần lấy dữ liệu. Nếu bằng {"*"}  thì lấy dữ liệu ở tất cả các cột. </param>
+            <param name="TenCotDinhVi">Tên cột cần truy vấn.</param>
+            <param name="GiaTriDau">Giá trị đầu của điều kiện truy vấn.</param>
+            <param name="GiaTriCuoi">Giá trị cuối của điều kiện truy vấn.</param>
+            <returns>Trả về kết quả kiểu DataTable. Nếu kết quả trả về = null thất bại.</returns>
+        </member>
+        <member name="M:PLCPiProject.SQLLogger.CapnhatDulieu(System.String,System.String[],System.String[],System.String[],System.String[])">
+            <summary>
+            Cập nhật dữ liệu trong bảng.
+            </summary>
+            <param name="TenBang">Tên bảng thao tác cập nhật.</param>
+            <param name="MangTenCotDinhVi">Tên cột truy vấn.</param>
+            <param name="MangGiaTriCotDinhVi">Giá trị cột truy vấn.</param>
+            <param name="MangTenCot">Mảng tên các cột cần cập nhật lại giá trị.</param>
+            <param name="MangGiaTri">Mảng giá trị mới của các cột tương ứng với mảng tên cột.</param>
+            <returns>Trả về trạng thái kiểu string. Nếu kết quả trả về = "GOOD" cập nhật thành công; = "BAD" cập nhật thất bại.</returns>
+        </member>
+    </members>
+</doc>
