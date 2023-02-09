@@ -245,11 +245,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommonDefs.cs" />
+    <Compile Include="Class\AnserU2Print.cs" />
+    <Compile Include="Class\CommonDefs.cs" />
     <Compile Include="Enums\LocationEnum.cs" />
     <Compile Include="Enums\RolesEnum.cs" />
     <Compile Include="Enums\StationEnum.cs" />
-    <Compile Include="Events\RefreshEvent.cs" />
+    <Compile Include="Events\CustomEvents.cs" />
     <Compile Include="Models\MissProItemModel.cs" />
     <Compile Include="Models\ApprovedModel.cs" />
     <Compile Include="Models\ApprovedReportModel.cs" />

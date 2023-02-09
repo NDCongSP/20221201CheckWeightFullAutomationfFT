@@ -148,5 +148,53 @@ namespace WeightChecking.Properties {
                 this["AfterPrinting"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("COM4")]
+        public string PrintComPort {
+            get {
+                return ((string)(this["PrintComPort"]));
+            }
+            set {
+                this["PrintComPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int ScannerIdMetal {
+            get {
+                return ((int)(this["ScannerIdMetal"]));
+            }
+            set {
+                this["ScannerIdMetal"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public int ScannerIdWeight {
+            get {
+                return ((int)(this["ScannerIdWeight"]));
+            }
+            set {
+                this["ScannerIdWeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        public int ScannerIdPrint {
+            get {
+                return ((int)(this["ScannerIdPrint"]));
+            }
+            set {
+                this["ScannerIdPrint"] = value;
+            }
+        }
     }
 }

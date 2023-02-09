@@ -37,7 +37,7 @@ namespace AnserU2_cSharp
             DateTime dt = DateTime.Now;
             String dtn = dt.ToShortTimeString();
 
-            _serialPort = new System.IO.Ports.SerialPort("COM4", 57600, Parity.None, 8, StopBits.One);
+            _serialPort = new System.IO.Ports.SerialPort("COM2", 57600, Parity.None, 8, StopBits.One);
             try
             {
                 _serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);

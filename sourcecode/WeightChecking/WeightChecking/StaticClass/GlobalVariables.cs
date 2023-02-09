@@ -28,7 +28,7 @@ namespace WeightChecking
         //chứa các thông tin cần lưu lại để khi mở phần mềm lên thì sẽ đọc lên để tiếp tục làm việc.
         public static RememberInfo RememberInfo { get; set; } = new RememberInfo();
 
-        public static RefreshEvent MyEvent = new RefreshEvent();
+        public static CustomEvents MyEvent = new CustomEvents();
 
         //biến cấu hình cân
         public static string IpScale = "";
@@ -50,6 +50,14 @@ namespace WeightChecking
 
         //bao can o tram truoc son hay sau son
         public static int AfterPrinting { get; set; } = 0;
+
+        public static string PrintComPort { get; set; }
+        public static int ScannerIdMetal { get; set; } = 1;
+        public static int ScannerIdWeight { get; set; } = 2;
+        public static int ScannerIdPrint { get; set; } = 3;
+
+        public static string ConveyorStatus { get; set; } = "Bad";
+        public static byte[] DataWriteDb1 { get; set; } = new byte[] { 0, 0, 0 };
 
         #region Printing
         // Print the file.

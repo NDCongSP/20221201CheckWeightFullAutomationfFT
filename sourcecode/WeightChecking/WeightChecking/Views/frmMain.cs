@@ -191,8 +191,8 @@ namespace WeightChecking
             }
             #endregion
 
-            #region Ket noi modbus RTU PLC metalScan counter
-            if (GlobalVariables.IsCounter)
+            #region Ket noi modbus RTU PLC: Scale, Metal scan
+            if (GlobalVariables.IsScale)
             {
                 GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPort, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
 
@@ -209,6 +209,22 @@ namespace WeightChecking
                                     "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            #endregion
+
+            #region Ket noi conveyor
+            GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.IpScale);
+            Console.WriteLine($"Conveyor Status: {GlobalVariables.ConveyorStatus}");
+
+            if (GlobalVariables.ConveyorStatus == "GOOD")
+            {
+                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 3, GlobalVariables.DataWriteDb1);
+            }
+            else
+            {
+                MessageBox.Show($"Không thể kết nối được bộ đếm dò kim loại.{Environment.NewLine}Tắt phần mềm, kiểm tra lại kết nối với PLC rồi mở lại phần mềm.",
+                                "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
             #endregion
 
             _barButtonItemExportMissItem.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
@@ -476,8 +492,8 @@ namespace WeightChecking
                                         CreatedDate = item.CreatedDate,
                                         Station = item.Station.ToString(),
                                         UserName = item.UserName,
-                                        ApprovedName=item.ApprovedName,
-                                        ActualDeviationPairs=item.ActualDeviationPairs
+                                        ApprovedName = item.ApprovedName,
+                                        ActualDeviationPairs = item.ActualDeviationPairs
                                     });
                                 }
                                 ws.Import(reportModel, 1, 0);
@@ -663,6 +679,7 @@ namespace WeightChecking
 
             barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")} " +
                 $"| {GlobalVariables.UserLoginInfo.UserName} | ScaleStatus: {GlobalVariables.ScaleStatus}" +
+                $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}" +
                 $" | CounterStatus: {GlobalVariables.ModbusStatus}";
 
             t.Enabled = true;

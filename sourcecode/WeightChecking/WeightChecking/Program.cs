@@ -32,6 +32,10 @@ namespace WeightChecking
             GlobalVariables.IsScale = Properties.Settings.Default.IsScale;
             GlobalVariables.IsCounter = Properties.Settings.Default.IsCounter;
             GlobalVariables.AfterPrinting = Properties.Settings.Default.AfterPrinting;
+            GlobalVariables.PrintComPort = Properties.Settings.Default.PrintComPort;
+            GlobalVariables.ScannerIdMetal = Properties.Settings.Default.ScannerIdMetal;
+            GlobalVariables.ScannerIdWeight = Properties.Settings.Default.ScannerIdWeight;
+            GlobalVariables.ScannerIdPrint = Properties.Settings.Default.ScannerIdPrint;
 
             if (Properties.Settings.Default.Station == 0)
             {
