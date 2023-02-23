@@ -26,7 +26,10 @@ namespace WeightChecking
     public partial class frmScale : DevExpress.XtraEditors.XtraForm
     {
         private ScaleHelper _scaleHelper;
-        private Task _ckTask;
+        private Task _ckTask, _ckQRTask;
+
+        private int _stableScale = 0;
+        private double _scaleValue = 0;
 
         private tblScanDataModel _scanData = new tblScanDataModel();
 
@@ -53,53 +56,53 @@ namespace WeightChecking
         private void FrmScale_Load(object sender, EventArgs e)
         {
             #region Register events Scale value change
-            if (GlobalVariables.IsScale)
-            {
-                _scaleHelper = new ScaleHelper()
-                {
-                    Ip = GlobalVariables.IpScale,
-                    Port = Convert.ToInt32(GlobalVariables.PortScale),
-                    ScaleDelay = GlobalVariables.ScaleDelay,
-                    StopScale = false
-                };
+            //if (GlobalVariables.IsScale)
+            //{
+            //    _scaleHelper = new ScaleHelper()
+            //    {
+            //        Ip = GlobalVariables.IpScale,
+            //        Port = Convert.ToInt32(GlobalVariables.PortScale),
+            //        ScaleDelay = GlobalVariables.ScaleDelay,
+            //        StopScale = false
+            //    };
 
-                _scaleHelper.StatusChanged += (s, o) =>
-                {
-                    GlobalVariables.ScaleStatus = o.StatusConnection;
-                    Console.WriteLine($"Scale {o}");
-                };
+            //    _scaleHelper.StatusChanged += (s, o) =>
+            //    {
+            //        GlobalVariables.ScaleStatus = o.StatusConnection;
+            //        Console.WriteLine($"Scale {o}");
+            //    };
 
-                _ckTask = new Task(() => _scaleHelper.CheckConnect());
-                _ckTask.Start();
+            //    _ckTask = new Task(() => _scaleHelper.CheckConnect());
+            //    _ckTask.Start();
 
-                _scaleHelper.ValueChanged += (s, o) =>
-                {
-                    try
-                    {
-                        var w = o.Value * GlobalVariables.UnitScale;
-                        GlobalVariables.RealWeight = w;
-                        //if (w.ToString().Length >= 4 || w == 0)
-                        {
-                            if (labRealWeight.InvokeRequired)
-                            {
-                                labRealWeight.Invoke(new Action(() =>
-                                {
-                                    labScaleValue.Text = w.ToString();
-                                }));
-                            }
-                            else
-                            {
-                                labScaleValue.Text = w.ToString();
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "Scale event error.");
-                    }
-                };
-                _scaleHelper.ScaleValue = 1;// 5.545;//tac động để đọc cân lần đầu tiên
-            }
+            //    _scaleHelper.ValueChanged += (s, o) =>
+            //    {
+            //        try
+            //        {
+            //            var w = o.Value * GlobalVariables.UnitScale;
+            //            GlobalVariables.RealWeight = w;
+            //            if (w.ToString().Length >= 4 || w == 0)
+            //            {
+            //                if (labRealWeight.InvokeRequired)
+            //                {
+            //                    labRealWeight.Invoke(new Action(() =>
+            //                    {
+            //                        labScaleValue.Text = w.ToString();
+            //                    }));
+            //                }
+            //                else
+            //                {
+            //                    labScaleValue.Text = w.ToString();
+            //                }
+            //            }
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Log.Error(ex, "Scale event error.");
+            //        }
+            //    };
+            //    _scaleHelper.ScaleValue = 1;// 5.545;//tac động để đọc cân lần đầu tiên
+            //}
             #endregion
 
             #region hien thi cac thong so dem
@@ -174,7 +177,7 @@ namespace WeightChecking
 
             #endregion
 
-            #region đăng ký sự kiện cập nhật giá trị MetalScan counter
+            #region đăng ký sự kiện từ cac PLC
             GlobalVariables.MyEvent.EventHandlerCount += (s, o) =>
             {
                 #region check Actual metal scan
@@ -287,6 +290,20 @@ namespace WeightChecking
                 else labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
 
                 #endregion
+            };
+
+            //sự kiện báo cân đã ổn định, chốt số cân.
+            GlobalVariables.MyEvent.EventHandlerStableScale += (s, o) =>
+            {
+                _stableScale = o.NewValue;
+
+                _scanData.GrossWeight = _scaleValue;
+            };
+
+            //sự kiến lấy khối lượng cân
+            GlobalVariables.MyEvent.EventHandlerScale += (s, o) =>
+            {
+                _scaleValue = o.ScaleValue;
             };
             #endregion
 
@@ -1412,8 +1429,6 @@ namespace WeightChecking
         {
             try
             {
-                _scanData.GrossWeight = double.TryParse(labScaleValue.Text, out double value) ? value : 0;
-                GlobalVariables.RealWeight = _scanData.GrossWeight;
                 _scanData.CreatedBy = GlobalVariables.UserLoginInfo.Id;
                 _scanData.Station = GlobalVariables.Station;
 
@@ -1551,21 +1566,21 @@ namespace WeightChecking
                                 {
                                     Console.WriteLine($"ProductNumber: {res.ProductNumber} có kiểm tra kim loại.");
                                     #region gui data xuong PLC
-                                    GlobalVariables.MyEvent.MetalStatus = 1;
+                                    GlobalVariables.MyEvent.MetalPusher = 0;
                                     #endregion
                                 }
                                 else if (res.MetalScan == 0)
                                 {
                                     Console.WriteLine($"ProductNumber: {res.ProductNumber} không kiểm tra kim loại.");
                                     #region gui data xuong PLC
-                                    GlobalVariables.MyEvent.MetalStatus = 3;
+                                    GlobalVariables.MyEvent.MetalPusher = 2;
                                     #endregion
                                 }
                             }
                             else
                             {
                                 #region gui data xuong PLC
-                                GlobalVariables.MyEvent.MetalStatus = 2;
+                                GlobalVariables.MyEvent.MetalPusher = 1;
                                 #endregion
 
                                 XtraMessageBox.Show($"Product number {_scanData.ProductNumber} không có trong hệ thống. Xin hãy kiểm tra lại thông tin."
@@ -1588,6 +1603,10 @@ namespace WeightChecking
                         break;
                     case 2:
                         #region truy vấn data và xử lý
+                        //lấy thông tin khối lượng cân sau khi cân đã báo stable
+                        while(_stableScale==0)
+                        _scanData.GrossWeight = GlobalVariables.RealWeight = _scaleValue;
+
                         //truy vấn thông tin 
                         using (var connection = GlobalVariables.GetDbConnection())
                         {
@@ -2081,6 +2100,9 @@ namespace WeightChecking
                                     //thung hang Pass
                                     if (_scanData.DeviationPairs == 0)
                                     {
+                                        //bật tín hiệu để PLC on đèn xanh
+                                        GlobalVariables.MyEvent.StatusLightPLC = true;
+
                                         if (_scanData.Decoration == 0)
                                         {
                                             GlobalVariables.RememberInfo.GoodBoxPrinting += 1;
@@ -2119,6 +2141,9 @@ namespace WeightChecking
                                             GlobalVariables.Printing((_scanData.GrossWeight / 1000).ToString("#,#0.00")
                                                         , !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanData.OcNo}|{_scanData.BoxNo}", true
                                                          , _scanData.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss"));
+
+                                            //báo trạng thái cho pusher là thùng cân OK
+                                            GlobalVariables.MyEvent.WeightPusher = 0;
                                         }
                                         else
                                         {
@@ -2133,6 +2158,11 @@ namespace WeightChecking
                                     }
                                     else//thung fail
                                     {
+                                        //bật tín hiệu để PLC on đèn xanh
+                                        GlobalVariables.MyEvent.StatusLightPLC = false;
+                                        //ghi tín hiệu xuống PLC conveyor điều khiển pusher reject. //báo trạng thái cho pusher là thùng cân OK
+                                        GlobalVariables.MyEvent.WeightPusher = 1;
+
                                         _scanData.Pass = 0;
                                         _scanData.Status = 0;
 
@@ -2343,23 +2373,6 @@ namespace WeightChecking
                                     connection.Execute("sp_tblItemMissingInfoInsert", para, commandType: CommandType.StoredProcedure);
                                 }
                             }
-                            else
-                            {
-                                XtraMessageBox.Show($"Product number {_scanData.ProductNumber} không có trong hệ thống. Xin hãy kiểm tra lại thông tin."
-                                    , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-                                ResetControl();
-
-                                para = null;
-                                para = new DynamicParameters();
-                                para.Add("ProductNumber", _scanData.ProductNumber);
-                                para.Add("ProductName", _scanData.ProductName);
-                                para.Add("OcNum", _scanData.OcNo);
-                                para.Add("Note", $"Product item '{_scanData.ProductNumber}' không có data hệ thống.");
-                                para.Add("QrCode", _scanData.BarcodeString);
-
-                                connection.Execute("sp_tblItemMissingInfoInsert", para, commandType: CommandType.StoredProcedure);
-                            }
                         }
                     #endregion
                     returnLoop:
@@ -2381,33 +2394,16 @@ namespace WeightChecking
                                 {
                                     Console.WriteLine($"ProductNumber: {res.ProductNumber} là hàng sơn.");
                                     #region gui data xuong PLC
-                                    GlobalVariables.MyEvent.PrintStatus = 1;
+                                    GlobalVariables.MyEvent.PrintPusher = 1;
                                     #endregion
                                 }
                                 else if (res.Printing == 0)
                                 {
                                     Console.WriteLine($"ProductNumber: {res.ProductNumber} không phải hàng sơn.");
                                     #region gui data xuong PLC
-                                    GlobalVariables.MyEvent.PrintStatus = 0;
+                                    GlobalVariables.MyEvent.PrintPusher = 0;
                                     #endregion
                                 }
-                            }
-                            else
-                            {
-                                XtraMessageBox.Show($"Product number {_scanData.ProductNumber} không có trong hệ thống. Xin hãy kiểm tra lại thông tin."
-                                    , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-                                ResetControl();
-
-                                para = null;
-                                para = new DynamicParameters();
-                                para.Add("ProductNumber", _scanData.ProductNumber);
-                                para.Add("ProductName", _scanData.ProductName);
-                                para.Add("OcNum", _scanData.OcNo);
-                                para.Add("Note", $"Product item '{_scanData.ProductNumber}' không có data hệ thống.");
-                                para.Add("QrCode", _scanData.BarcodeString);
-
-                                connection.Execute("sp_tblItemMissingInfoInsert", para, commandType: CommandType.StoredProcedure);
                             }
                         }
                         break;
@@ -2493,19 +2489,19 @@ namespace WeightChecking
             //Get ra ID của scanner
             var scannerId = xmlDoc.GetElementsByTagName("scannerID");
 
-            if (scannerId[0].InnerText == "1")//vị trí check metal. đầu chuyền
+            if (scannerId[0].InnerText == GlobalVariables.ScannerIdMetal.ToString())//vị trí check metal. đầu chuyền
             {
                 //this.Invoke((MethodInvoker)delegate { txtDataAscii1.Text = xmlDoc.GetElementsByTagName("datalabel")[0].InnerText; });
                 _barcodeString1 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
                 BarcodeHandle(1, _barcodeString1);
             }
-            else if (scannerId[0].InnerText == "2")//vị trí check weight. ngay cân
+            else if (scannerId[0].InnerText == GlobalVariables.ScannerIdWeight.ToString())//vị trí check weight. ngay cân
             {
                 _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
                 BarcodeHandle(2, _barcodeString2);
             }
-            else// if (scannerId[0].InnerText == "3")//vị trí phân loại hàng sơn cuối chuyền
+            else if (scannerId[0].InnerText == GlobalVariables.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
             {
                 _barcodeString3 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
                 BarcodeHandle(3, _barcodeString3);
@@ -2541,8 +2537,16 @@ namespace WeightChecking
                 _serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
                 _serialPort.Open();
                 Console.WriteLine("[" + dtn + "] " + "Connected\n");
+
+                GlobalVariables.PrintConnectionStatus = "Good";
+
+                StartPrint();
             }
-            catch (Exception ex) { MessageBox.Show(ex.ToString(), "Error"); }
+            catch (Exception ex)
+            {
+                GlobalVariables.PrintConnectionStatus = "Bad";
+                MessageBox.Show(ex.ToString(), "Error");
+            }
         }
 
         private void SerialPortClose()
@@ -2559,7 +2563,7 @@ namespace WeightChecking
 
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            //try
+            try
             {
                 System.Threading.Thread.Sleep(100);
                 string dataRCV = _serialPort.ReadExisting(); // Read
@@ -2593,6 +2597,10 @@ namespace WeightChecking
                 {
                     Console.WriteLine($"Loi. Error Code: {rcvArr[5]}");
                     MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    StopPrint();
+                    Thread.Sleep(1000);
+                    StartPrint();
                 }
                 else if (rcvArr[4] == 0x5D)//93 get speed
                 {
@@ -2610,11 +2618,14 @@ namespace WeightChecking
                 //    labStatus.Text += $"{item} ";
                 //});
             }
-            //catch (Exception)
-            //{
-
-            //    throw;
-            //}
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Printing data received error: {ex.Message}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
         }
 
         //private void btn_sendSTRING1_Click(object sender, EventArgs e)
@@ -2625,26 +2636,48 @@ namespace WeightChecking
         //    SendDynamicString(string1, string2);
         //}
 
-        private void btn_startprint_Click(object sender, EventArgs e)
+        private void StartPrint()
         {
-            byte[] SetPtinting = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
-            // Gán số thứ tự của bản tin cần in vào array
-            SetPtinting[5] = 2;//chon ban in so 2
-            // Tính checksum
-            byte chkSUM = 0;
-            for (var i = 1; i <= SetPtinting.Length - 3; i++)
-                chkSUM = (byte)(chkSUM + SetPtinting[i]);
-            // Gán giá trị checksum vào array
-            SetPtinting[9] = chkSUM;
-            // Gửi array xuống máy in
-            _serialPort.Write(SetPtinting, 0, SetPtinting.Length);
+            try
+            {
+                byte[] SetPtinting = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
+                // Gán số thứ tự của bản tin cần in vào array
+                SetPtinting[5] = 2;//chon ban in so 2
+                                   // Tính checksum
+                byte chkSUM = 0;
+                for (var i = 1; i <= SetPtinting.Length - 3; i++)
+                    chkSUM = (byte)(chkSUM + SetPtinting[i]);
+                // Gán giá trị checksum vào array
+                SetPtinting[9] = chkSUM;
+                // Gửi array xuống máy in
+                _serialPort.Write(SetPtinting, 0, SetPtinting.Length);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Start print error: {ex.Message}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
         }
 
-        private void btn_stopprint_Click(object sender, EventArgs e)
+        private void StopPrint()
         {
-            byte[] SetPtinting = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x4C, 0x3 };
+            try
+            {
+                byte[] SetPtinting = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x4C, 0x3 };
 
-            _serialPort.Write(SetPtinting, 0, SetPtinting.Length);
+                _serialPort.Write(SetPtinting, 0, SetPtinting.Length);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Stop print error: {ex.Message}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
         }
 
         /// <summary>
@@ -2708,71 +2741,115 @@ namespace WeightChecking
 
         private void btn_Setspeed_Click(object sender, EventArgs e)
         {
-            byte[] setSpeed = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x5E, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
-
-            int speedSV = 10 * 1000;// (int)(double.TryParse(txt_SpeedSV.Text, out double value) ? value * 1000 : 0);
-
-            byte[] speedSVarr = BitConverter.GetBytes(speedSV);
-
-            // Gán giá trị tốc độ vào arr
-            var i = 0;
-            foreach (var item in speedSVarr)
+            try
             {
-                setSpeed[5 + i] = item;
-                i += 1;
-            }
+                byte[] setSpeed = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x5E, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
 
-            // Tính checksum
-            int chksum = 0;
-            for (var j = 1; j <= setSpeed.Length - 2; j++)
-                chksum = chksum + setSpeed[j];
-            chksum = chksum & 0xFF;
-            // Gán checksum vào arr
-            setSpeed[9] = System.Convert.ToByte(chksum);
-            // Gửi xuống máy in
-            _serialPort.Write(setSpeed, 0, setSpeed.Length);
+                int speedSV = 10 * 1000;// (int)(double.TryParse(txt_SpeedSV.Text, out double value) ? value * 1000 : 0);
+
+                byte[] speedSVarr = BitConverter.GetBytes(speedSV);
+
+                // Gán giá trị tốc độ vào arr
+                var i = 0;
+                foreach (var item in speedSVarr)
+                {
+                    setSpeed[5 + i] = item;
+                    i += 1;
+                }
+
+                // Tính checksum
+                int chksum = 0;
+                for (var j = 1; j <= setSpeed.Length - 2; j++)
+                    chksum = chksum + setSpeed[j];
+                chksum = chksum & 0xFF;
+                // Gán checksum vào arr
+                setSpeed[9] = System.Convert.ToByte(chksum);
+                // Gửi xuống máy in
+                _serialPort.Write(setSpeed, 0, setSpeed.Length);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Printing set speed error: {ex.Message}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
         }
 
         private void btn_GetSpeed_Click(object sender, EventArgs e)
         {
-            byte[] GetSpeed = new byte[] { 0x2, 0x0, 0x2, 0x0, 0x5D, 0x5F, 0x3 };
-            _serialPort.Write(GetSpeed, 0, GetSpeed.Length);
+            try
+            {
+                byte[] GetSpeed = new byte[] { 0x2, 0x0, 0x2, 0x0, 0x5D, 0x5F, 0x3 };
+                _serialPort.Write(GetSpeed, 0, GetSpeed.Length);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Printing get speed error: {ex.Message}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
         }
 
         private void btnGetDelay_Click(object sender, EventArgs e)
         {
-            byte[] GetDelay = new byte[] { 0x2, 0x0, 0x4, 0x0, 0x64, 0x2, 0x0, 0x6A, 0x3 };
-            // ID ban tin =2
-            _serialPort.Write(GetDelay, 0, GetDelay.Length);
+            try
+            {
+                byte[] GetDelay = new byte[] { 0x2, 0x0, 0x4, 0x0, 0x64, 0x2, 0x0, 0x6A, 0x3 };
+                // ID ban tin =2
+                _serialPort.Write(GetDelay, 0, GetDelay.Length);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Printing get delay error: {ex.Message}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
         }
 
         private void btnSetDelay_Click(object sender, EventArgs e)
         {
-            byte[] setDelay = new byte[] { 0x2, 0x0, 0x8, 0x0, 0x65, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
-            // Gán IDbản tin
-            setDelay[5] = 0x2;
-
-            int delaySV = 10 * 10;// (int)(double.TryParse(txtDelaySV.Text, out double value) ? value * 10 : 0);
-
-            byte[] delaySVarr = BitConverter.GetBytes(delaySV);
-
-            // Gán giá trị tốc độ vào arr
-            var i = 0;
-            foreach (var item in delaySVarr)
+            try
             {
-                setDelay[7 + i] = item;
-                i += 1;
-            }
+                byte[] setDelay = new byte[] { 0x2, 0x0, 0x8, 0x0, 0x65, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
+                // Gán IDbản tin
+                setDelay[5] = 0x2;
 
-            // Tính checksum
-            int chksum = 0;
-            for (var j = 1; j <= setDelay.Length - 2; j++)
-                chksum = chksum + setDelay[j];
-            chksum = chksum & 0xFF;
-            // Gán checksum vào arr
-            setDelay[11] = System.Convert.ToByte(chksum);
-            // Gửi xuống máy in
-            _serialPort.Write(setDelay, 0, setDelay.Length);
+                int delaySV = 10 * 10;// (int)(double.TryParse(txtDelaySV.Text, out double value) ? value * 10 : 0);
+
+                byte[] delaySVarr = BitConverter.GetBytes(delaySV);
+
+                // Gán giá trị tốc độ vào arr
+                var i = 0;
+                foreach (var item in delaySVarr)
+                {
+                    setDelay[7 + i] = item;
+                    i += 1;
+                }
+
+                // Tính checksum
+                int chksum = 0;
+                for (var j = 1; j <= setDelay.Length - 2; j++)
+                    chksum = chksum + setDelay[j];
+                chksum = chksum & 0xFF;
+                // Gán checksum vào arr
+                setDelay[11] = System.Convert.ToByte(chksum);
+                // Gửi xuống máy in
+                _serialPort.Write(setDelay, 0, setDelay.Length);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Printing set delay error: {ex.Message}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
         }
         #endregion
     }

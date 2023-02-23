@@ -40,13 +40,13 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.80.1")]
-        public string ipScale {
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.1.86")]
+        public string ipConveyor {
             get {
-                return ((string)(this["ipScale"]));
+                return ((string)(this["ipConveyor"]));
             }
             set {
-                this["ipScale"] = value;
+                this["ipConveyor"] = value;
             }
         }
         
@@ -79,12 +79,12 @@ namespace WeightChecking.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("COM2")]
-        public string ComPort {
+        public string ComPortScale {
             get {
-                return ((string)(this["ComPort"]));
+                return ((string)(this["ComPortScale"]));
             }
             set {
-                this["ComPort"] = value;
+                this["ComPortScale"] = value;
             }
         }
         

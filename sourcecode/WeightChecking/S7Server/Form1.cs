@@ -45,11 +45,12 @@ namespace S7Server
         {
             _timer.Enabled = false;
 
-            label2.Text = Convert.ToString(_plcPi.S7Ethernet.Server.DataBlock[1]);
             label4.Text = Convert.ToString(_plcPi.S7Ethernet.Server.DataBlock[0]);
+            label2.Text = Convert.ToString(_plcPi.S7Ethernet.Server.DataBlock[1]);
+            label5.Text = Convert.ToString(_plcPi.S7Ethernet.Server.DataBlock[2]);
+            label6.Text = Convert.ToString(_plcPi.S7Ethernet.Server.DataBlock[3]);
+            _plcPi.S7Ethernet.Server.DataBlock[3] = Convert.ToByte(textBox1.Text);
 
-            //_plcPi.S7Ethernet.Server.DataBlock[0] = Convert.ToByte(textBox2.Text);
-            
             _timer.Enabled = true;
         }
     }

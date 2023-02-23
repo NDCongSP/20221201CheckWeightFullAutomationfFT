@@ -5,8 +5,8 @@
     <Setting Name="conString" Type="System.String" Scope="User">
       <Value Profile="(Default)">ed3YbBgz3fEdyTkRahthFY5ktQmH2er+blyCD/lIJfgQTkdsvUtAX21xE6NORw6ZjeFRNfYstnZaiBSjcXumLFU/sdtwUevAWTdRgM8d5rXa3D3X5+GMyirpW1sHWm/HgWEKYxsSdYZlXnxiuz9nf7drrpUpv2SLYUqgcaS4tI12TlmBEo/Dm8Id8z+gGyVqgoQB0EuDAY/OlHLTcrxHSejQK2jjixrgD9KsnAkU2d8AQ3+rEONwHA==</Value>
     </Setting>
-    <Setting Name="ipScale" Type="System.String" Scope="User">
-      <Value Profile="(Default)">192.168.80.1</Value>
+    <Setting Name="ipConveyor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">192.168.1.86</Value>
     </Setting>
     <Setting Name="conStringWL" Type="System.String" Scope="User">
       <Value Profile="(Default)">ed3YbBgz3fEdyTkRahthFY5ktQmH2er+ubV7i40QDz2+hAazJukJ2KdBD28UEGTZpJCCeedpXvxIaU3kh+lTExB/npJz2Uw5lNuwB800UZyeKbvZFrfjjijyurbNaMoE7IXQkLVO+pvLS+9V/AFxNrE1qo49bGzvAnZUvm1Uo3o1fPqAH5rwrQmiR/MZQW0YE/hEqI8KBWqqEiZJeE8Dbt/Bw1H8THChh6y2CqZBLz4=</Value>
@@ -14,7 +14,7 @@
     <Setting Name="UnitScale" Type="System.String" Scope="User">
       <Value Profile="(Default)">1000</Value>
     </Setting>
-    <Setting Name="ComPort" Type="System.String" Scope="User">
+    <Setting Name="ComPortScale" Type="System.String" Scope="User">
       <Value Profile="(Default)">COM2</Value>
     </Setting>
     <Setting Name="UpdatePath" Type="System.String" Scope="User">
