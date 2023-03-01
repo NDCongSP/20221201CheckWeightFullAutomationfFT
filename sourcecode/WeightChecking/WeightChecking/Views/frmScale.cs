@@ -1604,8 +1604,8 @@ namespace WeightChecking
                     case 2:
                         #region truy vấn data và xử lý
                         //lấy thông tin khối lượng cân sau khi cân đã báo stable
-                        while(_stableScale==0)
-                        _scanData.GrossWeight = GlobalVariables.RealWeight = _scaleValue;
+                        while (_stableScale == 0)
+                            _scanData.GrossWeight = GlobalVariables.RealWeight = _scaleValue;
 
                         //truy vấn thông tin 
                         using (var connection = GlobalVariables.GetDbConnection())

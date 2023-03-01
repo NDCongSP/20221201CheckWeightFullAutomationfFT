@@ -232,7 +232,7 @@ namespace WeightChecking
         /// <summary>
         /// Biến báo sự kiện sensor trước vị trí Scan metal có tác động.
         /// Bật bộ đếm thời gian báo ko đọc được tem QR lên.
-        /// Sau khoảng thời gian này mà vẫn chua có tín hiệu từ scanner thì báo reject.
+        /// Sau khoảng thời gian này mà vẫn chua có tín hiệu từ scanner thì báo rejec.
         /// </summary>
         public int SensorBeforeMetalScan
         {
@@ -329,7 +329,7 @@ namespace WeightChecking
         private bool _statusLight = false;
         public int CountValue { get => _countValue; set => _countValue = value; }
 
-        public bool StatusLight { get => _statusLight; set => _statusLight = value };
+        public bool StatusLight { get => _statusLight; set => _statusLight = value; }
 
         public CountValueChangedEventArgs(int value)
         {

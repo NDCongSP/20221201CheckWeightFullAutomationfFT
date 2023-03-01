@@ -204,6 +204,18 @@ namespace WeightChecking
                     //ghi giá trị tắt đèn tháp xuống PLC
                     GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 6, 1, _writeHoldingRegisterArr);
 
+                    //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
+                    GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 7, ref _readHoldingRegisterArr);
+
+                    //GlobalVariables.RememberInfo.CountMetalScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                    ////update gia tri count vao sự kiện để trong frmScal  nó update lên giao diện
+                    //GlobalVariables.MyEvent.CountValue = GlobalVariables.RememberInfo.CountMetalScan;
+
+                    //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                    GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetUintAt(_readHoldingRegisterArr, 1);
+                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 3);
+
+
                     _tskModbus = new System.Threading.Tasks.Task(() => ReadModbus());
                     _tskModbus.Start();
                 }

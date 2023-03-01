@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="conString" Type="System.String" Scope="User">
-      <Value Profile="(Default)">ed3YbBgz3fEdyTkRahthFY5ktQmH2er+blyCD/lIJfgQTkdsvUtAX21xE6NORw6ZjeFRNfYstnZaiBSjcXumLFU/sdtwUevAWTdRgM8d5rXa3D3X5+GMyirpW1sHWm/HgWEKYxsSdYZlXnxiuz9nf7drrpUpv2SLYUqgcaS4tI12TlmBEo/Dm8Id8z+gGyVqgoQB0EuDAY/OlHLTcrxHSejQK2jjixrgD9KsnAkU2d8AQ3+rEONwHA==</Value>
+      <Value Profile="(Default)">ed3YbBgz3fEdyTkRahthFY5ktQmH2er+blyCD/lIJfgQTkdsvUtAX21xE6NORw6ZjDTFBiO0b+JppR/MUkEA8ekTiP82jW+iRZeEPpw5i4ZzRNeEyaY72K+tde5hq7/8BKwBoCV4foyGW+mZa0JHAvho1Mhs6RJ6sMrGWGmbUV/UdgUFA1082LDKxlhpm1Ff0NktMNlPk9oi5E9iE4QzTiJ2s0VZLuBsCq2PiaLakbiwyZe5jji9kJRva0p2QANS</Value>
     </Setting>
     <Setting Name="ipConveyor" Type="System.String" Scope="User">
       <Value Profile="(Default)">192.168.1.86</Value>
@@ -21,7 +21,7 @@
       <Value Profile="(Default)">\\192.168.1.241\FramasPublic\PUBLIC_Able to deleted\22 IT\01-UpdateApp\11-SSFG_IDC\1.Station1BeforePrint\Update.xml</Value>
     </Setting>
     <Setting Name="IsScale" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="IsCounter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
