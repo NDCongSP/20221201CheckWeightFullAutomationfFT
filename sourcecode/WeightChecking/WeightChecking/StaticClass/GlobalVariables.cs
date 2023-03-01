@@ -62,6 +62,8 @@ namespace WeightChecking
         //byte[0]-Metal; byte[1]-Scale; byte[2]-print
 
         public static List<OcUsingModel> OcUsingList { get; set; } = new List<OcUsingModel>();//get ra danh sách tất cả các OcNo đang sử dụng
+        public static double TimeCheckQrMetal { get; set; }//Đơn vị (s), thời gian quy định thùng chạy từ cảm biến trước metal scanner đến vị trí scanner,n
+                                                           //nếu qua thời gian này mà scanner chưa có tín hiệu thì báo lỗi không đọc được QR code, ghi lệnh xuống PLC conveyor reject 
 
         #region Printing
         // Print the file.

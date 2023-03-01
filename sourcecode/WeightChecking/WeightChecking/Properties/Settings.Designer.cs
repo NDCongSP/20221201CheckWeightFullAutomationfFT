@@ -193,5 +193,17 @@ namespace WeightChecking.Properties {
                 this["ScannerIdPrint"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public double TimeCheckQrMetal {
+            get {
+                return ((double)(this["TimeCheckQrMetal"]));
+            }
+            set {
+                this["TimeCheckQrMetal"] = value;
+            }
+        }
     }
 }
