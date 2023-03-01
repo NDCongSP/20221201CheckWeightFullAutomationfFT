@@ -27,6 +27,7 @@ namespace WeightChecking
     {
         private ScaleHelper _scaleHelper;
         private Task _ckTask, _ckQRTask;
+        private bool _readQrStatus = false;//biến báo đọc được QR hay không.
 
         private int _stableScale = 0;
         private double _scaleValue = 0;
@@ -304,6 +305,23 @@ namespace WeightChecking
             GlobalVariables.MyEvent.EventHandlerScale += (s, o) =>
             {
                 _scaleValue = o.ScaleValue;
+            };
+
+            GlobalVariables.MyEvent.EventHandleSensorBeforeMetalScan += (s, o) =>
+            {
+                if (o.NewValue == 1)
+                {
+                    _ckQRTask = new Task(() => CheckReadQr());
+                    _ckQRTask.Start();
+                }
+                else
+                {
+                    if (_ckQRTask != null)
+                    {
+                        _ckQRTask.Wait();
+                        _ckQRTask.Dispose();
+                    }
+                }
             };
             #endregion
 
@@ -1283,11 +1301,17 @@ namespace WeightChecking
             //huy đối tượng máy in
             SerialPortClose();
 
+            if (_ckQRTask != null)
+            {
+                _ckQRTask.Wait();
+                _ckQRTask.Dispose();
+            }
+
             //huy doi tuong can
-            _scaleHelper.StopScale = true;
-            _ckTask.Wait();
-            _ckTask.Dispose();
-            _scaleHelper.Dispose();
+            //_scaleHelper.StopScale = true;
+            //_ckTask.Wait();
+            //_ckTask.Dispose();
+            //_scaleHelper.Dispose();
             GlobalVariables.ScaleStatus = "Disconnect";
         }
 
@@ -2480,6 +2504,9 @@ namespace WeightChecking
 
         void OnBarcodeEvent(short eventType, ref string pscanData)
         {
+            //bật biến báo đọc đc QR code từ label
+            _readQrStatus = true;
+
             var r = eventType;
             string barcode = pscanData;//string từ scanner trả về
 
@@ -2852,5 +2879,30 @@ namespace WeightChecking
             }
         }
         #endregion
+
+        /// <summary>
+        /// Chạy method này để tính thời gian quét Qr.
+        /// Sau thời gian này mà chưa đọc đọc QR Thì báo không đọc được, ghi tín hiệu xuống cho MetalPusher reject.
+        /// </summary>
+        public void CheckReadQr()
+        {
+            double timeCheck = 0;
+            DateTime startTime = DateTime.Now;
+            DateTime endTime = DateTime.Now;
+
+            while (timeCheck <= GlobalVariables.TimeCheckQrMetal)
+            {
+                timeCheck = (endTime - startTime).TotalSeconds;
+                endTime = DateTime.Now;
+            }
+
+            if (!_readQrStatus)
+            {
+                //hết thời gian đọc QR code mà chưa đọc được
+                //gui data xuong PLC báo reject metalPusher
+                GlobalVariables.MyEvent.MetalPusher = 1;
+                _readQrStatus = false;//xóa biến này cho lần đọc kế tiếp
+            }
+        }
     }
 }

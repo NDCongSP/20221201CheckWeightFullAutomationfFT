@@ -202,7 +202,7 @@ namespace WeightChecking
                 if (GlobalVariables.ModbusStatus)
                 {
                     //ghi giá trị tắt đèn tháp xuống PLC
-                    GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 6, 1, _writeHoldingRegisterArr);
+                    GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
 
                     //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
                     GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 7, ref _readHoldingRegisterArr);
@@ -212,20 +212,20 @@ namespace WeightChecking
                     //GlobalVariables.MyEvent.CountValue = GlobalVariables.RememberInfo.CountMetalScan;
 
                     //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
-                    GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetUintAt(_readHoldingRegisterArr, 1);
-                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 3);
+                    GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetUintAt(_readHoldingRegisterArr, 2);
+                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
 
-
+                    //đăng ký sự kiện bật tắt đèn tháp báo cân pass/fail
+                    GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
+                    //run thread đọc modbus, để đọc các giá trị cân
                     _tskModbus = new System.Threading.Tasks.Task(() => ReadModbus());
                     _tskModbus.Start();
                 }
                 else
                 {
-                    MessageBox.Show($"Không thể kết nối được bộ đếm dò kim loại.{Environment.NewLine}Tắt phần mềm, kiểm tra lại kết nối với PLC rồi mở lại phần mềm.",
+                    MessageBox.Show($"Không thể kết nối được cân (Modbus RTU).{Environment.NewLine}Tắt phần mềm, kiểm tra lại kết nối với PLC rồi mở lại phần mềm.",
                                     "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-
-                GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
             }
             #endregion
 

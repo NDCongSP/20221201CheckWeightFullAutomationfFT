@@ -37,6 +37,7 @@ namespace WeightChecking
             GlobalVariables.ScannerIdMetal = Properties.Settings.Default.ScannerIdMetal;
             GlobalVariables.ScannerIdWeight = Properties.Settings.Default.ScannerIdWeight;
             GlobalVariables.ScannerIdPrint = Properties.Settings.Default.ScannerIdPrint;
+            GlobalVariables.TimeCheckQrMetal = Properties.Settings.Default.TimeCheckQrMetal;
 
             if (Properties.Settings.Default.Station == 0)
             {

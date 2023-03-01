@@ -176,7 +176,7 @@ namespace WeightChecking
         #endregion
 
         #region Conveyor
-        private int _metalPusher = 0, _weightPusher = 0, _printPusher = 0,_sensorBeforMetalScan=0;
+        private int _metalPusher = 0, _weightPusher = 0, _printPusher = 0, _sensorBeforMetalScan = 0;
 
         /// <summary>
         /// Biến báo sự kiện cho pusher metal scan.
@@ -239,7 +239,7 @@ namespace WeightChecking
             get => _sensorBeforMetalScan;
             set
             {
-                if (value!=_sensorBeforMetalScan)
+                if (value != _sensorBeforMetalScan)
                 {
                     _sensorBeforMetalScan = value;
                     OnSensorBeforeMetalScan(value);
@@ -284,9 +284,9 @@ namespace WeightChecking
             _eventHandlerMetalPusher?.Invoke(this, new TagValueChangeEventArgs(value));
         }
 
-       void OnSensorBeforeMetalScan(int value)
+        void OnSensorBeforeMetalScan(int value)
         {
-            _eventHandleSensorBeforeMetalScan?.Invoke(this,new TagValueChangeEventArgs(value));
+            _eventHandleSensorBeforeMetalScan?.Invoke(this, new TagValueChangeEventArgs(value));
         }
         #endregion
 
