@@ -48,7 +48,7 @@ namespace S7Client
             }
             else
                 label20.BackColor = Color.Red;
-            timer1.Enabled = true;
+            //timer1.Enabled = true;
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -64,8 +64,10 @@ namespace S7Client
             Data[8] = 9;
             Data[9] = 10;
 
+            myPLC.S7Ethernet.Client.GhiMB(0, 10, new byte[] { 1,2,3,4,5,6,7,8,9,10});
+
             //ghi vùng nhớ data block
-            if (myPLC.S7Ethernet.Client.GhiDB(1, 0, 10, Data) == "GOOD")
+            if (myPLC.S7Ethernet.Client.GhiDB(1, 0, 2, Data) == "GOOD")
             {
                 label20.BackColor = Color.Green;
                 label4.Text = "GOOD";
