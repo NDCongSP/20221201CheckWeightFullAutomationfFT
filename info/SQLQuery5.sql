@@ -1,4 +1,6 @@
-﻿declare @mesoyear int 
+﻿
+
+declare @mesoyear int 
 	set @mesoyear = (select MESOYEAR from [FTT2021].[dbo].[vCompanyCurrentYear])
 
 select 
@@ -38,3 +40,18 @@ order by ProductNumber asc
 
 select * from [FTT2021].[dbo].v021 _v021 where _v021.mesoyear = 1476
 select * from [FTT2021].[dbo].t026 _t026 where _t026.mesoyear = 1476--c067 OC
+
+---------------------------------------------------------------------------------------------------------------------------
+--lấy tất cả các tên OC theo vocher order
+select left(_t357.c018,2) oc,* from t357 _t357
+where _t357.mesoyear = 1476
+	and _t357.c030 in ('125','126','1','111','114','121','123','124','131','132','133','134','135')
+
+----------------------SPLIT STRING
+DECLARE @tags NVARCHAR(400) = 'clothing,road,,touring,bike'  
+  
+SELECT value  
+FROM STRING_SPLIT(@tags, ',')  
+WHERE RTRIM(value) <> '';
+
+exec sp_IdcGetListOcName

@@ -1,4 +1,4 @@
-﻿using PLCPiProject;
+using PLCPiProject;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -57,12 +57,6 @@ namespace S7Client
             Data[1] = 2;
             Data[2] = 3;
             Data[3] = 4;
-            Data[4] = 5;
-            Data[5] = 6;
-            Data[6] = 7;
-            Data[7] = 8;
-            Data[8] = 9;
-            Data[9] = 10;
 
             myPLC.S7Ethernet.Client.GhiMB(0, 10, new byte[] { 1,2,3,4,5,6,7,8,9,10});
 

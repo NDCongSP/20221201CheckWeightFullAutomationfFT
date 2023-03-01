@@ -13,6 +13,7 @@ using Serilog.Sinks.MSSqlServer;
 using DevExpress.XtraSplashScreen;
 using AutoUpdaterDotNET;
 using System.Threading;
+using Dapper;
 
 namespace WeightChecking
 {
@@ -27,11 +28,11 @@ namespace WeightChecking
             #region Đọc các thông số cấu hình ban đầu từ settings
             GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");
             GlobalVariables.ConStringWinline = EncodeMD5.DecryptString(Properties.Settings.Default.conStringWL, "ITFramasBDVN");
-            GlobalVariables.IpScale = Properties.Settings.Default.ipScale;
+            GlobalVariables.IpConveyor = Properties.Settings.Default.ipConveyor;
             GlobalVariables.UnitScale = int.TryParse(Properties.Settings.Default.UnitScale, out int value) ? value : 0;
             GlobalVariables.IsScale = Properties.Settings.Default.IsScale;
             GlobalVariables.IsCounter = Properties.Settings.Default.IsCounter;
-            GlobalVariables.AfterPrinting = Properties.Settings.Default.AfterPrinting;
+            GlobalVariables.AfterPrinting = Properties.Settings.Default.AfterPrinting;//0-trước in; 1-sau in
             GlobalVariables.PrintComPort = Properties.Settings.Default.PrintComPort;
             GlobalVariables.ScannerIdMetal = Properties.Settings.Default.ScannerIdMetal;
             GlobalVariables.ScannerIdWeight = Properties.Settings.Default.ScannerIdWeight;
@@ -60,7 +61,14 @@ namespace WeightChecking
                 GlobalVariables.RememberInfo.Pass = EncodeMD5.DecryptString(GlobalVariables.RememberInfo.Pass, "ITFramasBDVN");
             }
 
-            GlobalVariables.ComPort = Properties.Settings.Default.ComPort;
+            GlobalVariables.ComPortScale = Properties.Settings.Default.ComPortScale;
+            #endregion
+
+            #region Get danh sách tất cả các OC đang sử dụng
+            using (var connection =GlobalVariables.GetDbConnectionWinline())
+            {
+                GlobalVariables.OcUsingList = connection.Query<OcUsingModel>("sp_IdcGetListOcName").ToList();
+            }
             #endregion
 
             //Log các hành động của user thì tự log bằng tay vào bảng tblLog

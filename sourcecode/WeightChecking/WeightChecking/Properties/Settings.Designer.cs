@@ -25,10 +25,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fEdyTkRahthFY5ktQmH2er+blyCD/lIJfgQTkdsvUtAX21xE6NORw6ZjeFRNfYstnZaiBSjc" +
-            "XumLFU/sdtwUevAWTdRgM8d5rXa3D3X5+GMyirpW1sHWm/HgWEKYxsSdYZlXnxiuz9nf7drrpUpv2SLY" +
-            "UqgcaS4tI12TlmBEo/Dm8Id8z+gGyVqgoQB0EuDAY/OlHLTcrxHSejQK2jjixrgD9KsnAkU2d8AQ3+rE" +
-            "ONwHA==")]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"ed3YbBgz3fEdyTkRahthFY5ktQmH2er+blyCD/lIJfgQTkdsvUtAX21xE6NORw6ZjDTFBiO0b+JppR/MUkEA8ekTiP82jW+iRZeEPpw5i4ZzRNeEyaY72K+tde5hq7/8BKwBoCV4foyGW+mZa0JHAvho1Mhs6RJ6sMrGWGmbUV/UdgUFA1082LDKxlhpm1Ff0NktMNlPk9oi5E9iE4QzTiJ2s0VZLuBsCq2PiaLakbiwyZe5jji9kJRva0p2QANS")]
         public string conString {
             get {
                 return ((string)(this["conString"]));
@@ -40,13 +37,13 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.80.1")]
-        public string ipScale {
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.1.86")]
+        public string ipConveyor {
             get {
-                return ((string)(this["ipScale"]));
+                return ((string)(this["ipConveyor"]));
             }
             set {
-                this["ipScale"] = value;
+                this["ipConveyor"] = value;
             }
         }
         
@@ -79,12 +76,12 @@ namespace WeightChecking.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("COM2")]
-        public string ComPort {
+        public string ComPortScale {
             get {
-                return ((string)(this["ComPort"]));
+                return ((string)(this["ComPortScale"]));
             }
             set {
-                this["ComPort"] = value;
+                this["ComPortScale"] = value;
             }
         }
         
@@ -103,7 +100,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool IsScale {
             get {
                 return ((bool)(this["IsScale"]));

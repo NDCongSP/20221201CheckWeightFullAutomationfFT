@@ -39,7 +39,8 @@ namespace WeightChecking
 
         Timer _timer = new Timer() { Interval = 500 };
 
-        byte[] _readHoldingRegisterArr = { 0, 0 };
+        byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] _writeHoldingRegisterArr = { 0, 0 };
         int _countDisconnectPlc = 0;
         private System.Threading.Tasks.Task _tskModbus;
 
@@ -194,12 +195,27 @@ namespace WeightChecking
             #region Ket noi modbus RTU PLC: Scale, Metal scan
             if (GlobalVariables.IsScale)
             {
-                GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPort, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
+                GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
 
                 Console.WriteLine($"PLC Status: {GlobalVariables.ModbusStatus}");
 
                 if (GlobalVariables.ModbusStatus)
                 {
+                    //ghi giá trị tắt đèn tháp xuống PLC
+                    GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 6, 1, _writeHoldingRegisterArr);
+
+                    //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
+                    GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 7, ref _readHoldingRegisterArr);
+
+                    //GlobalVariables.RememberInfo.CountMetalScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                    ////update gia tri count vao sự kiện để trong frmScal  nó update lên giao diện
+                    //GlobalVariables.MyEvent.CountValue = GlobalVariables.RememberInfo.CountMetalScan;
+
+                    //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                    GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetUintAt(_readHoldingRegisterArr, 1);
+                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 3);
+
+
                     _tskModbus = new System.Threading.Tasks.Task(() => ReadModbus());
                     _tskModbus.Start();
                 }
@@ -208,11 +224,13 @@ namespace WeightChecking
                     MessageBox.Show($"Không thể kết nối được bộ đếm dò kim loại.{Environment.NewLine}Tắt phần mềm, kiểm tra lại kết nối với PLC rồi mở lại phần mềm.",
                                     "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+
+                GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
             }
             #endregion
 
             #region Ket noi conveyor
-            GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.IpScale);
+            GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.IpConveyor);
             Console.WriteLine($"Conveyor Status: {GlobalVariables.ConveyorStatus}");
 
             if (GlobalVariables.ConveyorStatus == "GOOD")
@@ -225,6 +243,25 @@ namespace WeightChecking
                                 "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
+            //đăng ký các sự kiện ghi giá trị điều khiển Pusher
+            GlobalVariables.MyEvent.EventHandlerMetalPusher += (s, o) =>
+            {
+                GlobalVariables.DataWriteDb1[0] = (byte)o.NewValue;
+                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 1, GlobalVariables.DataWriteDb1);
+            };
+
+            GlobalVariables.MyEvent.EventHandlerWeightPusher += (s, o) =>
+            {
+                GlobalVariables.DataWriteDb1[1] = (byte)o.NewValue;
+                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, GlobalVariables.DataWriteDb1);
+            };
+
+            GlobalVariables.MyEvent.EventHandlerPrintPusher += (s, o) =>
+            {
+                GlobalVariables.DataWriteDb1[2] = (byte)o.NewValue;
+                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 2, 1, GlobalVariables.DataWriteDb1);
+            };
+
             #endregion
 
             _barButtonItemExportMissItem.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
@@ -234,6 +271,25 @@ namespace WeightChecking
             this._barEditItemCombStation.EditValue = "All";
             _timer.Enabled = true;
             _timer.Tick += _timer_Tick;
+        }
+
+        /// <summary>
+        /// Method ghi tag điều khiển đèn tháp báo thùng cân Pass/Fail.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MyEvent_EventHandleStatusLightPLC(object sender, CountValueChangedEventArgs e)
+        {
+            if (e.StatusLight)//thùng cân Pass
+            {
+                _writeHoldingRegisterArr[1] = 1;
+                GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+            }
+            else//thùng cân fail
+            {
+                _writeHoldingRegisterArr[1] = 2;
+                GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+            }
         }
 
         private void _barButtonItemExportMissItem_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
@@ -680,7 +736,8 @@ namespace WeightChecking
             barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")} " +
                 $"| {GlobalVariables.UserLoginInfo.UserName} | ScaleStatus: {GlobalVariables.ScaleStatus}" +
                 $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}" +
-                $" | CounterStatus: {GlobalVariables.ModbusStatus}";
+                $" | CounterStatus: {GlobalVariables.ModbusStatus}" +
+                $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}";
 
             t.Enabled = true;
         }
@@ -1095,25 +1152,27 @@ namespace WeightChecking
                 #region Đọc các giá trị từ PLC
                 if (GlobalVariables.ModbusStatus)
                 {
-                    if (_resetCounter)
-                    {
-                        if (GlobalVariables.MyDriver.ModbusRTUMaster.WriteSingleCoil(1, 2, true))
-                        {
-                            System.Threading.Thread.Sleep(10);
-                            if (GlobalVariables.MyDriver.ModbusRTUMaster.WriteSingleCoil(1, 2, false))
-                            {
-                                _resetCounter = false;
-                            }
-                        }
-                    }
-                    //thanh ghi D0 cua PLC Delta DPV14SS2 co dia chi la 4596
-                    GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 1, ref _readHoldingRegisterArr);
+                    //if (_resetCounter)
+                    //{
+                    //    if (GlobalVariables.MyDriver.ModbusRTUMaster.WriteSingleCoil(1, 2, true))
+                    //    {
+                    //        System.Threading.Thread.Sleep(10);
+                    //        if (GlobalVariables.MyDriver.ModbusRTUMaster.WriteSingleCoil(1, 2, false))
+                    //        {
+                    //            _resetCounter = false;
+                    //        }
+                    //    }
+                    //}
+                    //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
+                    GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 7, ref _readHoldingRegisterArr);
 
                     //GlobalVariables.RememberInfo.CountMetalScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
                     ////update gia tri count vao sự kiện để trong frmScal  nó update lên giao diện
                     //GlobalVariables.MyEvent.CountValue = GlobalVariables.RememberInfo.CountMetalScan;
 
-                    GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                    //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                    GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetUintAt(_readHoldingRegisterArr, 1);
+                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 3);
                 }
                 else
                 {
@@ -1122,8 +1181,36 @@ namespace WeightChecking
                     {
                         GlobalVariables.MyDriver.ModbusRTUMaster.NgatKetNoi();
 
-                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPort, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
+                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
                     }
+                }
+                #endregion
+
+                System.Threading.Thread.Sleep(100);
+            }
+        }
+
+        public void ReadProfinet()
+        {
+            while (true)
+            {
+                #region Đọc các giá trị từ PLC conveyor s7-1200, profinet
+                if (GlobalVariables.ConveyorStatus == "GOOD")
+                {
+                    var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 4);
+
+                    if (resultData.TrangThai == "GOOD")
+                    {
+                        GlobalVariables.ConveyorStatus = resultData.TrangThai;
+                        //vùng nhớ chứa trạng thái của sensor là DB1[3]
+                        GlobalVariables.MyEvent.SensorBeforeMetalScan = resultData.MangGiaTri[3];
+                    }
+                }
+                else
+                {
+                    GlobalVariables.MyDriver.S7Ethernet.Client.NgatKetNoi();
+
+                    GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.IpConveyor);
                 }
                 #endregion
 

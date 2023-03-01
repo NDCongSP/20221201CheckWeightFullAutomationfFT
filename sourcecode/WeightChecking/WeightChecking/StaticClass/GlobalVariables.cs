@@ -31,7 +31,7 @@ namespace WeightChecking
         public static CustomEvents MyEvent = new CustomEvents();
 
         //biến cấu hình cân
-        public static string IpScale = "";
+        public static string IpConveyor = "";//ip cau PLC S7-1200 kết n
         public static string PortScale = "23";
         public static string ScaleStatus = "Disconnected";
         public static int ScaleDelay = 300;
@@ -42,7 +42,7 @@ namespace WeightChecking
         public static PLCPi MyDriver = new PLCPi();
         public static byte[] ReadHoldingArr { get; set; }
         public static bool ModbusStatus { get; set; }
-        public static string ComPort { get; set; }
+        public static string ComPortScale { get; set; }//com kết nối PLC Delta ngay bàn cân, để đọc khố lượng cân và điều khiển đèn tháp
 
         public static bool IsScale { get; set; } = false;
         public static bool IsCounter { get; set; } = false;
@@ -57,7 +57,11 @@ namespace WeightChecking
         public static int ScannerIdPrint { get; set; } = 3;
 
         public static string ConveyorStatus { get; set; } = "Bad";
-        public static byte[] DataWriteDb1 { get; set; } = new byte[] { 0, 0, 0 };
+        public static string PrintConnectionStatus { get; set; } = "Bad";
+        public static byte[] DataWriteDb1 { get; set; } = new byte[] { 0, 0, 0 };//biến dùng để chứa các giá trị ghi xuống PLC để điều khiển pusher
+        //byte[0]-Metal; byte[1]-Scale; byte[2]-print
+
+        public static List<OcUsingModel> OcUsingList { get; set; } = new List<OcUsingModel>();//get ra danh sách tất cả các OcNo đang sử dụng
 
         #region Printing
         // Print the file.

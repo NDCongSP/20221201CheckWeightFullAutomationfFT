@@ -116,7 +116,7 @@ namespace WeightChecking
             get => _scaleValue;
             set
             {
-                if (value.Equals(_scaleValue))
+                if (value != _scaleValue)
                 {
                     _scaleValue = value;
                     OnScaleValueAction(_scaleValue);
@@ -142,112 +142,182 @@ namespace WeightChecking
             _eventHandlerScale?.Invoke(this, new ScaleDynamicChangeEventArgs(value));
         }
 
-        private int _sensorStatus = 0;
-        public int SensorStatus
+        private int _stableScale = 0;
+        public int StableScale
         {
-            get => _sensorStatus;
+            get => _stableScale;
             set
             {
-                if (value.Equals(_sensorStatus))
+                if (value != _stableScale)
                 {
-                    _sensorStatus = value;
-                    OnSensorStatusAction(_sensorStatus);
+                    _stableScale = value;
+                    OnStableScaleAction(_stableScale);
                 }
             }
         }
 
-        private event EventHandler<TagValueChangeEventArgs> _eventHandlerSensor;
-        public event EventHandler<TagValueChangeEventArgs> EventHandlerSensor
+        private event EventHandler<TagValueChangeEventArgs> _eventHandlerStatbleScale;
+        public event EventHandler<TagValueChangeEventArgs> EventHandlerStableScale
         {
             add
             {
-                _eventHandlerSensor += value;
+                _eventHandlerStatbleScale += value;
             }
             remove
             {
-                _eventHandlerSensor -= value;
+                _eventHandlerStatbleScale -= value;
             }
         }
 
-        void OnSensorStatusAction(int value)
+        void OnStableScaleAction(int value)
         {
-            _eventHandlerSensor?.Invoke(this, new TagValueChangeEventArgs(value));
+            _eventHandlerStatbleScale?.Invoke(this, new TagValueChangeEventArgs(value));
         }
         #endregion
 
         #region Conveyor
-        private int _metalStatus = 0, _weightStatus = 0, _printStatus = 0;
-        public int MetalStatus
+        private int _metalPusher = 0, _weightPusher = 0, _printPusher = 0,_sensorBeforMetalScan=0;
+
+        /// <summary>
+        /// Biến báo sự kiện cho pusher metal scan.
+        /// 0- metalscan; 1-can't read QR (reject); 2- no metal scan.
+        /// </summary>
+        public int MetalPusher
         {
-            get => _metalStatus;
+            get => _metalPusher;
             set
             {
-                if (value.Equals(_metalStatus))
+                if (value != _metalPusher)
                 {
-                    _metalStatus = value;
-                    OnMetalAction(_metalStatus);
+                    _metalPusher = value;
+                    OnMetalPusherAction(_metalPusher);
                 }
             }
         }
 
-        public int WeightStatus
+        /// <summary>
+        /// Biến báo sự kiện cho pusher reject cân lôi.
+        /// 0- cân ok; 1-cân lỗi.
+        /// </summary>
+        public int WeightPusher
         {
-            get => _weightStatus;
+            get => _weightPusher;
             set
             {
-                if (value.Equals(_weightStatus))
+                if (value != _weightPusher)
                 {
-                    _weightStatus = value;
-                    OnWeightAction(value);
+                    _weightPusher = value;
+                    OnWeightPusherAction(value);
                 }
             }
         }
 
-        public int PrintStatus
+        /// <summary>
+        /// Biến báo sự kiện cho pusher phân loại hàng sơn và FG.
+        /// 0- hàng FG; 1-hàng đi sơn.
+        /// </summary>
+        public int PrintPusher
         {
-            get => _printStatus;
+            get => _printPusher;
             set
             {
-                if (value.Equals(_printStatus))
+                if (value != _printPusher)
                 {
-                    _printStatus = value;
-                    OnPrintAction(value);
+                    _printPusher = value;
+                    OnPrintPusherAction(value);
                 }
             }
         }
 
-        private event EventHandler<TagValueChangeEventArgs> _eventHandlerMetal;
-        public event EventHandler<TagValueChangeEventArgs> EventHandlerMetal
+        /// <summary>
+        /// Biến báo sự kiện sensor trước vị trí Scan metal có tác động.
+        /// Bật bộ đếm thời gian báo ko đọc được tem QR lên.
+        /// Sau khoảng thời gian này mà vẫn chua có tín hiệu từ scanner thì báo rejec.
+        /// </summary>
+        public int SensorBeforeMetalScan
         {
-            add { _eventHandlerMetal += value; }
-            remove { _eventHandlerMetal -= value; }
+            get => _sensorBeforMetalScan;
+            set
+            {
+                if (value!=_sensorBeforMetalScan)
+                {
+                    _sensorBeforMetalScan = value;
+                    OnSensorBeforeMetalScan(value);
+                }
+            }
         }
 
-        private event EventHandler<TagValueChangeEventArgs> _eventHandlerWeight;
-        public event EventHandler<TagValueChangeEventArgs> EventHandlerWeight
+        private event EventHandler<TagValueChangeEventArgs> _eventHandlerMetalPusher;
+        public event EventHandler<TagValueChangeEventArgs> EventHandlerMetalPusher
         {
-            add { _eventHandlerWeight += value; }
-            remove { _eventHandlerWeight -= value; }
+            add { _eventHandlerMetalPusher += value; }
+            remove { _eventHandlerMetalPusher -= value; }
         }
 
-        private event EventHandler<TagValueChangeEventArgs> _eventHandlerPrint;
-        public event EventHandler<TagValueChangeEventArgs> EventHandlerPrint
+        private event EventHandler<TagValueChangeEventArgs> _eventHandlerWeightPusher;
+        public event EventHandler<TagValueChangeEventArgs> EventHandlerWeightPusher
         {
-            add { _eventHandlerPrint += value; }
-            remove { _eventHandlerPrint -= value; }
+            add { _eventHandlerWeightPusher += value; }
+            remove { _eventHandlerWeightPusher -= value; }
         }
 
-        void OnMetalAction(int value)
+        private event EventHandler<TagValueChangeEventArgs> _eventHandlerPrintPusher;
+        public event EventHandler<TagValueChangeEventArgs> EventHandlerPrintPusher
         {
-            _eventHandlerMetal?.Invoke(this, new TagValueChangeEventArgs(value));
+            add { _eventHandlerPrintPusher += value; }
+            remove { _eventHandlerPrintPusher -= value; }
         }
-        void OnWeightAction(int value)
+
+        private event EventHandler<TagValueChangeEventArgs> _eventHandleSensorBeforeMetalScan;
+        public event EventHandler<TagValueChangeEventArgs> EventHandleSensorBeforeMetalScan;
+
+        void OnMetalPusherAction(int value)
         {
-            _eventHandlerMetal?.Invoke(this, new TagValueChangeEventArgs(value));
+            _eventHandlerMetalPusher?.Invoke(this, new TagValueChangeEventArgs(value));
         }
-        void OnPrintAction(int value)
+        void OnWeightPusherAction(int value)
         {
-            _eventHandlerMetal?.Invoke(this, new TagValueChangeEventArgs(value));
+            _eventHandlerMetalPusher?.Invoke(this, new TagValueChangeEventArgs(value));
+        }
+        void OnPrintPusherAction(int value)
+        {
+            _eventHandlerMetalPusher?.Invoke(this, new TagValueChangeEventArgs(value));
+        }
+
+       void OnSensorBeforeMetalScan(int value)
+        {
+            _eventHandleSensorBeforeMetalScan?.Invoke(this,new TagValueChangeEventArgs(value));
+        }
+        #endregion
+
+        #region Event PLC on/off light
+        private bool _statusLightPLC = false;
+        public bool StatusLightPLC
+        {
+            get => _statusLightPLC;
+            set
+            {
+                _statusLightPLC = value;
+                OnStatusLightPlcAction(value);
+            }
+        }
+
+        private event EventHandler<CountValueChangedEventArgs> _eventHandleStatusLightPLC;
+        public event EventHandler<CountValueChangedEventArgs> EventHandleStatusLightPLC
+        {
+            add
+            {
+                _eventHandleStatusLightPLC += value;
+            }
+            remove
+            {
+                _eventHandleStatusLightPLC -= value;
+            }
+        }
+
+        void OnStatusLightPlcAction(bool value)
+        {
+            _eventHandleStatusLightPLC?.Invoke(this, new CountValueChangedEventArgs(value));
         }
         #endregion
     }
@@ -256,11 +326,19 @@ namespace WeightChecking
     public class CountValueChangedEventArgs : EventArgs
     {
         private int _countValue = 0;
+        private bool _statusLight = false;
         public int CountValue { get => _countValue; set => _countValue = value; }
+
+        public bool StatusLight { get => _statusLight; set => _statusLight = value; }
 
         public CountValueChangedEventArgs(int value)
         {
             _countValue = value;
+        }
+
+        public CountValueChangedEventArgs(bool value)
+        {
+            _statusLight = value;
         }
     }
 
