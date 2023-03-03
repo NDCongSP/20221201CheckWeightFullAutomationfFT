@@ -48,7 +48,7 @@ namespace S7Client
             }
             else
                 label20.BackColor = Color.Red;
-            //timer1.Enabled = true;
+            timer1.Enabled = true;
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -58,10 +58,10 @@ namespace S7Client
             Data[2] = 3;
             Data[3] = 4;
 
-            myPLC.S7Ethernet.Client.GhiMB(0, 10, new byte[] { 1,2,3,4,5,6,7,8,9,10});
+            myPLC.S7Ethernet.Client.GhiMB(100, 1, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
 
             //ghi vùng nhớ data block
-            if (myPLC.S7Ethernet.Client.GhiDB(1, 0, 2, Data) == "GOOD")
+            if (myPLC.S7Ethernet.Client.GhiDB(1, 0, 4, Data) == "GOOD")
             {
                 label20.BackColor = Color.Green;
                 label4.Text = "GOOD";
@@ -96,9 +96,9 @@ namespace S7Client
                 }
 
                 label20.BackColor = Color.Green;
-                
+
                 //đọc vùng nhớ data block
-                DocS7 myDocS72 = myPLC.S7Ethernet.Client.DocDB(1, 0, 10);
+                DocS7 myDocS72 = myPLC.S7Ethernet.Client.DocDB(1, 0, 4);
                 if (myDocS72 != null)
                 {
                     if (myDocS72.TrangThai == "GOOD")
@@ -108,6 +108,15 @@ namespace S7Client
                         foreach (byte b in myDocS72.MangGiaTri)
                             textBox2.Text += "|" + b.ToString();
                         DemLoi = 0;
+
+                        if (myDocS72.MangGiaTri[3] == 1)
+                        {
+                            this.Invoke((MethodInvoker)delegate { labMetalSensor.BackColor = Color.Green; });
+                        }
+                        else
+                        {
+                            this.Invoke((MethodInvoker)delegate { labMetalSensor.BackColor = Color.Gray; });
+                        }
                     }
                     else
                     {
@@ -123,6 +132,8 @@ namespace S7Client
                     DemLoi++;
                 }
 
+
+
                 //Ghi                
 
                 //tang gia tri de ghi xuong cac vung nho
@@ -136,7 +147,7 @@ namespace S7Client
                 if (DemLoi >= 14)
                 {
                     DemLoi = 0;
-                    
+
                 }
                 label7.Text = DemLoi.ToString();
 

@@ -40,7 +40,7 @@ namespace WeightChecking
         Timer _timer = new Timer() { Interval = 500 };
 
         byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        byte[] _writeHoldingRegisterArr = { 0, 0 };
+        byte[] _writeHoldingRegisterArr = { 0, 1 };
         int _countDisconnectPlc = 0;
         private System.Threading.Tasks.Task _tskModbus;
 
@@ -212,8 +212,9 @@ namespace WeightChecking
                     //GlobalVariables.MyEvent.CountValue = GlobalVariables.RememberInfo.CountMetalScan;
 
                     //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
-                    GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetUintAt(_readHoldingRegisterArr, 2);
-                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
+                    GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
+                    GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
+                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
 
                     //đăng ký sự kiện bật tắt đèn tháp báo cân pass/fail
                     GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
@@ -244,18 +245,19 @@ namespace WeightChecking
             }
 
             //đăng ký các sự kiện ghi giá trị điều khiển Pusher
+            //vùng nhớ dataBlock 1(DB1.DB0 byte)
             GlobalVariables.MyEvent.EventHandlerMetalPusher += (s, o) =>
             {
                 GlobalVariables.DataWriteDb1[0] = (byte)o.NewValue;
                 GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 1, GlobalVariables.DataWriteDb1);
             };
-
+            //vùng nhớ dataBlock 1(DB1.DB1 byte)
             GlobalVariables.MyEvent.EventHandlerWeightPusher += (s, o) =>
             {
                 GlobalVariables.DataWriteDb1[1] = (byte)o.NewValue;
                 GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, GlobalVariables.DataWriteDb1);
             };
-
+            //vùng nhớ dataBlock 1(DB1.DB2 byte)
             GlobalVariables.MyEvent.EventHandlerPrintPusher += (s, o) =>
             {
                 GlobalVariables.DataWriteDb1[2] = (byte)o.NewValue;
@@ -1171,8 +1173,9 @@ namespace WeightChecking
                     //GlobalVariables.MyEvent.CountValue = GlobalVariables.RememberInfo.CountMetalScan;
 
                     //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
-                    GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetUintAt(_readHoldingRegisterArr, 1);
-                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 3);
+                    GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
+                    GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
+                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
                 }
                 else
                 {

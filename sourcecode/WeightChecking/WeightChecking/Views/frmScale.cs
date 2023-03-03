@@ -31,6 +31,7 @@ namespace WeightChecking
 
         private int _stableScale = 0;
         private double _scaleValue = 0;
+        private double _scaleValueStable = 0;
 
         private tblScanDataModel _scanData = new tblScanDataModel();
 
@@ -293,18 +294,27 @@ namespace WeightChecking
                 #endregion
             };
 
+            //sự kiện lấy số cân hiện tại cảu đầu cân (real time)
+            GlobalVariables.MyEvent.EventHandleScaleValue += (s, o) =>
+            {
+                _scaleValue = o.ScaleValue;
+
+                this.Invoke((MethodInvoker)delegate { labScaleValue.Text = _scaleValue.ToString(); });
+            };
+            //sự kiến lấy khối lượng cân đã chốt ổn định
+            GlobalVariables.MyEvent.EventHandlerScaleValueStable += (s, o) =>
+            {
+                _scaleValueStable = o.ScaleValue;
+
+                _scanData.GrossWeight = _scaleValueStable;
+
+                this.Invoke((MethodInvoker)delegate { labScaleValue.Text = _scanData.GrossWeight.ToString(); });
+            };
+
             //sự kiện báo cân đã ổn định, chốt số cân.
             GlobalVariables.MyEvent.EventHandlerStableScale += (s, o) =>
             {
                 _stableScale = o.NewValue;
-
-                _scanData.GrossWeight = _scaleValue;
-            };
-
-            //sự kiến lấy khối lượng cân
-            GlobalVariables.MyEvent.EventHandlerScale += (s, o) =>
-            {
-                _scaleValue = o.ScaleValue;
             };
 
             GlobalVariables.MyEvent.EventHandleSensorBeforeMetalScan += (s, o) =>
@@ -1629,7 +1639,7 @@ namespace WeightChecking
                         #region truy vấn data và xử lý
                         //lấy thông tin khối lượng cân sau khi cân đã báo stable
                         while (_stableScale == 0)
-                            _scanData.GrossWeight = GlobalVariables.RealWeight = _scaleValue;
+                            _scanData.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
 
                         //truy vấn thông tin 
                         using (var connection = GlobalVariables.GetDbConnection())
@@ -2162,9 +2172,11 @@ namespace WeightChecking
                                             _scanData.Pass = 1;
                                             _scanData.CreatedDate = GlobalVariables.CreatedDate = DateTime.Now;//lấy thời gian để đồng bộ giữa in tem và log DB
                                                                                                                //Printing
-                                            GlobalVariables.Printing((_scanData.GrossWeight / 1000).ToString("#,#0.00")
-                                                        , !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanData.OcNo}|{_scanData.BoxNo}", true
-                                                         , _scanData.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss"));
+
+                                            //gọi method truyền lệnh in xuống máy in Anser smart U2 để in lên thùng
+                                            SendDynamicString(!string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanData.OcNo}|{_scanData.BoxNo}"
+                                                , (_scanData.GrossWeight / 1000).ToString("#,#0.00")
+                                                , _scanData.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss"));
 
                                             //báo trạng thái cho pusher là thùng cân OK
                                             GlobalVariables.MyEvent.WeightPusher = 0;
@@ -2710,7 +2722,7 @@ namespace WeightChecking
         /// <summary>
         /// Method truyen noi dung xuong may in.
         /// </summary>
-        /// <param name="idLabel">Id label hoặc là OC.</param>
+        /// <param name="idLabel">'IdLabel' hoặc là 'OC|BoxNo'.</param>
         /// <param name="weight">Khối lượng cân thực tế.</param>
         /// <param name="date">Thời điểm cân.</param>
         private void SendDynamicString(string idLabel, string weight, string date)
@@ -2896,13 +2908,14 @@ namespace WeightChecking
                 endTime = DateTime.Now;
             }
 
+            //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject
             if (!_readQrStatus)
             {
                 //hết thời gian đọc QR code mà chưa đọc được
                 //gui data xuong PLC báo reject metalPusher
                 GlobalVariables.MyEvent.MetalPusher = 1;
-                _readQrStatus = false;//xóa biến này cho lần đọc kế tiếp
             }
+            _readQrStatus = false;//xóa biến này cho lần đọc kế tiếp
         }
     }
 }

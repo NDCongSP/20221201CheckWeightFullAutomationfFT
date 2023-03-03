@@ -110,6 +110,38 @@ namespace WeightChecking
         #endregion
 
         #region Scale Event
+        private double _scaleValueStable = 0;
+        public double ScaleValueStable
+        {
+            get => _scaleValueStable;
+            set
+            {
+                if (value != _scaleValueStable)
+                {
+                    _scaleValueStable = value;
+                    OnScaleValueStableAction(_scaleValueStable);
+                }
+            }
+        }
+
+        private event EventHandler<ScaleDynamicChangeEventArgs> _eventHandlerScaleValueStable;
+        public event EventHandler<ScaleDynamicChangeEventArgs> EventHandlerScaleValueStable
+        {
+            add
+            {
+                _eventHandlerScaleValueStable += value;
+            }
+            remove
+            {
+                _eventHandlerScaleValueStable -= value;
+            }
+        }
+
+        void OnScaleValueStableAction(double value)
+        {
+            _eventHandlerScaleValueStable?.Invoke(this, new ScaleDynamicChangeEventArgs(value));
+        }
+
         private double _scaleValue = 0;
         public double ScaleValue
         {
@@ -119,27 +151,25 @@ namespace WeightChecking
                 if (value != _scaleValue)
                 {
                     _scaleValue = value;
-                    OnScaleValueAction(_scaleValue);
+                    OnScaleValueAction(value);
                 }
             }
         }
-
-        private event EventHandler<ScaleDynamicChangeEventArgs> _eventHandlerScale;
-        public event EventHandler<ScaleDynamicChangeEventArgs> EventHandlerScale
+        private event EventHandler<ScaleDynamicChangeEventArgs> _eventHandleScaleValue;
+        public event EventHandler<ScaleDynamicChangeEventArgs> EventHandleScaleValue
         {
             add
             {
-                _eventHandlerScale += value;
+                _eventHandleScaleValue += value;
             }
             remove
             {
-                _eventHandlerScale -= value;
+                _eventHandleScaleValue -= value;
             }
         }
-
         void OnScaleValueAction(double value)
         {
-            _eventHandlerScale?.Invoke(this, new ScaleDynamicChangeEventArgs(value));
+            this._eventHandleScaleValue?.Invoke(this, new ScaleDynamicChangeEventArgs(value));
         }
 
         private int _stableScale = 0;

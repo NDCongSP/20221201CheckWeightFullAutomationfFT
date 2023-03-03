@@ -54,6 +54,7 @@ namespace S7Client
             this.label19 = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.button3 = new System.Windows.Forms.Button();
+            this.labMetalSensor = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label3
@@ -278,11 +279,21 @@ namespace S7Client
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
+            // labMetalSensor
+            // 
+            this.labMetalSensor.AutoSize = true;
+            this.labMetalSensor.Location = new System.Drawing.Point(621, 292);
+            this.labMetalSensor.Name = "labMetalSensor";
+            this.labMetalSensor.Size = new System.Drawing.Size(69, 13);
+            this.labMetalSensor.TabIndex = 48;
+            this.labMetalSensor.Text = "Metal Sensor";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.labMetalSensor);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.textBox5);
             this.Controls.Add(this.button3);
@@ -340,6 +351,7 @@ namespace S7Client
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Label labMetalSensor;
     }
 }
 

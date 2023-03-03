@@ -37,7 +37,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.1.86")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.80.3")]
         public string ipConveyor {
             get {
                 return ((string)(this["ipConveyor"]));
