@@ -168,6 +168,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Data.OracleClient" />
     <Reference Include="System.IdentityModel" />
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -258,6 +259,7 @@
     <Compile Include="Models\ScanDataReport1Model.cs" />
     <Compile Include="Models\ScanDataReportModel.cs" />
     <Compile Include="Models\tblScanDataCheckModel.cs" />
+    <Compile Include="Models\tblSpecialCaseModel.cs" />
     <Compile Include="rptLabelFail.cs">
       <SubType>Component</SubType>
     </Compile>

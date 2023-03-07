@@ -214,13 +214,14 @@ namespace WeightChecking
                     //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
                     GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
                     GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
-                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
+                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
 
                     //đăng ký sự kiện bật tắt đèn tháp báo cân pass/fail
                     GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
-                    //run thread đọc modbus, để đọc các giá trị cân
-                    _tskModbus = new System.Threading.Tasks.Task(() => ReadModbus());
-                    _tskModbus.Start();
+
+                    ////run thread đọc modbus, để đọc các giá trị cân
+                    //_tskModbus = new System.Threading.Tasks.Task(() => ReadModbus());
+                    //_tskModbus.Start();
                 }
                 else
                 {
@@ -237,6 +238,19 @@ namespace WeightChecking
             if (GlobalVariables.ConveyorStatus == "GOOD")
             {
                 GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 3, GlobalVariables.DataWriteDb1);
+
+                var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 6);
+
+                if (resultData.TrangThai == "GOOD")
+                {
+                    GlobalVariables.ConveyorStatus = resultData.TrangThai;
+                    //vùng nhớ chứa trạng thái của sensor là DB1[3], truoc vị trí metal scan, để tính thời gian quét QR code. 1-On;0-off
+                    GlobalVariables.MyEvent.SensorBeforeMetalScan = resultData.MangGiaTri[3];
+                    //sensor đặt ngay sau máy quét kim loại, báo là thùng hàng đã qua metal scan. 1-On;0-off
+                    GlobalVariables.MyEvent.SensorAfterMetalScan = resultData.MangGiaTri[5];
+                    //vùng nhớ báo kết quả check metal. 0-pass; 1-Fail
+                    GlobalVariables.MyEvent.MetalCheckResult = resultData.MangGiaTri[4];
+                }
             }
             else
             {
@@ -244,12 +258,17 @@ namespace WeightChecking
                                 "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
+            //run thread đọc modbus, để đọc các giá trị cân
+            _tskModbus = new System.Threading.Tasks.Task(() => ReadModbus());
+            _tskModbus.Start();
+
             //đăng ký các sự kiện ghi giá trị điều khiển Pusher
             //vùng nhớ dataBlock 1(DB1.DB0 byte)
             GlobalVariables.MyEvent.EventHandlerMetalPusher += (s, o) =>
             {
                 GlobalVariables.DataWriteDb1[0] = (byte)o.NewValue;
                 GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 1, GlobalVariables.DataWriteDb1);
+                Debug.WriteLine($"Event ghi DB {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
             };
             //vùng nhớ dataBlock 1(DB1.DB1 byte)
             GlobalVariables.MyEvent.EventHandlerWeightPusher += (s, o) =>
@@ -737,7 +756,8 @@ namespace WeightChecking
 
             barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")} " +
                 $"| {GlobalVariables.UserLoginInfo.UserName} | ScaleStatus: {GlobalVariables.ScaleStatus}" +
-                $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}" +
+                $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}" +
+                $";S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};MC-{GlobalVariables.MyEvent.MetalCheckResult}" +
                 $" | CounterStatus: {GlobalVariables.ModbusStatus}" +
                 $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}";
 
@@ -1151,7 +1171,7 @@ namespace WeightChecking
         {
             while (true)
             {
-                #region Đọc các giá trị từ PLC
+                #region Đọc các giá trị từ PLC Cân
                 if (GlobalVariables.ModbusStatus)
                 {
                     //if (_resetCounter)
@@ -1175,7 +1195,7 @@ namespace WeightChecking
                     //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
                     GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
                     GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
-                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
+                    GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
                 }
                 else
                 {
@@ -1186,6 +1206,31 @@ namespace WeightChecking
 
                         GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
                     }
+                }
+                #endregion
+
+                #region Đọc các giá trị từ PLC conveyor s7-1200, profinet
+                if (GlobalVariables.ConveyorStatus == "GOOD")
+                {
+                    var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 6);
+
+                    if (resultData.TrangThai == "GOOD")
+                    {
+                        GlobalVariables.ConveyorStatus = resultData.TrangThai;
+                        //vùng nhớ chứa trạng thái của sensor là DB1[3], truoc vị trí metal scan, để tính thời gian quét QR code. 1-On;0-off
+                        GlobalVariables.MyEvent.SensorBeforeMetalScan = resultData.MangGiaTri[3];
+                        //sensor đặt ngay sau máy quét kim loại, báo là thùng hàng đã qua metal scan. 1-On;0-off
+                        GlobalVariables.MyEvent.SensorAfterMetalScan = resultData.MangGiaTri[5];
+                        //vùng nhớ báo kết quả check metal. 0-pass; 1-Fail
+                        GlobalVariables.MyEvent.MetalCheckResult = resultData.MangGiaTri[4];
+
+                    }
+                }
+                else
+                {
+                    GlobalVariables.MyDriver.S7Ethernet.Client.NgatKetNoi();
+
+                    GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.IpConveyor);
                 }
                 #endregion
 
@@ -1200,13 +1245,15 @@ namespace WeightChecking
                 #region Đọc các giá trị từ PLC conveyor s7-1200, profinet
                 if (GlobalVariables.ConveyorStatus == "GOOD")
                 {
-                    var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 4);
+                    var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 6);
 
                     if (resultData.TrangThai == "GOOD")
                     {
                         GlobalVariables.ConveyorStatus = resultData.TrangThai;
                         //vùng nhớ chứa trạng thái của sensor là DB1[3]
                         GlobalVariables.MyEvent.SensorBeforeMetalScan = resultData.MangGiaTri[3];
+                        GlobalVariables.MyEvent.SensorAfterMetalScan = resultData.MangGiaTri[5];
+                        GlobalVariables.MyEvent.MetalCheckResult = resultData.MangGiaTri[4];
                     }
                 }
                 else

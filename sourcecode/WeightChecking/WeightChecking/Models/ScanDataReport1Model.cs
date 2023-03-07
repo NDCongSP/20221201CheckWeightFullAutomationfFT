@@ -39,12 +39,12 @@ namespace WeightChecking
         //Ở trạm IDC check nêu hàng noPrinting thì set =2. nếu printing set =1.
         //Khi hàng đi sơn về, vào trạm check afterPrinting, quét OK set =2
         public int Status { get; set; }
-        public int CalculatedPairs { get; set; }
-        public int DeviationPairs { get; set; } = 0;//thể hiện số pairs bị thiếu.
+        public double CalculatedPairs { get; set; }
+        public double DeviationPairs { get; set; } = 0;//thể hiện số pairs bị thiếu.
         public DateTime CreatedDate { get; set; }
         public string Station { get; set; }
         public string UserName { get; set; }
         public string ApprovedName { get; set; }
-        public int ActualDeviationPairs { get; set; } = 0;
+        public double ActualDeviationPairs { get; set; } = 0;
     }
 }

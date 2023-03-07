@@ -49,12 +49,22 @@ namespace WeightChecking
         [Browsable(false)]
         public Guid CreatedBy { get; set; }
         public string UserName { get; set; }
-        public int CalculatedPairs { get; set; }
-        public int DeviationPairs { get; set; } = 0;//thể hiện số pairs bị thiếu.
+        public double CalculatedPairs { get; set; }
+        public double DeviationPairs { get; set; } = 0;//thể hiện số pairs bị thiếu.
         public StationEnum Station { get; set; }
         [Browsable(false)]
         public Guid ApprovedBy { get; set; } = Guid.Empty;
         public string ApprovedName { get; set; }
-        public int ActualDeviationPairs { get; set; } = 0;
+        public double ActualDeviationPairs { get; set; } = 0;
+
+        /// <summary>
+        /// Tỉ lệ khối lượng calculate deviation / standar Gross weight.
+        /// % = [|CalculateDeviation (prs)| * AveWeight/Prs (g)]/SdtGrossWeight (g).
+        /// </summary>
+        public double RatioFailWeight
+        {
+            get { return Math.Round((DeviationPairs * AveWeight1Prs) / StdGrossWeight, 2); }
+            set { }
+        }
     }
 }

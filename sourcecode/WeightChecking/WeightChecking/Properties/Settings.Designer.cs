@@ -25,7 +25,9 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"ed3YbBgz3fEdyTkRahthFY5ktQmH2er+blyCD/lIJfgQTkdsvUtAX21xE6NORw6ZjDTFBiO0b+JppR/MUkEA8ekTiP82jW+iRZeEPpw5i4ZzRNeEyaY72K+tde5hq7/8BKwBoCV4foyGW+mZa0JHAvho1Mhs6RJ6sMrGWGmbUV/UdgUFA1082LDKxlhpm1Ff0NktMNlPk9oi5E9iE4QzTiJ2s0VZLuBsCq2PiaLakbiwyZe5jji9kJRva0p2QANS")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fF3bb/osXwqYNhSCfyKvNWvXPUgvQLnsbz+Nd6Vj/7Bp8rlvWbE/zlBsqiGfzls0FozxdSpL" +
+            "EGyIYk/FpLk0PUEB0owITx4e7QWtAs6hhG9O20ffz+nroHV3b//mZ91MP5kAywrsmMsnt2//5mfdTD+Z" +
+            "FycX6i+aqjOePbB/5XtS54TqvGoMQ6uZs5JoyLjxtFaOXCkfgRc3OCVgB+kkBmL")]
         public string conString {
             get {
                 return ((string)(this["conString"]));
@@ -37,7 +39,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.80.3")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.207.7")]
         public string ipConveyor {
             get {
                 return ((string)(this["ipConveyor"]));
@@ -49,9 +51,9 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fEdyTkRahthFY5ktQmH2er+ubV7i40QDz2+hAazJukJ2KdBD28UEGTZpJCCeedpXvxIaU3kh" +
-            "+lTExB/npJz2Uw5lNuwB800UZyeKbvZFrfjjijyurbNaMoE7IXQkLVO+pvLS+9V/AFxNrE1qo49bGzvA" +
-            "nZUvm1Uo3o1fPqAH5rwrQmiR/MZQW0YE/hEqI8KBWqqEiZJeE8Dbt/Bw1H8THChh6y2CqZBLz4=")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fF3bb/osXwqYNhSCfyKvNWvXPUgvQLnsbxhiBYExpE31Zqka9VTJreKXnvPXqdo2TaQPGxYv" +
+            "jIEfeJvW5J47WBVFrQLOoYRvTttH38/p66B1d2//5mfdTD+ZAMsK7JjLJ7dv/+Zn3Uw/mRcnF+ovmqoz" +
+            "nj2wf+V7UueE6rxqDEOrmbOSaMi48bRWjlwpH4EXNzglYAfpJAZiw==")]
         public string conStringWL {
             get {
                 return ((string)(this["conStringWL"]));
@@ -100,7 +102,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool IsScale {
             get {
                 return ((bool)(this["IsScale"]));

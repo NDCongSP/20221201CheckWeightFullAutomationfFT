@@ -17,19 +17,19 @@ namespace WeightChecking
         public string Date { get; set; }
         public string Size { get; set; }
         public double AveWeight1Prs { get; set; }
-        public int BoxQtyBx1 { get; set; }
-        public int BoxQtyBx2 { get; set; }
-        public int BoxQtyBx3 { get; set; }
-        public int BoxQtyBx4 { get; set; }
+        public double BoxQtyBx1 { get; set; }
+        public double BoxQtyBx2 { get; set; }
+        public double BoxQtyBx3 { get; set; }
+        public double BoxQtyBx4 { get; set; }
         public double BoxWeightBx1 { get; set; }
         public double BoxWeightBx2 { get; set; }
         public double BoxWeightBx3 { get; set; }
         public double BoxWeightBx4 { get; set; }
-        public int PartitionQty { get; set; }
-        public int PlasicBag1Qty { get; set; }
-        public int PlasicBag2Qty { get; set; }
-        public int WrapSheetQty { get; set; }
-        public int  FoamSheetQty { get; set; }
+        public double PartitionQty { get; set; }
+        public double PlasicBag1Qty { get; set; }
+        public double PlasicBag2Qty { get; set; }
+        public double WrapSheetQty { get; set; }
+        public double FoamSheetQty { get; set; }
         public double PartitionWeight { get; set; } = 60;
         public double PlasicBag1Weight { get; set; }
         public double PlasicBag2Weight { get; set; }

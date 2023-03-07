@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S7Client", "S7Client\S7Clie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZebraSDKTest", "..\..\..\OtherSourceCode\20230104ZebraSDK\ZebraSDKTest\ZebraSDKTest\ZebraSDKTest.csproj", "{02A4DA74-D385-4A85-BDA7-9AECE3322D23}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnserU2_cSharp", "..\AnserU2_DK\AnserU2_cSharp\AnserU2_cSharp.csproj", "{AE748927-C553-41F3-904A-5D488CAE6785}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PLCPi", "..\..\..\OtherSourceCode\2014PLCPiProject\PLCPiForPC\PLCPi\PLCPi\PLCPi.csproj", "{15DD2F14-1735-4D96-BA90-B57E90BEB545}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE748927-C553-41F3-904A-5D488CAE6785}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE748927-C553-41F3-904A-5D488CAE6785}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE748927-C553-41F3-904A-5D488CAE6785}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE748927-C553-41F3-904A-5D488CAE6785}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

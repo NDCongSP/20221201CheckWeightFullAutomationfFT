@@ -72,6 +72,13 @@ namespace WeightChecking
             }
             #endregion
 
+            #region Đọc DB lấy danh sách specialCase
+            using (var connection = GlobalVariables.GetDbConnection())
+            {
+                GlobalVariables.SpecialCaseList = connection.Query<tblSpecialCaseModel>("sp_tblSpecialCaseGets").ToList();
+            }
+            #endregion
+
             //Log các hành động của user thì tự log bằng tay vào bảng tblLog
             //tạo serilog để log Error exception.
             MSSqlServerSinkOptions sinkOption = new MSSqlServerSinkOptions()
