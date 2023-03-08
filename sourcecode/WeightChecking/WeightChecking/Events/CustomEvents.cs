@@ -206,7 +206,7 @@ namespace WeightChecking
         #endregion
 
         #region Conveyor
-        private int _metalPusher = 0, _weightPusher = 0, _printPusher = 0, _sensorBeforMetalScan = 0, _sensorAfterMetalScan = 0, _metalCheckResult = 0;
+        private int _metalPusher = 0, _metalPusher1 = 0, _weightPusher = 0, _printPusher = 0, _sensorBeforeMetalScan = 0, _sensorAfterMetalScan = 0, _metalCheckResult = 0, _sensorBeforeWeightScan = 0;
 
         /// <summary>
         /// Biến báo sự kiện cho pusher metal scan.
@@ -225,6 +225,36 @@ namespace WeightChecking
             }
         }
 
+        public int MetalPusher1
+        {
+            get => _metalPusher1;
+            set
+            {
+                if (value != _metalPusher1)
+                {
+                    _metalPusher1 = value;
+                    OnMetalPusher1Action(value);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Biến này dùng để báo có thùng vào trạm cân, để set thời gian đếm nhận tín hiệu scanner.
+        /// Nếu sau thời gian này mà ko có tín hiệu từ scanner thì báo reject weight.
+        /// </summary>
+        public int SensorBeforeWeightScan
+        {
+            get => _sensorBeforeWeightScan;
+            set
+            {
+                if (value!=_sensorBeforeWeightScan)
+                {
+                    _sensorBeforeWeightScan = value;
+                    OnSensorBeforeScanAction(value);
+                }
+            }
+        }
         /// <summary>
         /// Biến báo sự kiện cho pusher reject cân lôi.
         /// 0- cân ok; 1-cân lỗi.
@@ -266,13 +296,13 @@ namespace WeightChecking
         /// </summary>
         public int SensorBeforeMetalScan
         {
-            get => _sensorBeforMetalScan;
+            get => _sensorBeforeMetalScan;
             set
             {
-                if (value != _sensorBeforMetalScan)
+                if (value != _sensorBeforeMetalScan)
                 {
-                    _sensorBeforMetalScan = value;
-                    OnSensorBeforeMetalScan(value);
+                    _sensorBeforeMetalScan = value;
+                    OnSensorBeforeMetalScanAction(value);
                 }
             }
         }
@@ -285,7 +315,7 @@ namespace WeightChecking
                 if (value != _sensorAfterMetalScan)
                 {
                     _sensorAfterMetalScan = value;
-                    OnSensorAfterMetalScan(value);
+                    OnSensorAfterMetalScanAction(value);
                 }
             }
         }
@@ -298,7 +328,7 @@ namespace WeightChecking
                 if (value != _metalCheckResult)
                 {
                     _metalCheckResult = value;
-                    OnMetalCheckResult(value);
+                    OnMetalCheckResultAction(value);
                 }
             }
         }
@@ -310,6 +340,32 @@ namespace WeightChecking
             remove { _eventHandlerMetalPusher -= value; }
         }
 
+        private event EventHandler<TagValueChangeEventArgs> _eventHandleMetalPusher1;
+        public event EventHandler<TagValueChangeEventArgs> EventHandleMetalePusher1
+        {
+            add
+            {
+                _eventHandleMetalPusher1 += value;
+            }
+            remove
+            {
+                _eventHandleMetalPusher1 -= value;
+            }
+        }
+
+
+        private event EventHandler<TagValueChangeEventArgs> _eventHandleSensorBeforeScan;
+        public event EventHandler<TagValueChangeEventArgs> EventHandleSensorBeforeScan
+        {
+            add
+            {
+                _eventHandleSensorBeforeScan += value;
+            }
+            remove
+            {
+                _eventHandleSensorBeforeScan -= value;
+            }
+        }
         private event EventHandler<TagValueChangeEventArgs> _eventHandlerWeightPusher;
         public event EventHandler<TagValueChangeEventArgs> EventHandlerWeightPusher
         {
@@ -367,26 +423,35 @@ namespace WeightChecking
         {
             _eventHandlerMetalPusher?.Invoke(this, new TagValueChangeEventArgs(value));
         }
+        void OnMetalPusher1Action(int value)
+        {
+            _eventHandleMetalPusher1?.Invoke(this, new TagValueChangeEventArgs(value));
+        }
+
+        void OnSensorBeforeScanAction(int value)
+        {
+            _eventHandleSensorBeforeScan?.Invoke(this, new TagValueChangeEventArgs(value));
+        }
         void OnWeightPusherAction(int value)
         {
-            _eventHandlerMetalPusher?.Invoke(this, new TagValueChangeEventArgs(value));
+            _eventHandlerWeightPusher?.Invoke(this, new TagValueChangeEventArgs(value));
         }
         void OnPrintPusherAction(int value)
         {
-            _eventHandlerMetalPusher?.Invoke(this, new TagValueChangeEventArgs(value));
+            _eventHandlerPrintPusher?.Invoke(this, new TagValueChangeEventArgs(value));
         }
 
-        void OnSensorBeforeMetalScan(int value)
+        void OnSensorBeforeMetalScanAction(int value)
         {
             _eventHandleSensorBeforeMetalScan?.Invoke(this, new TagValueChangeEventArgs(value));
         }
 
-        void OnSensorAfterMetalScan(int value)
+        void OnSensorAfterMetalScanAction(int value)
         {
             _eventHandleSensorAfterMetalScan?.Invoke(this, new TagValueChangeEventArgs(value));
         }
 
-        void OnMetalCheckResult(int value)
+        void OnMetalCheckResultAction(int value)
         {
             _eventHandleMetalCheckResult?.Invoke(this, new TagValueChangeEventArgs(value));
         }

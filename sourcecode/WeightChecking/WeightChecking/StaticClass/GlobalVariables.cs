@@ -58,7 +58,7 @@ namespace WeightChecking
 
         public static string ConveyorStatus { get; set; } = "Bad";
         public static string PrintConnectionStatus { get; set; } = "Bad";
-        public static byte[] DataWriteDb1 { get; set; } = new byte[] { 0, 0, 0 };//biến dùng để chứa các giá trị ghi xuống PLC để điều khiển pusher
+        public static byte[] DataWriteDb1 { get; set; } = new byte[] { 0, 0, 0, 0 };//biến dùng để chứa các giá trị ghi xuống PLC để điều khiển pusher
         //byte[0]-Metal; byte[1]-Scale; byte[2]-print
 
         public static List<OcUsingModel> OcUsingList { get; set; } = new List<OcUsingModel>();//get ra danh sách tất cả các OcNo đang sử dụng
@@ -67,9 +67,11 @@ namespace WeightChecking
         public static bool AutoMan { get; set; } = true;//biến chọn chế độ hoạt động là tự động hoàn toàn hay là bằng tay. True-Auto; False-Man
         public static List<tblSpecialCaseModel> SpecialCaseList { get; set; } = new List<tblSpecialCaseModel>();
 
+        public static string PrintResult { get; set; } = "";//ket qua tra ve khi thuc hien in
+
         #region Printing
         // Print the file.
-        public static void Printing(string content, string idLabel,bool pass,string createdDate)
+        public static void Printing(string content, string idLabel, bool pass, string createdDate)
         {
             //content of the QR code "OC283225,6112012227-2094-2651,28,13,P,1/56,160506,1/1|1,30.2022"
             if (pass)

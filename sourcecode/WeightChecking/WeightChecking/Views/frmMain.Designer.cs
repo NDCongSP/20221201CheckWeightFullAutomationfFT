@@ -51,6 +51,7 @@ namespace WeightChecking
             this._barEditItemCombStation = new DevExpress.XtraBars.BarEditItem();
             this.repositoryItemComboBox1 = new DevExpress.XtraEditors.Repository.RepositoryItemComboBox();
             this._barButtonItemExportMasterData = new DevExpress.XtraBars.BarButtonItem();
+            this._barButtonItemExportMissItem = new DevExpress.XtraBars.BarButtonItem();
             this.ribbonPageHome = new DevExpress.XtraBars.Ribbon.RibbonPage();
             this.ribbonPageGroupHome = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.ribbonPageMasterData = new DevExpress.XtraBars.Ribbon.RibbonPage();
@@ -63,7 +64,7 @@ namespace WeightChecking
             this.documentManager1 = new DevExpress.XtraBars.Docking2010.DocumentManager(this.components);
             this.tabbedView1 = new DevExpress.XtraBars.Docking2010.Views.Tabbed.TabbedView(this.components);
             this.dockManager1 = new DevExpress.XtraBars.Docking.DockManager(this.components);
-            this._barButtonItemExportMissItem = new DevExpress.XtraBars.BarButtonItem();
+            this.barButtonItemTest = new DevExpress.XtraBars.BarButtonItem();
             ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemDateEdit1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemDateEdit1.CalendarTimeProperties)).BeginInit();
@@ -97,9 +98,10 @@ namespace WeightChecking
             this.barStaticItemVersion,
             this._barEditItemCombStation,
             this._barButtonItemExportMasterData,
-            this._barButtonItemExportMissItem});
+            this._barButtonItemExportMissItem,
+            this.barButtonItemTest});
             this.ribbonControl1.Location = new System.Drawing.Point(0, 0);
-            this.ribbonControl1.MaxItemId = 21;
+            this.ribbonControl1.MaxItemId = 22;
             this.ribbonControl1.Name = "ribbonControl1";
             this.ribbonControl1.Pages.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPage[] {
             this.ribbonPageHome,
@@ -289,6 +291,14 @@ namespace WeightChecking
             this._barButtonItemExportMasterData.Name = "_barButtonItemExportMasterData";
             this._barButtonItemExportMasterData.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
             // 
+            // _barButtonItemExportMissItem
+            // 
+            this._barButtonItemExportMissItem.Caption = "Export Miss Product Item";
+            this._barButtonItemExportMissItem.Id = 20;
+            this._barButtonItemExportMissItem.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("_barButtonItemExportMissItem.ImageOptions.SvgImage")));
+            this._barButtonItemExportMissItem.LargeWidth = 150;
+            this._barButtonItemExportMissItem.Name = "_barButtonItemExportMissItem";
+            // 
             // ribbonPageHome
             // 
             this.ribbonPageHome.Groups.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageGroup[] {
@@ -304,6 +314,7 @@ namespace WeightChecking
             this.ribbonPageGroupHome.ItemLinks.Add(this.barButtonItemPrint);
             this.ribbonPageGroupHome.ItemLinks.Add(this.barButtonItemResetCountMetal);
             this.ribbonPageGroupHome.ItemLinks.Add(this._barButtonItemUpVersion);
+            this.ribbonPageGroupHome.ItemLinks.Add(this.barButtonItemTest);
             this.ribbonPageGroupHome.Name = "ribbonPageGroupHome";
             this.ribbonPageGroupHome.Text = "Actions";
             // 
@@ -388,13 +399,12 @@ namespace WeightChecking
             "DevExpress.XtraBars.FluentDesignSystem.FluentDesignFormControl",
             "DevExpress.XtraBars.ToolbarForm.ToolbarFormControl"});
             // 
-            // _barButtonItemExportMissItem
+            // barButtonItemTest
             // 
-            this._barButtonItemExportMissItem.Caption = "Export Miss Product Item";
-            this._barButtonItemExportMissItem.Id = 20;
-            this._barButtonItemExportMissItem.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("_barButtonItemExportMissItem.ImageOptions.SvgImage")));
-            this._barButtonItemExportMissItem.LargeWidth = 150;
-            this._barButtonItemExportMissItem.Name = "_barButtonItemExportMissItem";
+            this.barButtonItemTest.Caption = "barButtonItem1";
+            this.barButtonItemTest.Id = 21;
+            this.barButtonItemTest.Name = "barButtonItemTest";
+            this.barButtonItemTest.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItemTest_ItemClick);
             // 
             // frmMain
             // 
@@ -460,6 +470,7 @@ namespace WeightChecking
         private DevExpress.XtraEditors.Repository.RepositoryItemComboBox repositoryItemComboBox1;
         private DevExpress.XtraBars.BarButtonItem _barButtonItemExportMasterData;
         private DevExpress.XtraBars.BarButtonItem _barButtonItemExportMissItem;
+        private DevExpress.XtraBars.BarButtonItem barButtonItemTest;
     }
 }
 

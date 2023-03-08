@@ -339,6 +339,25 @@ namespace WeightChecking
                 }
             };
 
+            GlobalVariables.MyEvent.EventHandleSensorBeforeScan += (s, o) =>
+            {
+                //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ metal scanner
+                //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
+                if (o.NewValue == 1)
+                {
+                    _ckQRTask = new Task(() => CheckReadQr());
+                    _ckQRTask.Start();
+                }
+                else
+                {
+                    if (_ckQRTask != null)
+                    {
+                        _ckQRTask.Wait();
+                        _ckQRTask.Dispose();
+                    }
+                }
+            };
+
             GlobalVariables.MyEvent.EventHandleMetalCheckResult += (s, o) =>
             {
                 _metalCheckResult = o.NewValue;
@@ -348,6 +367,16 @@ namespace WeightChecking
             {
                 if (o.NewValue == 1)
                 {
+                    if (_metalCheckResult == 1)
+                    {
+                        GlobalVariables.MyEvent.MetalPusher1 = 1;
+                        _metalCheckResult = 0;
+                    }
+                    else
+                    {
+                        GlobalVariables.MyEvent.MetalPusher1 = 0;
+                    }
+
                     //log gia thông tin check metal vào bảng tblMetalScanResult
                     using (var connection = GlobalVariables.GetDbConnection())
                     {
@@ -368,7 +397,7 @@ namespace WeightChecking
 
             GlobalVariables.MyEvent.EventHandleMetalCheckResult += (s, o) =>
             {
-
+                _metalCheckResult = o.NewValue;
             };
             #endregion
 
@@ -376,29 +405,12 @@ namespace WeightChecking
             InitializeScaner();
 
             //Khởi tạo máy in AnserU2 Smart one
-            //SerialPortOpen();
+            SerialPortOpen();
 
-            //_scanData.BarcodeString = "OPRT8592,6112042102-PAX0-3001,8,6,P,8/8,170000,1/1|1,,,,";// _sen.Text;
-            //_scanData.RatioFailWeight = 13.5;
-            //#region test xong xoa
-            //using (var connection = GlobalVariables.GetDbConnection())
-            //{
-            //    var para = new DynamicParameters();
+            //BarcodeHandle(2, "PRTB3702,6112321904-N186-2752,36,7,P,9/9,162610,1/1|1,201476.2023,,,");
+            Thread.Sleep(10000);
 
-
-            //    //para.Add("QRLabel", _scanData.BarcodeString);
-            //    //var checkInfo = connection.Query<tblScanDataCheckModel>("sp_tblScanDataCheck", para, commandType: CommandType.StoredProcedure).ToList();
-
-            //    para.Add("_QrCode", _scanData.BarcodeString);
-            //    var checkInfo = connection.Query<tblScanDataModel>("sp_tblScanDataGetByQrCode", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
-
-            //    var ratio = (checkInfo.DeviationPairs * checkInfo.AveWeight1Prs) / checkInfo.StdGrossWeight;
-            //}
-            //#endregion
-            //this.txtQrCode.Focus();
-            //this.txtQrCode.KeyDown += TxtQrCode_KeyDown;
-
-            BarcodeHandle(2, "PRTB3702,6112321904-N186-2752,36,7,P,9/9,162610,1/1|1,201476.2023,,,");
+            SendDynamicString("15.8 Kg", "2023-03-08 13:00:00", "99999.2023");
         }
 
         private void frmScale_FormClosing(object sender, FormClosingEventArgs e)
@@ -748,7 +760,7 @@ namespace WeightChecking
                         #region truy vấn data và xử lý
                         //lấy thông tin khối lượng cân sau khi cân đã báo stable
                         Debug.WriteLine($"da vao can,dang doi stable {_stableScale}");
-                        //while (_stableScale == 0) { }
+                        while (_stableScale == 0) { }
                         Debug.WriteLine($"da can xong. stable {_stableScale}");
 
                         _scanData.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
@@ -1111,9 +1123,10 @@ namespace WeightChecking
                                         //kiểm tra xem data đã có trên hệ thống hay chưa
                                         if (statusLogData == 0)
                                         {
-                                            GlobalVariables.Printing((_scanData.GrossWeight / 1000).ToString("#,#0.00")
-                                                        , !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanData.OcNo}|{_scanData.BoxNo}", true
-                                                         , _scanData.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss"));
+                                            //gui lenh in
+                                            SendDynamicString((_scanData.GrossWeight / 1000).ToString("#,#0.00")
+                                                , _scanData.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                                , !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanData.OcNo}|{_scanData.BoxNo}");
                                         }
                                         //với thùng Pass mà trước đó đã cân và báo fail thì popup form nhập deviation
                                         //else if (statusLogData == 1)
@@ -1234,9 +1247,9 @@ namespace WeightChecking
 
                                         if (statusLogData == 0)
                                         {
-                                            GlobalVariables.Printing(_scanData.DeviationPairs.ToString()
-                                                        , !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanData.OcNo}|{_scanData.BoxNo}", false
-                                                        , _scanData.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss"));
+                                            SendDynamicString(_scanData.DeviationPairs.ToString("#,#0.00")
+                                                , _scanData.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                                , !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanData.OcNo}|{_scanData.BoxNo}");
                                         }
                                         else if (statusLogData == 2)
                                         {
@@ -1586,7 +1599,7 @@ namespace WeightChecking
                     Console.WriteLine($"in thanh cong!!!");
 
                     //xoa string
-                    SendDynamicString(" ", " ", "");
+                    SendDynamicString(" ", " ", " ");
                 }
                 else if (rcvArr[4] == 0x4F)
                 {
@@ -1595,7 +1608,7 @@ namespace WeightChecking
                 else if (rcvArr[4] == 0x31)
                 {
                     Console.WriteLine($"Loi. Error Code: {rcvArr[5]}");
-                    MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                     StopPrint();
                     Thread.Sleep(1000);
@@ -1612,6 +1625,11 @@ namespace WeightChecking
                     delayPV = Math.Round(delayPV / 100, 2);
                 }
 
+                GlobalVariables.PrintResult = string.Empty;
+                foreach (var item in rcvArr)
+                {
+                    GlobalVariables.PrintResult += item;
+                }
                 //this.Invoke((MethodInvoker)delegate {
                 //    labStatus.Text = string.Empty;
                 //    labStatus.Text += $"{item} ";
@@ -1637,6 +1655,7 @@ namespace WeightChecking
 
         private void StartPrint()
         {
+        loop1:
             try
             {
                 byte[] SetPtinting = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
@@ -1654,6 +1673,12 @@ namespace WeightChecking
             catch (Exception ex)
             {
                 Log.Error(ex, $"Start print error: {ex.Message}");
+
+                Thread.Sleep(10000);
+
+                goto loop1;
+
+                Thread.Sleep(10000);
             }
             finally
             {
@@ -1682,50 +1707,50 @@ namespace WeightChecking
         /// <summary>
         /// Method truyen noi dung xuong may in.
         /// </summary>
-        /// <param name="idLabel">'IdLabel' hoặc là 'OC|BoxNo'.</param>
-        /// <param name="weight">Khối lượng cân thực tế.</param>
-        /// <param name="date">Thời điểm cân.</param>
-        private void SendDynamicString(string idLabel, string weight, string date)
+        /// <param name="string1">Khối lượng cân thực tế.</param>
+        /// <param name="string2">Thời điểm cân.</param>
+        /// <param name="string3">'IdLabel' hoặc là 'OC|BoxNo'.</param>
+        private void SendDynamicString(string string1, string string2, string string3)
         {
             int i = 0, j = 0, k = 0;
             int chkSUM = 0;
 
-            byte[] SetDynamicString = new byte[14 + idLabel.Length + weight.Length + date.Length];
+            byte[] SetDynamicString = new byte[14 + string1.Length + string2.Length + string3.Length];
             SetDynamicString[0] = 0x2;
             SetDynamicString[1] = 0x0;
-            SetDynamicString[2] = (byte)(9 + idLabel.Length + weight.Length + date.Length);
+            SetDynamicString[2] = (byte)(9 + string1.Length + string2.Length + string3.Length);
             SetDynamicString[3] = 0x0;
             SetDynamicString[4] = 0xCA; // Mã lệnh Set dynamic string
             SetDynamicString[5] = 0;
             SetDynamicString[6] = 0;
-            SetDynamicString[7] = (byte)(idLabel.Length); // Chiều dài của string 1
-            SetDynamicString[8] = (byte)(weight.Length); // Chiều dài của string 2
-            SetDynamicString[9] = (byte)(date.Length); // Chiều dài của string 3
+            SetDynamicString[7] = (byte)(string1.Length); // Chiều dài của string 1
+            SetDynamicString[8] = (byte)(string2.Length); // Chiều dài của string 2
+            SetDynamicString[9] = (byte)(string3.Length); // Chiều dài của string 3
             SetDynamicString[10] = 0; // Chiều dài của string 4
             SetDynamicString[11] = 0; // Chiều dài của string 5
 
             //chuyen string sang ASCII
-            var idLabelArr = idLabel.ToCharArray();
-            var weighArr = weight.ToCharArray();
-            var dateArr = date.ToCharArray();
+            var string1Arr = string1.ToCharArray();
+            var string2Arr = string2.ToCharArray();
+            var string3Arr = string3.ToCharArray();
 
-            byte[] idLabelAscii = Encoding.ASCII.GetBytes(idLabelArr);
-            byte[] weightAscii = Encoding.ASCII.GetBytes(weighArr);
-            byte[] dateAscii = Encoding.ASCII.GetBytes(dateArr);
+            byte[] string1Ascii = Encoding.ASCII.GetBytes(string1Arr);
+            byte[] string2Ascii = Encoding.ASCII.GetBytes(string2Arr);
+            byte[] string3Ascii = Encoding.ASCII.GetBytes(string3Arr);
 
-            for (i = 0; i <= idLabelAscii.Length - 1; i++)
+            for (i = 0; i <= string1Ascii.Length - 1; i++)
             {
-                SetDynamicString[12 + i] = idLabelAscii[i];// Nội dung của string 1
+                SetDynamicString[12 + i] = string1Ascii[i];// Nội dung của string 1
             }
 
-            for (j = 0; j <= weightAscii.Length - 1; j++)
+            for (j = 0; j <= string2Ascii.Length - 1; j++)
             {
-                SetDynamicString[12 + i + j] = weightAscii[j];// Nội dung của string 1
+                SetDynamicString[12 + i + j] = string2Ascii[j];// Nội dung của string 2
             }
 
-            for (j = 0; j <= dateAscii.Length - 1; j++)
+            for (k = 0; k <= string3Ascii.Length - 1; k++)
             {
-                SetDynamicString[12 + i + j + k] = dateAscii[k];// Nội dung của string 1
+                SetDynamicString[12 + i + j + k] = string3Ascii[k];// Nội dung của string 3
             }
 
             // Tính check SUM
@@ -1880,9 +1905,30 @@ namespace WeightChecking
             _readQrStatus = false;//xóa biến này cho lần đọc kế tiếp
         }
 
-        private void CheckOc(string oc)
+        /// <summary>
+        /// Chạy method này để tính thời gian quét Qr.
+        /// Sau thời gian này mà chưa đọc đọc QR Thì báo không đọc được, ghi tín hiệu xuống cho MetalPusher reject.
+        /// </summary>
+        public void CheckReadQrWeight()
         {
+            double timeCheck = 0;
+            DateTime startTime = DateTime.Now;
+            DateTime endTime = DateTime.Now;
 
+            while (timeCheck <= GlobalVariables.TimeCheckQrMetal)
+            {
+                timeCheck = (endTime - startTime).TotalSeconds;
+                endTime = DateTime.Now;
+            }
+
+            //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject
+            if (!_readQrStatus)
+            {
+                //hết thời gian đọc QR code mà chưa đọc được
+                //gui data xuong PLC báo reject metalPusher
+                GlobalVariables.MyEvent.WeightPusher = 1;
+            }
+            _readQrStatus = false;//xóa biến này cho lần đọc kế tiếp
         }
         #endregion
     }
