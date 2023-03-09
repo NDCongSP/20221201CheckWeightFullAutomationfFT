@@ -1197,7 +1197,7 @@ namespace WeightChecking
 
         private void barButtonItemTest_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-            GlobalVariables.MyEvent.PrintPusher = 1;
+            GlobalVariables.MyEvent.StableScale = 1;
         }
 
         private async void AutoUpdater_ApplicationExitEvent()
@@ -1245,6 +1245,7 @@ namespace WeightChecking
                     _countDisconnectPlc += 1;
                     if (_countDisconnectPlc >= 3)
                     {
+                        _countDisconnectPlc = 0;
                         GlobalVariables.MyDriver.ModbusRTUMaster.NgatKetNoi();
 
                         GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
