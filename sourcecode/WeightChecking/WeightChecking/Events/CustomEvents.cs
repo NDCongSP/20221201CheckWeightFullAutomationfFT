@@ -206,7 +206,8 @@ namespace WeightChecking
         #endregion
 
         #region Conveyor
-        private int _metalPusher = 0, _metalPusher1 = 0, _weightPusher = 0, _printPusher = 0, _sensorBeforeMetalScan = 0, _sensorAfterMetalScan = 0, _metalCheckResult = 0, _sensorBeforeWeightScan = 0;
+        private int _metalPusher = 0, _metalPusher1 = 0, _weightPusher = 0, _printPusher = 0;
+        private int _sensorBeforeMetalScan = 0, _sensorAfterMetalScan = 0, _metalCheckResult = 0, _sensorBeforeWeightScan = 0;
 
         /// <summary>
         /// Biến báo sự kiện cho pusher metal scan.
@@ -251,7 +252,7 @@ namespace WeightChecking
                 if (value!=_sensorBeforeWeightScan)
                 {
                     _sensorBeforeWeightScan = value;
-                    OnSensorBeforeScanAction(value);
+                    OnSensorBeforeWeightScanAction(value);
                 }
             }
         }
@@ -354,16 +355,16 @@ namespace WeightChecking
         }
 
 
-        private event EventHandler<TagValueChangeEventArgs> _eventHandleSensorBeforeScan;
-        public event EventHandler<TagValueChangeEventArgs> EventHandleSensorBeforeScan
+        private event EventHandler<TagValueChangeEventArgs> _eventHandleSensorBeforeWeightScan;
+        public event EventHandler<TagValueChangeEventArgs> EventHandleSensorBeforeWeightScan
         {
             add
             {
-                _eventHandleSensorBeforeScan += value;
+                _eventHandleSensorBeforeWeightScan += value;
             }
             remove
             {
-                _eventHandleSensorBeforeScan -= value;
+                _eventHandleSensorBeforeWeightScan -= value;
             }
         }
         private event EventHandler<TagValueChangeEventArgs> _eventHandlerWeightPusher;
@@ -428,9 +429,9 @@ namespace WeightChecking
             _eventHandleMetalPusher1?.Invoke(this, new TagValueChangeEventArgs(value));
         }
 
-        void OnSensorBeforeScanAction(int value)
+        void OnSensorBeforeWeightScanAction(int value)
         {
-            _eventHandleSensorBeforeScan?.Invoke(this, new TagValueChangeEventArgs(value));
+            _eventHandleSensorBeforeWeightScan?.Invoke(this, new TagValueChangeEventArgs(value));
         }
         void OnWeightPusherAction(int value)
         {

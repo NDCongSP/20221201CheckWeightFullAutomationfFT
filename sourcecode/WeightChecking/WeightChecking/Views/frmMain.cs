@@ -199,7 +199,7 @@ namespace WeightChecking
             {
                 GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
 
-                Console.WriteLine($"PLC Status: {GlobalVariables.ModbusStatus}");
+                Debug.WriteLine($"PLC Status: {GlobalVariables.ModbusStatus}");
 
                 if (GlobalVariables.ModbusStatus)
                 {
@@ -217,6 +217,7 @@ namespace WeightChecking
                     GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
                     GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
                     GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
+                    GlobalVariables.MyEvent.SensorBeforeWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 8);
 
                     //đăng ký sự kiện bật tắt đèn tháp báo cân pass/fail
                     GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
@@ -265,33 +266,56 @@ namespace WeightChecking
             _tskModbus.Start();
 
             //đăng ký các sự kiện ghi giá trị điều khiển Pusher
-            //vùng nhớ dataBlock 1(DB1.DB0 byte)
+            //vùng nhớ dataBlock 1(DB1.DB0 byte). before metal scan
             GlobalVariables.MyEvent.EventHandlerMetalPusher += (s, o) =>
             {
-                GlobalVariables.DataWriteDb1[0] = (byte)o.NewValue;
-                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 1, new byte[] { (byte)o.NewValue });
-                //GlobalVariables.MyEvent.MetalPusher = 0;
+                //_metalScan = o.NewValue;
+
+                if (o.NewValue != 0)
+                {
+                    GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 1, new byte[] { (byte)o.NewValue });
+                }
+
+                GlobalVariables.MyEvent.MetalPusher = 0;
                 Debug.WriteLine($"Event ghi DB metal pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
             };
-            //vùng nhớ dataBlock 1(DB1.DB1 byte)
+            //vùng nhớ dataBlock 1(DB1.DB1 byte). weight pusher
             GlobalVariables.MyEvent.EventHandlerWeightPusher += (s, o) =>
             {
-                GlobalVariables.DataWriteDb1[1] = (byte)o.NewValue;
-                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, new byte[] { (byte)o.NewValue });
+                //_weightPusher = o.NewValue;
+
+                if (o.NewValue != 0)
+                {
+                    GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, new byte[] { (byte)o.NewValue });
+                }
+
+                GlobalVariables.MyEvent.WeightPusher = 0;
                 Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
             };
-            //vùng nhớ dataBlock 1(DB1.DB2 byte)
+            //vùng nhớ dataBlock 1(DB1.DB2 byte). printing pusher
             GlobalVariables.MyEvent.EventHandlerPrintPusher += (s, o) =>
             {
-                GlobalVariables.DataWriteDb1[2] = (byte)o.NewValue;
-                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 2, 1, new byte[] { (byte)o.NewValue });
+                //_printPusher = o.NewValue;
+
+                if (o.NewValue != 0)
+                {
+                    GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 2, 1, new byte[] { (byte)o.NewValue });
+                }
+
+                GlobalVariables.MyEvent.PrintPusher = 0;
                 Debug.WriteLine($"Event ghi DB Print pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
             };
             //vungf nho DB1.DB6/ dieu khien pusher reject quét kim loại lỗi
             GlobalVariables.MyEvent.EventHandleMetalePusher1 += (s, o) =>
             {
-                GlobalVariables.DataWriteDb1[3] = (byte)o.NewValue;
-                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 6, 1, new byte[] { (byte)o.NewValue});
+                //_metalPusher = o.NewValue;
+
+                if (o.NewValue != 0)
+                {
+                    GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 6, 1, new byte[] { (byte)o.NewValue });
+                }
+
+                GlobalVariables.MyEvent.MetalPusher1 = 0;
                 Debug.WriteLine($"Event ghi DB Metal pusher 1 {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
             };
 
@@ -315,12 +339,12 @@ namespace WeightChecking
         {
             if (e.StatusLight)//thùng cân Pass
             {
-                _writeHoldingRegisterArr[1] = 1;
+                _writeHoldingRegisterArr[1] = 2;
                 GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
             }
             else//thùng cân fail
             {
-                _writeHoldingRegisterArr[1] = 2;
+                _writeHoldingRegisterArr[1] = 1;
                 GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
             }
         }
@@ -767,10 +791,10 @@ namespace WeightChecking
             t.Enabled = false;
 
             barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")} " +
-                $"| {GlobalVariables.UserLoginInfo.UserName} | ScaleStatus: {GlobalVariables.ScaleStatus}" +
+                $"| {GlobalVariables.UserLoginInfo.UserName}" +
                 $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}" +
                 $";S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};MC-{GlobalVariables.MyEvent.MetalCheckResult}. Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
-                $" | CounterStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
+                $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
                 $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" +
                 $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}. PrintResult: {GlobalVariables.PrintResult}";
 
@@ -1173,7 +1197,7 @@ namespace WeightChecking
 
         private void barButtonItemTest_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-            GlobalVariables.MyEvent.MetalPusher = 2;
+            GlobalVariables.MyEvent.PrintPusher = 1;
         }
 
         private async void AutoUpdater_ApplicationExitEvent()
@@ -1233,6 +1257,8 @@ namespace WeightChecking
                 {
                     var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 7);
 
+                    GlobalVariables.ConveyorStatus = resultData.TrangThai;
+
                     if (resultData.TrangThai == "GOOD")
                     {
                         GlobalVariables.ConveyorStatus = resultData.TrangThai;
@@ -1240,15 +1266,14 @@ namespace WeightChecking
                         _metalScan = resultData.MangGiaTri[0];
                         _weightPusher = resultData.MangGiaTri[1];
                         _printPusher = resultData.MangGiaTri[2];
+                        _metalPusher = resultData.MangGiaTri[6];
+
                         //vùng nhớ chứa trạng thái của sensor là DB1[3], truoc vị trí metal scan, để tính thời gian quét QR code. 1-On;0-off
                         GlobalVariables.MyEvent.SensorBeforeMetalScan = resultData.MangGiaTri[3];
                         //sensor đặt ngay sau máy quét kim loại, báo là thùng hàng đã qua metal scan. 1-On;0-off
                         GlobalVariables.MyEvent.SensorAfterMetalScan = resultData.MangGiaTri[5];
                         //vùng nhớ báo kết quả check metal. 0-pass; 1-Fail
                         GlobalVariables.MyEvent.MetalCheckResult = resultData.MangGiaTri[4];
-
-                        _metalPusher = resultData.MangGiaTri[6];
-
                     }
                 }
                 else

@@ -51,6 +51,9 @@ namespace S7Server
             this.txtsp = new System.Windows.Forms.TextBox();
             this.txtpp = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.textBox4 = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -258,6 +261,34 @@ namespace S7Server
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label15.Location = new System.Drawing.Point(335, 255);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(211, 16);
+            this.label15.TabIndex = 40;
+            this.label15.Text = "Vùng Nhớ DB1[6] Metal reject";
+            // 
+            // label16
+            // 
+            this.label16.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label16.Location = new System.Drawing.Point(346, 282);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(96, 34);
+            this.label16.TabIndex = 41;
+            this.label16.Text = "0";
+            // 
+            // textBox4
+            // 
+            this.textBox4.Location = new System.Drawing.Point(452, 292);
+            this.textBox4.Name = "textBox4";
+            this.textBox4.Size = new System.Drawing.Size(130, 20);
+            this.textBox4.TabIndex = 42;
+            this.textBox4.Text = "0";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -266,6 +297,7 @@ namespace S7Server
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox3);
             this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.textBox4);
             this.Controls.Add(this.txtpp);
             this.Controls.Add(this.txtsp);
             this.Controls.Add(this.txtmp);
@@ -273,10 +305,12 @@ namespace S7Server
             this.Controls.Add(this.label14);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.label10);
+            this.Controls.Add(this.label16);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label7);
+            this.Controls.Add(this.label15);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.panel1);
@@ -316,6 +350,9 @@ namespace S7Server
         private System.Windows.Forms.TextBox txtsp;
         private System.Windows.Forms.TextBox txtpp;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.TextBox textBox4;
     }
 }
 

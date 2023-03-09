@@ -19,6 +19,7 @@ namespace S7Server
         private byte _mp = 0;
         private byte _cp = 0;
         private byte _pp = 0;
+        private byte _m = 0;
 
 
         private PLCPi _plcPi = new PLCPi();
@@ -68,7 +69,7 @@ namespace S7Server
 
                 try
                 {
-                    _cp  = Convert.ToByte(t.Text);
+                    _cp = Convert.ToByte(t.Text);
                 }
                 catch (Exception)
                 {
@@ -90,6 +91,21 @@ namespace S7Server
                     throw;
                 }
             };
+            textBox4.TextChanged += (s, o) =>
+            {
+                TextBox t = (TextBox)s;
+
+                try
+                {
+                    _m = Convert.ToByte(t.Text);
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+            };
+
             _timer.Interval = 100;
             _timer.Tick += _timer_Tick;
             _timer.Enabled = true;
@@ -149,6 +165,8 @@ namespace S7Server
             label10.Text = Convert.ToString(_plcPi.S7Ethernet.Server.DataBlock[3]);
             label14.Text = Convert.ToString(_plcPi.S7Ethernet.Server.DataBlock[4]);
             label12.Text = Convert.ToString(_plcPi.S7Ethernet.Server.DataBlock[5]);
+            label16.Text = Convert.ToString(_plcPi.S7Ethernet.Server.DataBlock[6]);
+
             _plcPi.S7Ethernet.Server.DataBlock[3] = _metalSensorBefore;
             _plcPi.S7Ethernet.Server.DataBlock[4] = _metalCheckResult;
             _plcPi.S7Ethernet.Server.DataBlock[5] = _metalSensorAfter;
@@ -161,6 +179,7 @@ namespace S7Server
             _plcPi.S7Ethernet.Server.DataBlock[0] = _mp;
             _plcPi.S7Ethernet.Server.DataBlock[1] = _cp;
             _plcPi.S7Ethernet.Server.DataBlock[2] = _pp;
+            _plcPi.S7Ethernet.Server.DataBlock[6] = _m;
         }
     }
 }
