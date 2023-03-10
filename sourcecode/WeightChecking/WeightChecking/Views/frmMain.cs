@@ -203,8 +203,7 @@ namespace WeightChecking
 
                 if (GlobalVariables.ModbusStatus)
                 {
-                    //ghi giá trị tắt đèn tháp xuống PLC
-                    GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+                    
 
                     //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
                     GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 7, ref _readHoldingRegisterArr);
@@ -221,6 +220,10 @@ namespace WeightChecking
 
                     //đăng ký sự kiện bật tắt đèn tháp báo cân pass/fail
                     GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
+
+                    //ghi giá trị tắt đèn tháp xuống PLC
+                    //GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+                    GlobalVariables.MyEvent.StatusLightPLC = 0;
 
                     ////run thread đọc modbus, để đọc các giá trị cân
                     //_tskModbus = new System.Threading.Tasks.Task(() => ReadModbus());
@@ -242,7 +245,7 @@ namespace WeightChecking
             {
                 GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 3, GlobalVariables.DataWriteDb1);
 
-                var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 7);
+                var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 8);
 
                 if (resultData.TrangThai == "GOOD")
                 {
@@ -253,17 +256,15 @@ namespace WeightChecking
                     GlobalVariables.MyEvent.SensorAfterMetalScan = resultData.MangGiaTri[5];
                     //vùng nhớ báo kết quả check metal. 0-pass; 1-Fail
                     GlobalVariables.MyEvent.MetalCheckResult = resultData.MangGiaTri[4];
+                    //vùng nhớ báo tin hiệu sensor ngay vị trí bàn nâng chuyển 3 hướng sau vị trí metal scanner
+                    GlobalVariables.MyEvent.SensorMiddleMetal = resultData.MangGiaTri[7];
                 }
             }
             else
             {
-                MessageBox.Show($"Không thể kết nối được bộ đếm dò kim loại.{Environment.NewLine}Tắt phần mềm, kiểm tra lại kết nối với PLC rồi mở lại phần mềm.",
+                MessageBox.Show($"Không thể kết nối được băng tải.{Environment.NewLine}Tắt phần mềm, kiểm tra lại kết nối với PLC rồi mở lại phần mềm.",
                                 "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            //run thread đọc modbus, để đọc các giá trị cân
-            _tskModbus = new System.Threading.Tasks.Task(() => ReadModbus());
-            _tskModbus.Start();
 
             //đăng ký các sự kiện ghi giá trị điều khiển Pusher
             //vùng nhớ dataBlock 1(DB1.DB0 byte). before metal scan
@@ -309,6 +310,10 @@ namespace WeightChecking
 
             #endregion
 
+            //run thread đọc modbus, để đọc các giá trị cân
+            _tskModbus = new System.Threading.Tasks.Task(() => ReadModbus());
+            _tskModbus.Start();
+
             _barButtonItemExportMissItem.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
             this._barEditItemFromDate.EditValue = this._barEditItemToDate.EditValue = DateTime.Now;
 
@@ -323,18 +328,16 @@ namespace WeightChecking
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void MyEvent_EventHandleStatusLightPLC(object sender, CountValueChangedEventArgs e)
+        private void MyEvent_EventHandleStatusLightPLC(object sender, TagValueChangeEventArgs e)
         {
-            if (e.StatusLight)//thùng cân Pass
-            {
-                _writeHoldingRegisterArr[1] = 2;
+                _writeHoldingRegisterArr[1] = (byte)e.NewValue;
                 GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
-            }
-            else//thùng cân fail
-            {
-                _writeHoldingRegisterArr[1] = 1;
-                GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
-            }
+            
+            //else//thùng cân fail
+            //{
+            //    _writeHoldingRegisterArr[1] = 1;
+            //    GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+            //}
         }
 
         private void _barButtonItemExportMissItem_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
@@ -1250,7 +1253,7 @@ namespace WeightChecking
                 #region Đọc các giá trị từ PLC conveyor s7-1200, profinet
                 if (GlobalVariables.ConveyorStatus == "GOOD")
                 {
-                    var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 7);
+                    var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 8);
 
                     GlobalVariables.ConveyorStatus = resultData.TrangThai;
 
@@ -1269,6 +1272,8 @@ namespace WeightChecking
                         GlobalVariables.MyEvent.SensorAfterMetalScan = resultData.MangGiaTri[5];
                         //vùng nhớ báo kết quả check metal. 0-pass; 1-Fail
                         GlobalVariables.MyEvent.MetalCheckResult = resultData.MangGiaTri[4];
+                        //vùng nhớ báo tin hiệu sensor ngay vị trí bàn nâng chuyển 3 hướng sau vị trí metal scanner
+                        GlobalVariables.MyEvent.SensorMiddleMetal = resultData.MangGiaTri[7];
                     }
                 }
                 else

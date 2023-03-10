@@ -207,7 +207,7 @@ namespace WeightChecking
 
         #region Conveyor
         private int _metalPusher = 0, _metalPusher1 = 0, _weightPusher = 0, _printPusher = 0;
-        private int _sensorBeforeMetalScan = 0, _sensorAfterMetalScan = 0, _metalCheckResult = 0, _sensorBeforeWeightScan = 0;
+        private int _sensorBeforeMetalScan = 0, _sensorAfterMetalScan = 0, _metalCheckResult = 0, _sensorBeforeWeightScan = 0, _sensorMiddleMetal = 0;
 
         /// <summary>
         /// Biến báo sự kiện cho pusher metal scan.
@@ -249,7 +249,7 @@ namespace WeightChecking
             get => _sensorBeforeWeightScan;
             set
             {
-                if (value!=_sensorBeforeWeightScan)
+                if (value != _sensorBeforeWeightScan)
                 {
                     _sensorBeforeWeightScan = value;
                     OnSensorBeforeWeightScanAction(value);
@@ -304,6 +304,19 @@ namespace WeightChecking
                 {
                     _sensorBeforeMetalScan = value;
                     OnSensorBeforeMetalScanAction(value);
+                }
+            }
+        }
+
+        public int SensorMiddleMetal
+        {
+            get => _sensorMiddleMetal;
+            set
+            {
+                if (value!=_sensorMiddleMetal)
+                {
+                    _sensorMiddleMetal = value;
+                    OnSensorMiddleMetalAction(value);
                 }
             }
         }
@@ -393,7 +406,18 @@ namespace WeightChecking
                 _eventHandleSensorBeforeMetalScan -= value;
             }
         }
-
+        private event EventHandler<TagValueChangeEventArgs> _eventHandleSensorMiddleMetal;
+        public event EventHandler<TagValueChangeEventArgs> EventHandleSensorMiddleMetal
+        {
+            add
+            {
+                _eventHandleSensorMiddleMetal += value;
+            }
+            remove
+            {
+                _eventHandleSensorMiddleMetal -= value;
+            }
+        }
         private event EventHandler<TagValueChangeEventArgs> _eventHandleSensorAfterMetalScan;
         public event EventHandler<TagValueChangeEventArgs> EventHandleSensorAfterMetalScan
         {
@@ -446,7 +470,10 @@ namespace WeightChecking
         {
             _eventHandleSensorBeforeMetalScan?.Invoke(this, new TagValueChangeEventArgs(value));
         }
-
+        void OnSensorMiddleMetalAction(int value)
+        {
+            _eventHandleSensorMiddleMetal?.Invoke(this, new TagValueChangeEventArgs(value));
+        }
         void OnSensorAfterMetalScanAction(int value)
         {
             _eventHandleSensorAfterMetalScan?.Invoke(this, new TagValueChangeEventArgs(value));
@@ -459,8 +486,8 @@ namespace WeightChecking
         #endregion
 
         #region Event PLC on/off light
-        private bool _statusLightPLC = false;
-        public bool StatusLightPLC
+        private int _statusLightPLC = 0;
+        public int StatusLightPLC
         {
             get => _statusLightPLC;
             set
@@ -470,8 +497,8 @@ namespace WeightChecking
             }
         }
 
-        private event EventHandler<CountValueChangedEventArgs> _eventHandleStatusLightPLC;
-        public event EventHandler<CountValueChangedEventArgs> EventHandleStatusLightPLC
+        private event EventHandler<TagValueChangeEventArgs> _eventHandleStatusLightPLC;
+        public event EventHandler<TagValueChangeEventArgs> EventHandleStatusLightPLC
         {
             add
             {
@@ -483,9 +510,9 @@ namespace WeightChecking
             }
         }
 
-        void OnStatusLightPlcAction(bool value)
+        void OnStatusLightPlcAction(int value)
         {
-            _eventHandleStatusLightPLC?.Invoke(this, new CountValueChangedEventArgs(value));
+            _eventHandleStatusLightPLC?.Invoke(this, new TagValueChangeEventArgs(value));
         }
         #endregion
     }
@@ -493,18 +520,11 @@ namespace WeightChecking
     #region Class variables for events
     public class CountValueChangedEventArgs : EventArgs
     {
-        private int _countValue = 0;
-        private bool _statusLight = false;
-        public int CountValue { get => _countValue; set => _countValue = value; }
+        private int _statusLight = 0;
 
-        public bool StatusLight { get => _statusLight; set => _statusLight = value; }
+        public int StatusLight { get => _statusLight; set => _statusLight = value; }
 
         public CountValueChangedEventArgs(int value)
-        {
-            _countValue = value;
-        }
-
-        public CountValueChangedEventArgs(bool value)
         {
             _statusLight = value;
         }

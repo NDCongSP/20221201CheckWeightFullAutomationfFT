@@ -28,7 +28,7 @@ namespace WeightChecking
     {
         private ScaleHelper _scaleHelper;
         private Task _ckTask, _ckQRTask, _ckQrWeightScanTask;//task kiểm tra tại các trạm scanner để check xem có đoc đc QR code ko
-        private Task _scaleHandleTask;
+        private bool _isStartCountTimer = true;
 
         private bool[] _readQrStatus = { false, false, false };//biến báo đọc được QR hay không. metal-weight-print
 
@@ -125,24 +125,35 @@ namespace WeightChecking
                 _stableScale = o.NewValue;
             };
 
-
+            //sự kiện ghi nhận thừng đêbs trước vị trí metalScan, lấy cánh xuống để tác động tính thời gian để báo ko đọc đc QR code
             GlobalVariables.MyEvent.EventHandleSensorBeforeMetalScan += (s, o) =>
             {
                 Debug.WriteLine($"Event Sensor before metal scan: {o.NewValue}");
                 //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ metal scanner
                 //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
+                if (_isStartCountTimer == false)
+                {
+                    _isStartCountTimer = true;
+
+                    if (o.NewValue == 1)
+                    {
+                        _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.TimeCheckQrMetal + 2)));
+                        _ckQRTask.Start();
+                    }
+                    else if (o.NewValue == 0)
+                    {
+                        _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.TimeCheckQrMetal)));
+                        _ckQRTask.Start();
+                    }
+                }
+            };
+            GlobalVariables.MyEvent.EventHandleSensorMiddleMetal += (s, o) =>
+            {
+                Debug.WriteLine($"Event Sensor middle metal: {o.NewValue}");
+
                 if (o.NewValue == 1)
                 {
-                    _ckQRTask = new Task(() => CheckReadQr());
-                    _ckQRTask.Start();
-                }
-                else
-                {
-                    if (_ckQRTask != null)
-                    {
-                        _ckQRTask.Wait();
-                        _ckQRTask.Dispose();
-                    }
+                    _isStartCountTimer = false;
                 }
             };
 
@@ -210,9 +221,7 @@ namespace WeightChecking
 
             //Khởi tạo máy in AnserU2 Smart one
             //SerialPortOpen();
-
-            Thread.Sleep(10000);
-
+            //Thread.Sleep(10000);
             //SendDynamicString(" ", " ", " ");
         }
 
@@ -547,7 +556,7 @@ namespace WeightChecking
                             }
                         }
 
-                        _readQrStatus[0] = false;//trả lại bit này để quét lần sau
+                        // _readQrStatus[0] = false;//trả lại bit này để quét lần sau
                         break;
                     case 2://trạm cân
                         this.Invoke((MethodInvoker)delegate { labQrScale.Text = barcodeString; });//hiển thị QR lên label
@@ -975,7 +984,7 @@ namespace WeightChecking
                                         _scanDataWeight.Pass = 1;//báo thùng pass
                                         _scanDataWeight.CreatedDate = GlobalVariables.CreatedDate = DateTime.Now;//lấy thời gian để đồng bộ giữa in tem và log DB Printing
                                                                                                                  //bật tín hiệu để PLC on đèn xanh
-                                        GlobalVariables.MyEvent.StatusLightPLC = true;
+                                        GlobalVariables.MyEvent.StatusLightPLC = 2;
 
                                         if (_scanDataWeight.Decoration == 0)
                                         {
@@ -1019,7 +1028,7 @@ namespace WeightChecking
                                     else//thung fail
                                     {
                                         //bật đèn đỏ
-                                        GlobalVariables.MyEvent.StatusLightPLC = false;
+                                        GlobalVariables.MyEvent.StatusLightPLC = 1;
                                         GlobalVariables.MyEvent.WeightPusher = 1;//ghi xuong PLC bao reject
 
                                         _scanDataWeight.Pass = 0;
@@ -1189,7 +1198,7 @@ namespace WeightChecking
                         }
                     #endregion
                     returnLoop:
-                        _readQrStatus[1] = false;//trả lại bit này để quét lần sau
+                        //_readQrStatus[1] = false;//trả lại bit này để quét lần sau
                         break;
                     case 3://trạm phân loại hàng sơn.
                         this.Invoke((MethodInvoker)delegate { labQrPrint.Text = barcodeString; });
@@ -1757,13 +1766,13 @@ namespace WeightChecking
         /// Chạy method này để tính thời gian quét Qr.
         /// Sau thời gian này mà chưa đọc đọc QR Thì báo không đọc được, ghi tín hiệu xuống cho MetalPusher reject.
         /// </summary>
-        public void CheckReadQr()
+        public void CheckReadQr(int timeCheckSettings)
         {
             double timeCheck = 0;
             DateTime startTime = DateTime.Now;
             DateTime endTime = DateTime.Now;
 
-            while (timeCheck <= GlobalVariables.TimeCheckQrMetal)
+            while (timeCheck <= timeCheckSettings)
             {
                 timeCheck = (endTime - startTime).TotalSeconds;
                 endTime = DateTime.Now;
@@ -1774,7 +1783,7 @@ namespace WeightChecking
             //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject
             if (!_readQrStatus[0])
             {
-                Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code");
+                Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram metal");
                 //hết thời gian đọc QR code mà chưa đọc được
                 //gui data xuong PLC báo reject metalPusher
                 GlobalVariables.MyEvent.MetalPusher = 1;
@@ -1797,13 +1806,13 @@ namespace WeightChecking
                 timeCheck = (endTime - startTime).TotalSeconds;
                 endTime = DateTime.Now;
                 Debug.WriteLine($"Dem thoi gian bao weight Scanner fail: {timeCheck}");
-                Thread.Sleep(200);
+                Thread.Sleep(100);
             }
 
             //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject
             if (!_readQrStatus[1])
             {
-                Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code");
+                Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
                 //hết thời gian đọc QR code mà chưa đọc được
                 //gui data xuong PLC báo reject metalPusher
                 GlobalVariables.MyEvent.WeightPusher = 1;

@@ -54,6 +54,9 @@ namespace S7Server
             this.label15 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.textBox4 = new System.Windows.Forms.TextBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.labSensorMiddleMetal = new System.Windows.Forms.Label();
+            this.txtSensoeMiddleMetal = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -175,7 +178,7 @@ namespace S7Server
             // 
             this.label11.AutoSize = true;
             this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label11.Location = new System.Drawing.Point(335, 340);
+            this.label11.Location = new System.Drawing.Point(427, 340);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(258, 16);
             this.label11.TabIndex = 40;
@@ -185,7 +188,7 @@ namespace S7Server
             // 
             this.label12.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label12.Location = new System.Drawing.Point(346, 367);
+            this.label12.Location = new System.Drawing.Point(438, 367);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(96, 34);
             this.label12.TabIndex = 41;
@@ -193,7 +196,7 @@ namespace S7Server
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(462, 377);
+            this.textBox2.Location = new System.Drawing.Point(554, 377);
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(130, 20);
             this.textBox2.TabIndex = 42;
@@ -203,7 +206,7 @@ namespace S7Server
             // 
             this.label13.AutoSize = true;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label13.Location = new System.Drawing.Point(335, 426);
+            this.label13.Location = new System.Drawing.Point(427, 426);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(214, 16);
             this.label13.TabIndex = 40;
@@ -213,7 +216,7 @@ namespace S7Server
             // 
             this.label14.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label14.Location = new System.Drawing.Point(346, 453);
+            this.label14.Location = new System.Drawing.Point(438, 453);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(96, 34);
             this.label14.TabIndex = 41;
@@ -221,7 +224,7 @@ namespace S7Server
             // 
             // textBox3
             // 
-            this.textBox3.Location = new System.Drawing.Point(462, 463);
+            this.textBox3.Location = new System.Drawing.Point(554, 463);
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(130, 20);
             this.textBox3.TabIndex = 42;
@@ -265,7 +268,7 @@ namespace S7Server
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.Location = new System.Drawing.Point(335, 255);
+            this.label15.Location = new System.Drawing.Point(427, 255);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(211, 16);
             this.label15.TabIndex = 40;
@@ -275,7 +278,7 @@ namespace S7Server
             // 
             this.label16.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.Location = new System.Drawing.Point(346, 282);
+            this.label16.Location = new System.Drawing.Point(438, 282);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(96, 34);
             this.label16.TabIndex = 41;
@@ -283,11 +286,39 @@ namespace S7Server
             // 
             // textBox4
             // 
-            this.textBox4.Location = new System.Drawing.Point(452, 292);
+            this.textBox4.Location = new System.Drawing.Point(544, 292);
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(130, 20);
             this.textBox4.TabIndex = 42;
             this.textBox4.Text = "0";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label17.Location = new System.Drawing.Point(23, 426);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(331, 16);
+            this.label17.TabIndex = 40;
+            this.label17.Text = "Vùng Nhớ DB1[7] Sensor middle metal scanner";
+            // 
+            // labSensorMiddleMetal
+            // 
+            this.labSensorMiddleMetal.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.labSensorMiddleMetal.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labSensorMiddleMetal.Location = new System.Drawing.Point(34, 453);
+            this.labSensorMiddleMetal.Name = "labSensorMiddleMetal";
+            this.labSensorMiddleMetal.Size = new System.Drawing.Size(96, 34);
+            this.labSensorMiddleMetal.TabIndex = 41;
+            this.labSensorMiddleMetal.Text = "0";
+            // 
+            // txtSensoeMiddleMetal
+            // 
+            this.txtSensoeMiddleMetal.Location = new System.Drawing.Point(150, 463);
+            this.txtSensoeMiddleMetal.Name = "txtSensoeMiddleMetal";
+            this.txtSensoeMiddleMetal.Size = new System.Drawing.Size(130, 20);
+            this.txtSensoeMiddleMetal.TabIndex = 42;
+            this.txtSensoeMiddleMetal.Text = "0";
             // 
             // Form1
             // 
@@ -296,6 +327,7 @@ namespace S7Server
             this.ClientSize = new System.Drawing.Size(827, 516);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox3);
+            this.Controls.Add(this.txtSensoeMiddleMetal);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.textBox4);
             this.Controls.Add(this.txtpp);
@@ -303,10 +335,12 @@ namespace S7Server
             this.Controls.Add(this.txtmp);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label14);
+            this.Controls.Add(this.labSensorMiddleMetal);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label16);
             this.Controls.Add(this.label5);
+            this.Controls.Add(this.label17);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label7);
@@ -353,6 +387,9 @@ namespace S7Server
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label labSensorMiddleMetal;
+        private System.Windows.Forms.TextBox txtSensoeMiddleMetal;
     }
 }
 
