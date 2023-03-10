@@ -269,54 +269,42 @@ namespace WeightChecking
             //vùng nhớ dataBlock 1(DB1.DB0 byte). before metal scan
             GlobalVariables.MyEvent.EventHandlerMetalPusher += (s, o) =>
             {
-                //_metalScan = o.NewValue;
-
-                if (o.NewValue != 0)
+                //if (o.NewValue != 0)
                 {
                     GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 1, new byte[] { (byte)o.NewValue });
                 }
-
-                GlobalVariables.MyEvent.MetalPusher = 0;
                 Debug.WriteLine($"Event ghi DB metal pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                //GlobalVariables.MyEvent.MetalPusher = 0;
             };
             //vùng nhớ dataBlock 1(DB1.DB1 byte). weight pusher
             GlobalVariables.MyEvent.EventHandlerWeightPusher += (s, o) =>
             {
-                //_weightPusher = o.NewValue;
-
                 if (o.NewValue != 0)
                 {
                     GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, new byte[] { (byte)o.NewValue });
                 }
-
-                GlobalVariables.MyEvent.WeightPusher = 0;
                 Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                GlobalVariables.MyEvent.WeightPusher = 0;
             };
             //vùng nhớ dataBlock 1(DB1.DB2 byte). printing pusher
             GlobalVariables.MyEvent.EventHandlerPrintPusher += (s, o) =>
             {
-                //_printPusher = o.NewValue;
-
                 if (o.NewValue != 0)
                 {
                     GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 2, 1, new byte[] { (byte)o.NewValue });
-                }
-
-                GlobalVariables.MyEvent.PrintPusher = 0;
+                }                
                 Debug.WriteLine($"Event ghi DB Print pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                GlobalVariables.MyEvent.PrintPusher = 0;
             };
             //vungf nho DB1.DB6/ dieu khien pusher reject quét kim loại lỗi
             GlobalVariables.MyEvent.EventHandleMetalePusher1 += (s, o) =>
             {
-                //_metalPusher = o.NewValue;
-
                 if (o.NewValue != 0)
                 {
                     GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 6, 1, new byte[] { (byte)o.NewValue });
                 }
-
-                GlobalVariables.MyEvent.MetalPusher1 = 0;
                 Debug.WriteLine($"Event ghi DB Metal pusher 1 {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                GlobalVariables.MyEvent.MetalPusher1 = 0;
             };
 
             #endregion

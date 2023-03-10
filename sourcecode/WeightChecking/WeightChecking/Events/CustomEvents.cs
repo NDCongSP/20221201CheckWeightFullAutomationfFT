@@ -218,7 +218,7 @@ namespace WeightChecking
             get => _metalPusher;
             set
             {
-                if (value != _metalPusher)
+                //if (value != _metalPusher)
                 {
                     _metalPusher = value;
                     OnMetalPusherAction(_metalPusher);

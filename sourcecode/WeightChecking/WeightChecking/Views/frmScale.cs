@@ -65,247 +65,43 @@ namespace WeightChecking
 
         private void FrmScale_Load(object sender, EventArgs e)
         {
-            #region Register events Scale value change
-            //if (GlobalVariables.IsScale)
-            //{
-            //    _scaleHelper = new ScaleHelper()
-            //    {
-            //        Ip = GlobalVariables.IpScale,
-            //        Port = Convert.ToInt32(GlobalVariables.PortScale),
-            //        ScaleDelay = GlobalVariables.ScaleDelay,
-            //        StopScale = false
-            //    };
-
-            //    _scaleHelper.StatusChanged += (s, o) =>
-            //    {
-            //        GlobalVariables.ScaleStatus = o.StatusConnection;
-            //        Console.WriteLine($"Scale {o}");
-            //    };
-
-            //    _ckTask = new Task(() => _scaleHelper.CheckConnect());
-            //    _ckTask.Start();
-
-            //    _scaleHelper.ValueChanged += (s, o) =>
-            //    {
-            //        try
-            //        {
-            //            var w = o.Value * GlobalVariables.UnitScale;
-            //            GlobalVariables.RealWeight = w;
-            //            if (w.ToString().Length >= 4 || w == 0)
-            //            {
-            //                if (labRealWeight.InvokeRequired)
-            //                {
-            //                    labRealWeight.Invoke(new Action(() =>
-            //                    {
-            //                        labScaleValue.Text = w.ToString();
-            //                    }));
-            //                }
-            //                else
-            //                {
-            //                    labScaleValue.Text = w.ToString();
-            //                }
-            //            }
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            Log.Error(ex, "Scale event error.");
-            //        }
-            //    };
-            //    _scaleHelper.ScaleValue = 1;// 5.545;//tac động để đọc cân lần đầu tiên
-            //}
-            #endregion
-
             #region hien thi cac thong so dem
-            if (labGoodBox.InvokeRequired)
+            this.Invoke((MethodInvoker)delegate
             {
-                labGoodBox.Invoke(new Action(() => { labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString(); }));
-            }
-            else labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-
-            if (labGoodNoPrint.InvokeRequired)
-            {
-                labGoodNoPrint.Invoke(new Action(() =>
-                {
-                    labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                }));
-            }
-            else labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-
-            if (labGoodPrint.InvokeRequired)
-            {
-                labGoodPrint.Invoke(new Action(() =>
-                {
-                    labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                }));
-            }
-            else labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-
-            if (labFailBox.InvokeRequired)
-            {
-                labFailBox.Invoke(new Action(() =>
-                {
-                    labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting
-                    + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                }));
-            }
-            else labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-
-            if (labFailNoPrint.InvokeRequired)
-            {
-                labFailNoPrint.Invoke(new Action(() =>
-                {
-                    labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                }));
-            }
-            else labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-            if (labFailPrint.InvokeRequired)
-            {
-                labFailPrint.Invoke(new Action(() =>
-                {
-                    labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                }));
-            }
-            else labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-
-            if (labMetalScanBox.InvokeRequired)
-            {
-                labMetalScanBox.Invoke(new Action(() =>
-                {
-                    labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                }));
-            }
-            else labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-
-            if (labMetalScanCount.InvokeRequired)
-            {
-                labMetalScanCount.Invoke(new Action(() =>
-                {
-                    labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-                }));
-            }
-            else labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-
+                labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
+                labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
+                labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
+                labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
+                labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
+                labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
+                labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
+                labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
+            });
             #endregion
 
             #region đăng ký sự kiện từ cac PLC
-            GlobalVariables.MyEvent.EventHandlerCount += (s, o) =>
-            {
-                #region check Actual metal scan
-                if (GlobalVariables.Station == StationEnum.IDC_1 && _approveUpdateActMetalScan
-                && o.CountValue != GlobalVariables.RememberInfo.CountMetalScan && o.CountValue != 0)
-                {
-                    _scanData.ActualMetalScan = 1;
-
-                    #region update actualMetalScan vào thùng vừa được cân
-                    var para = new DynamicParameters();
-                    para.Add("QrCode", _scanData.BarcodeString);
-                    para.Add("ActualMetalScan", _scanData.ActualMetalScan);
-
-                    using (var con = GlobalVariables.GetDbConnection())
-                    {
-                        con.Execute("sp_tblScanDataUpdateActualMetalScan", para, commandType: CommandType.StoredProcedure);
-                    }
-                    #endregion
-
-                    _approveUpdateActMetalScan = false;
-                }
-                _scanData.ActualMetalScan = 0;
-                #endregion
-
-                GlobalVariables.RememberInfo.CountMetalScan = o.CountValue;
-
-                if (labMetalScanCount.InvokeRequired)
-                {
-                    labMetalScanCount.Invoke(new Action(() =>
-                    {
-                        labMetalScanCount.Text = o.CountValue.ToString();
-                    }));
-                }
-                else
-                {
-                    labMetalScanCount.Text = o.CountValue.ToString();
-                }
-            };
-
             GlobalVariables.MyEvent.EventHandlerRefreshMasterData += (s, o) =>
             {
                 #region hien thi cac thong so dem
-                if (labGoodBox.InvokeRequired)
-                {
-                    labGoodBox.Invoke(new Action(() => { labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString(); }));
-                }
-                else labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
 
-                if (labGoodNoPrint.InvokeRequired)
+                this.Invoke((MethodInvoker)delegate
                 {
-                    labGoodNoPrint.Invoke(new Action(() =>
-                    {
-                        labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                    }));
-                }
-                else labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-
-                if (labGoodPrint.InvokeRequired)
-                {
-                    labGoodPrint.Invoke(new Action(() =>
-                    {
-                        labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                    }));
-                }
-                else labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-
-                if (labFailBox.InvokeRequired)
-                {
-                    labFailBox.Invoke(new Action(() =>
-                    {
-                        labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting
-                        + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                    }));
-                }
-                else labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-
-                if (labFailNoPrint.InvokeRequired)
-                {
-                    labFailNoPrint.Invoke(new Action(() =>
-                    {
-                        labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                    }));
-                }
-                else labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                if (labFailPrint.InvokeRequired)
-                {
-                    labFailPrint.Invoke(new Action(() =>
-                    {
-                        labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                    }));
-                }
-                else labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-
-                if (labMetalScanBox.InvokeRequired)
-                {
-                    labMetalScanBox.Invoke(new Action(() =>
-                    {
-                        labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                    }));
-                }
-                else labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-
-                if (labMetalScanCount.InvokeRequired)
-                {
-                    labMetalScanCount.Invoke(new Action(() =>
-                    {
-                        labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-                    }));
-                }
-                else labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-
+                    labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
+                    labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
+                    labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
+                    labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
+                    labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
+                    labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
+                    labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
+                    labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
+                });
                 #endregion
             };
 
             //sự kiện lấy số cân hiện tại cảu đầu cân (real time)
             GlobalVariables.MyEvent.EventHandleScaleValue += (s, o) =>
             {
-                Debug.WriteLine($"Scale value real time: {o.ScaleValue}");
+                Debug.WriteLine($"Event Scale value real time: {o.ScaleValue}");
                 _scaleValue = o.ScaleValue;
 
                 this.Invoke((MethodInvoker)delegate { labScaleValue.Text = _scaleValue.ToString(); });
@@ -313,7 +109,7 @@ namespace WeightChecking
             //sự kiến lấy khối lượng cân đã chốt ổn định
             GlobalVariables.MyEvent.EventHandlerScaleValueStable += (s, o) =>
             {
-                Debug.WriteLine($"Scale value stable: {o.ScaleValue}");
+                Debug.WriteLine($"Event Scale value stable: {o.ScaleValue}");
 
                 _scaleValueStable = o.ScaleValue;
 
@@ -325,14 +121,14 @@ namespace WeightChecking
             //sự kiện báo cân đã ổn định, chốt số cân.
             GlobalVariables.MyEvent.EventHandlerStableScale += (s, o) =>
             {
-                Debug.WriteLine($"Scale stable: {o.NewValue}");
+                Debug.WriteLine($"Event Scale stable: {o.NewValue}");
                 _stableScale = o.NewValue;
             };
 
 
             GlobalVariables.MyEvent.EventHandleSensorBeforeMetalScan += (s, o) =>
             {
-                Debug.WriteLine($"Sensor before metal scan: {o.NewValue}");
+                Debug.WriteLine($"Event Sensor before metal scan: {o.NewValue}");
                 //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ metal scanner
                 //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
                 if (o.NewValue == 1)
@@ -352,7 +148,7 @@ namespace WeightChecking
 
             GlobalVariables.MyEvent.EventHandleSensorBeforeWeightScan += (s, o) =>
             {
-                Debug.WriteLine($"Sensor before weight scan: {o.NewValue}");
+                Debug.WriteLine($"Event Sensor before weight scan: {o.NewValue}");
                 //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ metal scanner
                 //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
                 if (o.NewValue == 1)
@@ -372,9 +168,10 @@ namespace WeightChecking
 
             GlobalVariables.MyEvent.EventHandleSensorAfterMetalScan += (s, o) =>
             {
-                Debug.WriteLine($"Sensor After metal scan: {o.NewValue}");
+                Debug.WriteLine($"Event Sensor After metal scan: {o.NewValue}");
                 // if (o.NewValue == 1)
                 {
+                    GlobalVariables.RememberInfo.CountMetalScan += 1;//đếm số thừng đi qua máy metalScan
                     if (_metalCheckResult == 1)
                     {
                         GlobalVariables.MyEvent.MetalPusher1 = 1;
@@ -404,7 +201,7 @@ namespace WeightChecking
             GlobalVariables.MyEvent.EventHandleMetalCheckResult += (s, o) =>
             {
                 _metalCheckResult = o.NewValue;
-                Debug.WriteLine($"Metal check result: {o.NewValue}");
+                Debug.WriteLine($"Event Metal check result: {o.NewValue}");
             };
             #endregion
 
@@ -718,7 +515,7 @@ namespace WeightChecking
                                 if (res.MetalScan == 1)
                                 {
                                     Debug.WriteLine($"ProductNumber: {res.ProductNumber} có kiểm tra kim loại.");
-                                    //GlobalVariables.MyEvent.MetalPusher = 0;
+                                    GlobalVariables.MyEvent.MetalPusher = 0;
                                 }
                                 else if (res.MetalScan == 0)
                                 {
@@ -884,11 +681,11 @@ namespace WeightChecking
                         #endregion
                         #endregion
 
-                        #region Comment
                         #region truy vấn data và xử lý
                         //lấy thông tin khối lượng cân sau khi cân đã báo stable
                         Debug.WriteLine($"da vao can,dang doi stable {_stableScale}");
-                        while (_stableScale == 0) {
+                        while (_stableScale == 0)
+                        {
                             Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
                         }
                         Debug.WriteLine($"da can xong. stable {_stableScale}");
@@ -1239,23 +1036,13 @@ namespace WeightChecking
                                             GlobalVariables.RememberInfo.FailBoxNoPrinting += 1;
                                         }
 
-                                        #region hien thi mau label
-                                        if (labResult.InvokeRequired)
-                                        {
-                                            labResult.Invoke(new Action(() =>
-                                            {
-                                                labResult.Text = "Fail";
-                                                labResult.BackColor = Color.Red;
-                                                labResult.ForeColor = Color.White;
-                                            }));
-                                        }
-                                        else
+                                        //hien thi mau label
+                                        this.Invoke((MethodInvoker)delegate
                                         {
                                             labResult.Text = "Fail";
                                             labResult.BackColor = Color.Red;
                                             labResult.ForeColor = Color.White;
-                                        }
-                                        #endregion
+                                        });
 
                                         if (statusLogData == 0)
                                         {
@@ -1403,7 +1190,6 @@ namespace WeightChecking
                     #endregion
                     returnLoop:
                         _readQrStatus[1] = false;//trả lại bit này để quét lần sau
-                        #endregion
                         break;
                     case 3://trạm phân loại hàng sơn.
                         this.Invoke((MethodInvoker)delegate { labQrPrint.Text = barcodeString; });
@@ -1982,6 +1768,7 @@ namespace WeightChecking
                 timeCheck = (endTime - startTime).TotalSeconds;
                 endTime = DateTime.Now;
                 Debug.WriteLine($"Dem thoi gian bao Metal Scanner fail: {timeCheck}");
+                Thread.Sleep(100);
             }
 
             //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject
@@ -2010,6 +1797,7 @@ namespace WeightChecking
                 timeCheck = (endTime - startTime).TotalSeconds;
                 endTime = DateTime.Now;
                 Debug.WriteLine($"Dem thoi gian bao weight Scanner fail: {timeCheck}");
+                Thread.Sleep(100);
             }
 
             //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WeightChecking.Properties {
+namespace SSFG.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -39,7 +39,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.80.3")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.1.4")]
         public string ipConveyor {
             get {
                 return ((string)(this["ipConveyor"]));
@@ -89,8 +89,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\\\\192.168.1.241\\FramasPublic\\PUBLIC_Able to deleted\\22 IT\\01-UpdateApp\\11-SSFG_ID" +
-            "C\\1.Station1BeforePrint\\Update.xml")]
+        [global::System.Configuration.DefaultSettingValueAttribute("\\\\10.40.10.9\\Public$\\05_IT\\01_Update\\21- IDCScaleSystem\\Update.xml")]
         public string UpdatePath {
             get {
                 return ((string)(this["UpdatePath"]));
