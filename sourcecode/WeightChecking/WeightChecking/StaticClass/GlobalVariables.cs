@@ -68,6 +68,7 @@ namespace WeightChecking
         public static List<tblSpecialCaseModel> SpecialCaseList { get; set; } = new List<tblSpecialCaseModel>();
 
         public static string PrintResult { get; set; } = "";//ket qua tra ve khi thuc hien in
+        public static string  UpdatePath { get; set; }
 
         #region Printing
         // Print the file.

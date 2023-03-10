@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SSFG.Properties {
+namespace WeightChecking.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -39,7 +39,7 @@ namespace SSFG.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.1.4")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.80.3")]
         public string ipConveyor {
             get {
                 return ((string)(this["ipConveyor"]));
@@ -161,7 +161,7 @@ namespace SSFG.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
         public int ScannerIdMetal {
             get {
                 return ((int)(this["ScannerIdMetal"]));
@@ -173,7 +173,7 @@ namespace SSFG.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public int ScannerIdWeight {
             get {
                 return ((int)(this["ScannerIdWeight"]));

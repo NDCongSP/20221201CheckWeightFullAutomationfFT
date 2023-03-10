@@ -38,6 +38,7 @@ namespace WeightChecking
             GlobalVariables.ScannerIdWeight = Properties.Settings.Default.ScannerIdWeight;
             GlobalVariables.ScannerIdPrint = Properties.Settings.Default.ScannerIdPrint;
             GlobalVariables.TimeCheckQrMetal = Properties.Settings.Default.TimeCheckQrMetal;
+            GlobalVariables.UpdatePath = Properties.Settings.Default.UpdatePath;
 
             if (Properties.Settings.Default.Station == 0)
             {
@@ -113,7 +114,7 @@ namespace WeightChecking
                 AutoUpdater.DownloadPath = Environment.CurrentDirectory;
                 AutoUpdater.ApplicationExitEvent += AutoUpdater_ApplicationExitEvent;
                 AutoUpdater.CheckForUpdateEvent += AutoUpdater_CheckForUpdateEvent;
-                AutoUpdater.Start(Properties.Settings.Default.UpdatePath);
+                AutoUpdater.Start(GlobalVariables.UpdatePath);
                 Application.Run(new Login());
 
             }

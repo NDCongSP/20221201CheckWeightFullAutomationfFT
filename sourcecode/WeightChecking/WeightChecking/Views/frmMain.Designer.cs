@@ -52,6 +52,7 @@ namespace WeightChecking
             this.repositoryItemComboBox1 = new DevExpress.XtraEditors.Repository.RepositoryItemComboBox();
             this._barButtonItemExportMasterData = new DevExpress.XtraBars.BarButtonItem();
             this._barButtonItemExportMissItem = new DevExpress.XtraBars.BarButtonItem();
+            this.barButtonItemTest = new DevExpress.XtraBars.BarButtonItem();
             this.ribbonPageHome = new DevExpress.XtraBars.Ribbon.RibbonPage();
             this.ribbonPageGroupHome = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.ribbonPageMasterData = new DevExpress.XtraBars.Ribbon.RibbonPage();
@@ -64,7 +65,6 @@ namespace WeightChecking
             this.documentManager1 = new DevExpress.XtraBars.Docking2010.DocumentManager(this.components);
             this.tabbedView1 = new DevExpress.XtraBars.Docking2010.Views.Tabbed.TabbedView(this.components);
             this.dockManager1 = new DevExpress.XtraBars.Docking.DockManager(this.components);
-            this.barButtonItemTest = new DevExpress.XtraBars.BarButtonItem();
             ((System.ComponentModel.ISupportInitialize)(this.ribbonControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemDateEdit1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemDateEdit1.CalendarTimeProperties)).BeginInit();
@@ -299,6 +299,13 @@ namespace WeightChecking
             this._barButtonItemExportMissItem.LargeWidth = 150;
             this._barButtonItemExportMissItem.Name = "_barButtonItemExportMissItem";
             // 
+            // barButtonItemTest
+            // 
+            this.barButtonItemTest.Caption = "barButtonItem1";
+            this.barButtonItemTest.Id = 21;
+            this.barButtonItemTest.Name = "barButtonItemTest";
+            this.barButtonItemTest.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItemTest_ItemClick);
+            // 
             // ribbonPageHome
             // 
             this.ribbonPageHome.Groups.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageGroup[] {
@@ -398,13 +405,6 @@ namespace WeightChecking
             "DevExpress.XtraBars.TabFormControl",
             "DevExpress.XtraBars.FluentDesignSystem.FluentDesignFormControl",
             "DevExpress.XtraBars.ToolbarForm.ToolbarFormControl"});
-            // 
-            // barButtonItemTest
-            // 
-            this.barButtonItemTest.Caption = "barButtonItem1";
-            this.barButtonItemTest.Id = 21;
-            this.barButtonItemTest.Name = "barButtonItemTest";
-            this.barButtonItemTest.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItemTest_ItemClick);
             // 
             // frmMain
             // 

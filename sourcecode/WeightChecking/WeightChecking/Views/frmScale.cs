@@ -1797,7 +1797,7 @@ namespace WeightChecking
                 timeCheck = (endTime - startTime).TotalSeconds;
                 endTime = DateTime.Now;
                 Debug.WriteLine($"Dem thoi gian bao weight Scanner fail: {timeCheck}");
-                Thread.Sleep(100);
+                Thread.Sleep(200);
             }
 
             //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject

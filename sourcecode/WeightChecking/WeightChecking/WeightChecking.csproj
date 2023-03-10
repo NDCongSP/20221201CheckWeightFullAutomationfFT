@@ -430,4 +430,48 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <Dir>$(OutputPath)\..\Update</Dir>
+    <DeployDir>\\10.40.10.9\Public$\05_IT\01_Update\21- IDCScaleSystem\Update.zip</DeployDir>
+    <!--<FVNDeployContent Include="%(LineFVN.Text)" />
+    <FFTDeployContent Include="%(LineFFT.Text)" />-->
+  </PropertyGroup>
+  <Target Name="GetAssmeblyVersion" AfterTargets="Build">
+    <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
+      <Output TaskParameter="Assemblies" ItemName="Identity" />
+    </GetAssemblyIdentity>
+    <ItemGroup>
+      <Line Include="line01">
+        <Text>&lt;?xml version="1.0" encoding="UTF-8"?&gt;</Text>
+      </Line>
+      <Line Include="line02">
+        <Text>&lt;item&gt;</Text>
+      </Line>
+      <Line Include="line03">
+        <Text>&lt;version&gt;%(Identity.Version)&lt;/version&gt;</Text>
+      </Line>
+      <Line Include="line04">
+        <Text>&lt;url&gt;$(DeployDir)&lt;/url&gt;</Text>
+      </Line>
+      <Line Include="line05">
+        <Text>&lt;changelog&gt;&lt;/changelog&gt;</Text>
+      </Line>
+      <Line Include="line06">
+        <Text>&lt;mandatory&gt;false&lt;/mandatory&gt;</Text>
+      </Line>
+      <Line Include="line07">
+        <Text>&lt;/item&gt;</Text>
+      </Line>
+      <LineText Include="%(Line.Text)" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(OutputPath)\..\update.xml" Lines="@(LineText)" Overwrite="true" Encoding="Unicode" />
+  </Target>
+  <Target Name="CopyDLLs" AfterTargets="Build">
+    <Message Text="Executing CopyDLLs task" Importance="High" />
+    <Copy SourceFiles="$(TargetDir)$(AssemblyName).exe;$(TargetDir)$(AssemblyName).exe.config;$(TargetDir)$(AssemblyName).pdb" DestinationFolder="$(OutputPath)\..\Update" />
+    <!--<Copy SourceFiles="$(TargetDir)\Reports\rptFormula.repx" DestinationFolder="$(OutputPath)\..\Update\Reports" />-->
+    <Message Text="Copied build files" Importance="High" />
+    <ZipDirectory SourceDirectory="$(OutputPath)\..\Update" DestinationFile="$(OutputPath)\..\Update.zip" Overwrite="true" />
+    <RemoveDir Directories="$(OutputPath)\..\Update" />
+  </Target>
 </Project>
