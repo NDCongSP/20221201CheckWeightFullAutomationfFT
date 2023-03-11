@@ -6,7 +6,7 @@
       <Value Profile="(Default)">ed3YbBgz3fF3bb/osXwqYNhSCfyKvNWvXPUgvQLnsbz+Nd6Vj/7Bp8rlvWbE/zlBsqiGfzls0FozxdSpLEGyIYk/FpLk0PUEB0owITx4e7QWtAs6hhG9O20ffz+nroHV3b//mZ91MP5kAywrsmMsnt2//5mfdTD+ZFycX6i+aqjOePbB/5XtS54TqvGoMQ6uZs5JoyLjxtFaOXCkfgRc3OCVgB+kkBmL</Value>
     </Setting>
     <Setting Name="ipConveyor" Type="System.String" Scope="User">
-      <Value Profile="(Default)">192.168.1.4</Value>
+      <Value Profile="(Default)">192.168.80.3</Value>
     </Setting>
     <Setting Name="conStringWL" Type="System.String" Scope="User">
       <Value Profile="(Default)">ed3YbBgz3fF3bb/osXwqYNhSCfyKvNWvXPUgvQLnsbxhiBYExpE31Zqka9VTJreKXnvPXqdo2TaQPGxYvjIEfeJvW5J47WBVFrQLOoYRvTttH38/p66B1d2//5mfdTD+ZAMsK7JjLJ7dv/+Zn3Uw/mRcnF+ovmqoznj2wf+V7UueE6rxqDEOrmbOSaMi48bRWjlwpH4EXNzglYAfpJAZiw==</Value>
@@ -21,10 +21,10 @@
       <Value Profile="(Default)">\\10.40.10.9\Public$\05_IT\01_Update\21- IDCScaleSystem\Update.xml</Value>
     </Setting>
     <Setting Name="IsScale" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="IsCounter" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="Station" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
@@ -36,10 +36,10 @@
       <Value Profile="(Default)">COM4</Value>
     </Setting>
     <Setting Name="ScannerIdMetal" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">3</Value>
     </Setting>
     <Setting Name="ScannerIdWeight" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">3</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="ScannerIdPrint" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">2</Value>
@@ -47,7 +47,7 @@
     <Setting Name="TimeCheckQrMetal" Type="System.Double" Scope="User">
       <Value Profile="(Default)">2</Value>
     </Setting>
-    <Setting Name="TimeCheckQrScale" Type="System.String" Scope="User">
+    <Setting Name="TimeCheckQrScale" Type="System.Double" Scope="User">
       <Value Profile="(Default)">3</Value>
     </Setting>
   </Settings>

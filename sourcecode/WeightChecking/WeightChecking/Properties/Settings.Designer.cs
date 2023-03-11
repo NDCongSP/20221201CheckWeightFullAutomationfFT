@@ -39,7 +39,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.1.4")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.80.3")]
         public string ipConveyor {
             get {
                 return ((string)(this["ipConveyor"]));
@@ -101,7 +101,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool IsScale {
             get {
                 return ((bool)(this["IsScale"]));
@@ -113,7 +113,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool IsCounter {
             get {
                 return ((bool)(this["IsCounter"]));
@@ -161,7 +161,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
         public int ScannerIdMetal {
             get {
                 return ((int)(this["ScannerIdMetal"]));
@@ -173,7 +173,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public int ScannerIdWeight {
             get {
                 return ((int)(this["ScannerIdWeight"]));
@@ -210,9 +210,9 @@ namespace WeightChecking.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("3")]
-        public string TimeCheckQrScale {
+        public double TimeCheckQrScale {
             get {
-                return ((string)(this["TimeCheckQrScale"]));
+                return ((double)(this["TimeCheckQrScale"]));
             }
             set {
                 this["TimeCheckQrScale"] = value;

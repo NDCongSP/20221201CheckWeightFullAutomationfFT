@@ -29,6 +29,7 @@ namespace WeightChecking
         private ScaleHelper _scaleHelper;
         private Task _ckTask, _ckQRTask, _ckQrWeightScanTask;//task kiểm tra tại các trạm scanner để check xem có đoc đc QR code ko
         private bool _isStartCountTimer = true;
+        private int _metalScannerStatus = 0;
 
         private bool[] _readQrStatus = { false, false, false };//biến báo đọc được QR hay không. metal-weight-print
 
@@ -154,6 +155,7 @@ namespace WeightChecking
                 if (o.NewValue == 1)
                 {
                     _isStartCountTimer = false;
+                    GlobalVariables.MyEvent.MetalPusher = _metalScannerStatus;
                 }
             };
 
@@ -220,9 +222,9 @@ namespace WeightChecking
             InitializeScaner();
 
             //Khởi tạo máy in AnserU2 Smart one
-            //SerialPortOpen();
-            //Thread.Sleep(10000);
-            //SendDynamicString(" ", " ", " ");
+            SerialPortOpen();
+            Thread.Sleep(10000);
+            SendDynamicString(" ", " ", " ");
         }
 
         private void frmScale_FormClosing(object sender, FormClosingEventArgs e)
@@ -416,7 +418,8 @@ namespace WeightChecking
                             {
                                 MessageBox.Show("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 //ghi lệnh reject do ko quet đc tem
-                                GlobalVariables.MyEvent.MetalPusher = 1;
+                                _metalScannerStatus = 1;
+                                //GlobalVariables.MyEvent.MetalPusher = 1;
                                 return;
                             }
 
@@ -480,7 +483,8 @@ namespace WeightChecking
                             {
                                 MessageBox.Show("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 //ghi lệnh reject do ko quet đc tem
-                                GlobalVariables.MyEvent.MetalPusher = 1;
+                                _metalScannerStatus = 1;
+                                //GlobalVariables.MyEvent.MetalPusher = 1;
                                 return;
                             }
 
@@ -524,19 +528,23 @@ namespace WeightChecking
                                 if (res.MetalScan == 1)
                                 {
                                     Debug.WriteLine($"ProductNumber: {res.ProductNumber} có kiểm tra kim loại.");
-                                    GlobalVariables.MyEvent.MetalPusher = 0;
+
+                                    _metalScannerStatus = 0;
+                                    //GlobalVariables.MyEvent.MetalPusher = 0;
                                 }
                                 else if (res.MetalScan == 0)
                                 {
                                     Debug.WriteLine($"ProductNumber: {res.ProductNumber} không kiểm tra kim loại.");
                                     // gui data xuong PLC
-                                    GlobalVariables.MyEvent.MetalPusher = 2;
+                                    _metalScannerStatus = 2;
+                                    //GlobalVariables.MyEvent.MetalPusher = 2;
                                 }
                             }
                             else
                             {
                                 #region gui data xuong PLC
-                                GlobalVariables.MyEvent.MetalPusher = 1;
+                                _metalScannerStatus = 1;
+                                //GlobalVariables.MyEvent.MetalPusher = 1;
                                 #endregion
 
                                 Debug.WriteLine($"Product number {_scanDataMetal.ProductNumber} không có trong hệ thống. Hãy báo quản lý để lấy lại dữ liệu mới nhất từ Winline về."
@@ -1017,9 +1025,9 @@ namespace WeightChecking
                                                 $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                                             //ghi giá trị xuống PLC cân reject
-                                            GlobalVariables.MyEvent.WeightPusher = 1;
+                                            //GlobalVariables.MyEvent.WeightPusher = 1;
 
-                                            ResetControl();
+                                            //ResetControl();
                                             goto returnLoop;
                                         }
                                         //GlobalVariables.RealWeight = _scanDataWeight.GrossWeight;
@@ -1067,7 +1075,7 @@ namespace WeightChecking
                                             //ghi giá trị xuống PLC cân reject
                                             GlobalVariables.MyEvent.WeightPusher = 1;
 
-                                            ResetControl();
+                                            //ResetControl();
                                             goto returnLoop;
                                         }
                                         else
@@ -1078,7 +1086,7 @@ namespace WeightChecking
                                             //ghi giá trị xuống PLC cân reject
                                             GlobalVariables.MyEvent.WeightPusher = 1;
 
-                                            ResetControl();
+                                            //ResetControl();
                                             goto returnLoop;
                                         }
                                     }
@@ -1133,27 +1141,6 @@ namespace WeightChecking
                                     //var id = para.Get<string>("Id");
 
                                     #endregion
-
-                                    #region hien thi cac thong so dem
-                                    this.Invoke((MethodInvoker)delegate
-                                    {
-                                        labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
-                                        labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
-                                        labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                                        labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                                        labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                                        labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                                        labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                                        labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                                        labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                                        labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-                                        labDeviation.Text = _scanDataWeight.Deviation.ToString();
-                                        labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
-                                    });
-                                    #endregion
-
-                                    string json = JsonConvert.SerializeObject(GlobalVariables.RememberInfo);
-                                    File.WriteAllText(@"./RememberInfo.json", json);
                                 }
                                 else
                                 {
@@ -1198,6 +1185,26 @@ namespace WeightChecking
                         }
                     #endregion
                     returnLoop:
+                        #region hien thi cac thong so dem
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
+                            labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
+                            labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
+                            labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
+                            labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
+                            labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
+                            labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
+                            labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
+                            labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
+                            labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
+                            labDeviation.Text = _scanDataWeight.Deviation.ToString();
+                            labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
+                        });
+                        #endregion
+
+                        string json = JsonConvert.SerializeObject(GlobalVariables.RememberInfo);
+                        File.WriteAllText(@"./RememberInfo.json", json);
                         //_readQrStatus[1] = false;//trả lại bit này để quét lần sau
                         break;
                     case 3://trạm phân loại hàng sơn.
@@ -1237,7 +1244,7 @@ namespace WeightChecking
                         }
                         else
                         {
-                            var s1 = _scanData.BarcodeString.Split(',');
+                            var s1 = _scanDataPrint.BarcodeString.Split(',');
                             _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
                             //Check xem  QR code quét vào có đúng định dạng hay ko
@@ -1245,7 +1252,7 @@ namespace WeightChecking
 
                             if (resultCheckOc != null)
                             {
-                                _scanData.OcNo = s1[0];
+                                _scanDataPrint.OcNo = s1[0];
                             }
                             else
                             {
@@ -1255,14 +1262,14 @@ namespace WeightChecking
                                 return;
                             }
 
-                            //_scanData.OcNo = s1[0];
-                            _scanData.ProductNumber = s1[1];
+                            //_scanDataPrint.OcNo = s1[0];
+                            _scanDataPrint.ProductNumber = s1[1];
                         }
 
                         #region check special case
                         foreach (var item in GlobalVariables.SpecialCaseList)
                         {
-                            if (_scanData.ProductNumber.Split('-')[0].Equals(item.MainItem))
+                            if (_scanDataPrint.ProductNumber.Split('-')[0].Equals(item.MainItem))
                             {
                                 specialCase = true;
 
@@ -1279,7 +1286,7 @@ namespace WeightChecking
                             var para = new DynamicParameters();
 
                             para = new DynamicParameters();
-                            para.Add("@ProductNumber", _scanData.ProductNumber);
+                            para.Add("@ProductNumber", _scanDataPrint.ProductNumber);
                             para.Add("@SpecialCase", specialCasePrint);
 
                             var res = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
@@ -1786,7 +1793,8 @@ namespace WeightChecking
                 Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram metal");
                 //hết thời gian đọc QR code mà chưa đọc được
                 //gui data xuong PLC báo reject metalPusher
-                GlobalVariables.MyEvent.MetalPusher = 1;
+                _metalScannerStatus = 1;
+                //GlobalVariables.MyEvent.MetalPusher = 1;
             }
             _readQrStatus[0] = false;//xóa biến này cho lần đọc kế tiếp
         }
@@ -1801,7 +1809,7 @@ namespace WeightChecking
             DateTime startTime = DateTime.Now;
             DateTime endTime = DateTime.Now;
 
-            while (timeCheck <= GlobalVariables.TimeCheckQrMetal)
+            while (timeCheck <= GlobalVariables.TimeCheckQrScale)
             {
                 timeCheck = (endTime - startTime).TotalSeconds;
                 endTime = DateTime.Now;

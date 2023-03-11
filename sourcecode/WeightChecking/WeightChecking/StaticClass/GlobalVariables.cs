@@ -64,6 +64,7 @@ namespace WeightChecking
         public static List<OcUsingModel> OcUsingList { get; set; } = new List<OcUsingModel>();//get ra danh sách tất cả các OcNo đang sử dụng
         public static double TimeCheckQrMetal { get; set; }//Đơn vị (s), thời gian quy định thùng chạy từ cảm biến trước metal scanner đến vị trí scanner,n
                                                            //nếu qua thời gian này mà scanner chưa có tín hiệu thì báo lỗi không đọc được QR code, ghi lệnh xuống PLC conveyor reject 
+        public static double TimeCheckQrScale { get; set; }
         public static bool AutoMan { get; set; } = true;//biến chọn chế độ hoạt động là tự động hoàn toàn hay là bằng tay. True-Auto; False-Man
         public static List<tblSpecialCaseModel> SpecialCaseList { get; set; } = new List<tblSpecialCaseModel>();
 
