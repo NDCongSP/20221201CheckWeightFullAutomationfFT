@@ -225,6 +225,8 @@ namespace WeightChecking
             SerialPortOpen();
             Thread.Sleep(10000);
             SendDynamicString(" ", " ", " ");
+
+            //BarcodeHandle(2, "A100455,6814322206-NB79-E064,200,2,P,2/5,1900056,1/2|2,18226.2023,,,");
         }
 
         private void frmScale_FormClosing(object sender, FormClosingEventArgs e)
@@ -707,7 +709,7 @@ namespace WeightChecking
                         #region truy vấn data và xử lý
                         //lấy thông tin khối lượng cân sau khi cân đã báo stable
                         //Debug.WriteLine($"da vao can,dang doi stable {_stableScale}");
-                        while (_stableScale == 0)
+                        while (_stableScale == 0 && GlobalVariables.IsScale)
                         {
                             Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
                         }
@@ -839,10 +841,19 @@ namespace WeightChecking
 
                                             connection.Execute("sp_tblItemMissingInfoInsert", para, commandType: CommandType.StoredProcedure);
 
+                                            //bật đèn đỏ
+                                            GlobalVariables.MyEvent.StatusLightPLC = 1;
                                             //ghi giá trị xuống PLC cân reject
                                             GlobalVariables.MyEvent.WeightPusher = 1;
 
                                             ResetControl();
+
+                                            this.Invoke((MethodInvoker)delegate
+                                            {
+                                                labResult.BackColor = Color.Red;
+                                                labErrInfoScale.Text = "Quantity box error.";
+                                            });
+
                                             goto returnLoop;
                                         }
 
@@ -1154,7 +1165,16 @@ namespace WeightChecking
                                     Debug.WriteLine($"Item '{_scanDataWeight.ProductNumber}' không có khối lượng/1 đôi. Xin hãy kiểm tra lại thông tin."
                                         , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
+
                                     ResetControl();
+
+                                    this.Invoke((MethodInvoker)delegate
+                                    {
+                                        labResult.BackColor = Color.Red;
+                                        labErrInfoScale.Text = "Không có khối lượng đôi. Weight/Prs.";
+                                    });
+                                    //bật đèn đỏ
+                                    GlobalVariables.MyEvent.StatusLightPLC = 1;
                                     //ghi giá trị xuống PLC cân reject
                                     GlobalVariables.MyEvent.WeightPusher = 1;
 
@@ -1176,6 +1196,14 @@ namespace WeightChecking
 
                                 ResetControl();
 
+                                this.Invoke((MethodInvoker)delegate
+                                {
+                                    labResult.BackColor = Color.Red;
+                                    labErrInfoScale.Text = "ProductItem không có trong hệ thống.";
+                                });
+
+                                //bật đèn đỏ
+                                GlobalVariables.MyEvent.StatusLightPLC = 1;
                                 //ghi giá trị xuống PLC cân reject
                                 GlobalVariables.MyEvent.WeightPusher = 1;
 
