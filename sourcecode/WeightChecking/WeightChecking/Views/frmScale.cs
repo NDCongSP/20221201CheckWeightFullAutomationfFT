@@ -525,7 +525,7 @@ namespace WeightChecking
 
                             if (res != null)
                             {
-                                if (res.MetalScan == 1)
+                                if (res.MetalScan == 1 && ocFirstCharMetal != "PR")
                                 {
                                     Debug.WriteLine($"ProductNumber: {res.ProductNumber} có kiểm tra kim loại.");
 
@@ -777,7 +777,6 @@ namespace WeightChecking
                                     para.Add("@Printing", 0);//truoc son, chi có ở trạm IDC1
                                 }
                             }
-
                             var res = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
 
                             if (res != null)
@@ -792,7 +791,7 @@ namespace WeightChecking
                                 {
                                     #region Fill data from coreData to scanData, tính toán ra NetWeight và GrossWeight
                                     //Xét điều kiện để lấy boxWeight. Nếu là hàng đi sơn thì dùng thùng nhựa
-                                    if (_scanDataWeight.Decoration == 0 || (_scanDataWeight.Decoration == 1 && checkOc != null))
+                                    if ((_scanDataWeight.Decoration == 0 || (_scanDataWeight.Decoration == 1 && checkOc != null)) && checkOc.OcFirstChar != "BF")
                                     {
                                         _scanDataWeight.Status = 2;//báo trạng thái hàng ko đi sơn, hoặc hàng sơn đã được sơn rồi
 
@@ -850,9 +849,9 @@ namespace WeightChecking
                                             this.Invoke((MethodInvoker)delegate { labDecoration.BackColor = Color.Green; });
                                         }
                                     }
-                                    else if (_scanDataWeight.Decoration == 1 && _scanDataWeight.OcNo.Contains("PR"))//hàng trước sơn. chỉ có trạm SSFG01 mới nhảy vào đây
+                                    else //if (_scanDataWeight.Decoration == 1 && _scanDataWeight.OcNo.Contains("PR"))//hàng trước sơn. chỉ có trạm SSFG01 mới nhảy vào đây
                                     {
-                                        if (GlobalVariables.AfterPrinting == 0)
+                                        if (GlobalVariables.AfterPrinting == 0 && _scanDataWeight.OcNo.Contains("PR"))
                                         {
                                             _scanDataWeight.Status = 1;// báo trạng thái hàng sơn cần đưa đi sơn, trạm SSFG01
                                         }
@@ -1063,9 +1062,9 @@ namespace WeightChecking
 
                                         if (statusLogData == 0)
                                         {
-                                            SendDynamicString(_scanDataWeight.DeviationPairs.ToString("#,#0.00")
-                                                , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
-                                                , !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                            //SendDynamicString(_scanDataWeight.DeviationPairs.ToString("#,#0.00")
+                                            //    , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                            //    , !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
                                         }
                                         else if (statusLogData == 2)
                                         {
