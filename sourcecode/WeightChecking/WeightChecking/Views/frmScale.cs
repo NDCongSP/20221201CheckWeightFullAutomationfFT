@@ -416,7 +416,8 @@ namespace WeightChecking
                             }
                             else
                             {
-                                MessageBox.Show("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "OC không đúng định dạng"; });
                                 //ghi lệnh reject do ko quet đc tem
                                 _metalScannerStatus = 1;
                                 //GlobalVariables.MyEvent.MetalPusher = 1;
@@ -481,7 +482,8 @@ namespace WeightChecking
                             }
                             else
                             {
-                                MessageBox.Show("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 _metalScannerStatus = 1;
                                 //GlobalVariables.MyEvent.MetalPusher = 1;
@@ -528,13 +530,14 @@ namespace WeightChecking
                                 if (res.MetalScan == 1 && ocFirstCharMetal != "PR")
                                 {
                                     Debug.WriteLine($"ProductNumber: {res.ProductNumber} có kiểm tra kim loại.");
-
+                                    this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng kiểm kim loại."; });
                                     _metalScannerStatus = 0;
                                     //GlobalVariables.MyEvent.MetalPusher = 0;
                                 }
                                 else if (res.MetalScan == 0)
                                 {
                                     Debug.WriteLine($"ProductNumber: {res.ProductNumber} không kiểm tra kim loại.");
+                                    this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng không kiểm kim loại."; });
                                     // gui data xuong PLC
                                     _metalScannerStatus = 2;
                                     //GlobalVariables.MyEvent.MetalPusher = 2;
@@ -549,6 +552,7 @@ namespace WeightChecking
 
                                 Debug.WriteLine($"Product number {_scanDataMetal.ProductNumber} không có trong hệ thống. Hãy báo quản lý để lấy lại dữ liệu mới nhất từ Winline về."
                                     , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "ProductItem chưa có trên hệ thống."; });
 
                                 ResetControl();
 
@@ -603,7 +607,8 @@ namespace WeightChecking
                             }
                             else
                             {
-                                MessageBox.Show("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 GlobalVariables.MyEvent.WeightPusher = 1;
                                 return;
@@ -667,7 +672,8 @@ namespace WeightChecking
                             }
                             else
                             {
-                                MessageBox.Show("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 GlobalVariables.MyEvent.WeightPusher = 1;
                                 return;
@@ -700,12 +706,12 @@ namespace WeightChecking
 
                         #region truy vấn data và xử lý
                         //lấy thông tin khối lượng cân sau khi cân đã báo stable
-                        Debug.WriteLine($"da vao can,dang doi stable {_stableScale}");
+                        //Debug.WriteLine($"da vao can,dang doi stable {_stableScale}");
                         while (_stableScale == 0)
                         {
                             Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
                         }
-                        Debug.WriteLine($"da can xong. stable {_stableScale}");
+                        //Debug.WriteLine($"da can xong. stable {_stableScale}");
 
                         _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
                         //truy vấn thông tin 
@@ -1008,6 +1014,7 @@ namespace WeightChecking
                                             labResult.Text = "Pass";
                                             labResult.BackColor = Color.Green;
                                             labResult.ForeColor = Color.White;
+                                            labErrInfoScale.Text = "Khối lượng OK.";
                                         });
 
                                         //kiểm tra xem data đã có trên hệ thống hay chưa
@@ -1022,7 +1029,7 @@ namespace WeightChecking
                                         {
                                             Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                                 $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
+                                            this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi."; });
                                             //ghi giá trị xuống PLC cân reject
                                             //GlobalVariables.MyEvent.WeightPusher = 1;
 
@@ -1058,6 +1065,7 @@ namespace WeightChecking
                                             labResult.Text = "Fail";
                                             labResult.BackColor = Color.Red;
                                             labResult.ForeColor = Color.White;
+                                            labErrInfoScale.Text = "Khối lượng lỗi.";
                                         });
 
                                         if (statusLogData == 0)
@@ -1066,22 +1074,22 @@ namespace WeightChecking
                                             //    , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
                                             //    , !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
                                         }
-                                        else if (statusLogData == 2)
+                                        else if (statusLogData == 1)
                                         {
-                                            Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
-                                                $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
+                                            Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng lỗi rồi, không được phép cân lại." +
+                                                 $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information); ;
+                                            this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng lỗi rồi."; });
                                             //ghi giá trị xuống PLC cân reject
                                             GlobalVariables.MyEvent.WeightPusher = 1;
 
                                             //ResetControl();
                                             goto returnLoop;
                                         }
-                                        else
+                                        else// if (statusLogData == 2)
                                         {
-                                            Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng lỗi rồi, không được phép cân lại." +
-                                                 $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information); ;
-
+                                            Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
+                                                $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                            this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng OK rồi."; });
                                             //ghi giá trị xuống PLC cân reject
                                             GlobalVariables.MyEvent.WeightPusher = 1;
 
@@ -1234,6 +1242,7 @@ namespace WeightChecking
                             else
                             {
                                 Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 GlobalVariables.MyEvent.PrintPusher = 1;
                                 return;
@@ -1256,6 +1265,7 @@ namespace WeightChecking
                             else
                             {
                                 Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 GlobalVariables.MyEvent.PrintPusher = 1;
                                 return;
@@ -1297,8 +1307,13 @@ namespace WeightChecking
                                 if (resultCheckOc != null)
                                 {
                                     Debug.WriteLine($"ProductNumber: {res.ProductNumber} là hàng sơn.");
+                                    this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng sơn."; });
 
                                     GlobalVariables.MyEvent.PrintPusher = 1;
+                                }
+                                else
+                                {
+                                    this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng FG."; });
                                 }
                             }
                         }
@@ -1790,6 +1805,7 @@ namespace WeightChecking
             if (!_readQrStatus[0])
             {
                 Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram metal");
+                this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Không đọc được QR code, Kiểm tra lại tem."; });
                 //hết thời gian đọc QR code mà chưa đọc được
                 //gui data xuong PLC báo reject metalPusher
                 _metalScannerStatus = 1;
@@ -1820,6 +1836,7 @@ namespace WeightChecking
             if (!_readQrStatus[1])
             {
                 Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
+                this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem."; });
                 //hết thời gian đọc QR code mà chưa đọc được
                 //gui data xuong PLC báo reject metalPusher
                 GlobalVariables.MyEvent.WeightPusher = 1;
