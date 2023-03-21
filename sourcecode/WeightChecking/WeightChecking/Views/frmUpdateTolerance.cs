@@ -31,6 +31,7 @@ namespace WeightChecking
         {
             var para = new DynamicParameters();
             para.Add("@ProductNumber",_info.ProductNumber);
+            para.Add("@SpecialCase", 0);
 
             using (var connection=GlobalVariables.GetDbConnection())
             {

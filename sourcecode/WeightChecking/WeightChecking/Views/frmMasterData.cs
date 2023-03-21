@@ -26,6 +26,21 @@ namespace WeightChecking
             InitializeComponent();
 
             Load += FrmMasterData_Load;
+            grv.SelectionChanged += Grv_SelectionChanged;
+        }
+
+        private void Grv_SelectionChanged(object sender, DevExpress.Data.SelectionChangedEventArgs e)
+        {
+            GridView gv = (GridView)sender;
+            try
+            {
+                _productNumber = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber").ToString();
+                _codeItemZise = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize") != null ? gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize").ToString() : string.Empty;
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         private void FrmMasterData_Load(object sender, EventArgs e)
@@ -130,7 +145,8 @@ namespace WeightChecking
 
                         if (grc.InvokeRequired)
                         {
-                            grc.Invoke(new Action(()=> {
+                            grc.Invoke(new Action(() =>
+                            {
                                 grc.DataSource = null;
                                 grc.DataSource = winlineInfo;
 
@@ -149,7 +165,8 @@ namespace WeightChecking
                     {
                         if (grc.InvokeRequired)
                         {
-                            grc.Invoke(new Action(() => {
+                            grc.Invoke(new Action(() =>
+                            {
                                 grc.DataSource = null;
                             }));
                         }
