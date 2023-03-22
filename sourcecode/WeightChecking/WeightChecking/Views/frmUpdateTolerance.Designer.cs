@@ -33,13 +33,17 @@ namespace WeightChecking
         private void InitializeComponent()
         {
             this.layoutControl1 = new DevExpress.XtraLayout.LayoutControl();
+            this.txtPlasicBag2Weight = new DevExpress.XtraEditors.TextEdit();
+            this.txtPlasicBag2Qty = new DevExpress.XtraEditors.TextEdit();
+            this.txtFoarmSheetWeight = new DevExpress.XtraEditors.TextEdit();
+            this.txtFoarmSheetQty = new DevExpress.XtraEditors.TextEdit();
             this.labSize = new DevExpress.XtraEditors.LabelControl();
             this.labCodeItemSize = new DevExpress.XtraEditors.LabelControl();
             this.txtWrapSheetWeight = new DevExpress.XtraEditors.TextEdit();
-            this.txtPlasicWeight = new DevExpress.XtraEditors.TextEdit();
+            this.txtPlasicBag1Weight = new DevExpress.XtraEditors.TextEdit();
             this.txtPartitionWeight = new DevExpress.XtraEditors.TextEdit();
             this.txtWrapSheetQty = new DevExpress.XtraEditors.TextEdit();
-            this.txtPlasicQty = new DevExpress.XtraEditors.TextEdit();
+            this.txtPlasicBag1Qty = new DevExpress.XtraEditors.TextEdit();
             this.txtPartitionQty = new DevExpress.XtraEditors.TextEdit();
             this.txtBoxWeightBx4 = new DevExpress.XtraEditors.TextEdit();
             this.txtBoxWeightBx3 = new DevExpress.XtraEditors.TextEdit();
@@ -74,20 +78,32 @@ namespace WeightChecking
             this.layoutControlItem14 = new DevExpress.XtraLayout.LayoutControlItem();
             this.layoutControlItem15 = new DevExpress.XtraLayout.LayoutControlItem();
             this.layoutControlItem17 = new DevExpress.XtraLayout.LayoutControlItem();
-            this.layoutControlItem18 = new DevExpress.XtraLayout.LayoutControlItem();
             this.layoutControlItem20 = new DevExpress.XtraLayout.LayoutControlItem();
-            this.layoutControlItem21 = new DevExpress.XtraLayout.LayoutControlItem();
             this.layoutControlItem5 = new DevExpress.XtraLayout.LayoutControlItem();
             this.layoutControlItem7 = new DevExpress.XtraLayout.LayoutControlItem();
             this.layoutControlItem22 = new DevExpress.XtraLayout.LayoutControlItem();
             this.layoutControlItem23 = new DevExpress.XtraLayout.LayoutControlItem();
+            this.layoutControlItem18 = new DevExpress.XtraLayout.LayoutControlItem();
+            this.layoutControlItem21 = new DevExpress.XtraLayout.LayoutControlItem();
+            this.layoutControlItem24 = new DevExpress.XtraLayout.LayoutControlItem();
+            this.layoutControlItem25 = new DevExpress.XtraLayout.LayoutControlItem();
+            this.layoutControlItem26 = new DevExpress.XtraLayout.LayoutControlItem();
+            this.layoutControlItem27 = new DevExpress.XtraLayout.LayoutControlItem();
+            this.ckDecorarion = new DevExpress.XtraEditors.CheckEdit();
+            this.layoutControlItem28 = new DevExpress.XtraLayout.LayoutControlItem();
+            this.ckMetalScan = new DevExpress.XtraEditors.CheckEdit();
+            this.layoutControlItem29 = new DevExpress.XtraLayout.LayoutControlItem();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControl1)).BeginInit();
             this.layoutControl1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicBag2Weight.Properties)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicBag2Qty.Properties)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtFoarmSheetWeight.Properties)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtFoarmSheetQty.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtWrapSheetWeight.Properties)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicWeight.Properties)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicBag1Weight.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtPartitionWeight.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtWrapSheetQty.Properties)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicQty.Properties)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicBag1Qty.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtPartitionQty.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtBoxWeightBx4.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtBoxWeightBx3.Properties)).BeginInit();
@@ -119,24 +135,38 @@ namespace WeightChecking
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem14)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem15)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem17)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem18)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem20)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem21)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem5)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem7)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem22)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem23)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem18)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem21)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem24)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem25)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem26)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem27)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ckDecorarion.Properties)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem28)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ckMetalScan.Properties)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem29)).BeginInit();
             this.SuspendLayout();
             // 
             // layoutControl1
             // 
+            this.layoutControl1.Controls.Add(this.ckMetalScan);
+            this.layoutControl1.Controls.Add(this.ckDecorarion);
+            this.layoutControl1.Controls.Add(this.txtPlasicBag2Weight);
+            this.layoutControl1.Controls.Add(this.txtPlasicBag2Qty);
+            this.layoutControl1.Controls.Add(this.txtFoarmSheetWeight);
+            this.layoutControl1.Controls.Add(this.txtFoarmSheetQty);
             this.layoutControl1.Controls.Add(this.labSize);
             this.layoutControl1.Controls.Add(this.labCodeItemSize);
             this.layoutControl1.Controls.Add(this.txtWrapSheetWeight);
-            this.layoutControl1.Controls.Add(this.txtPlasicWeight);
+            this.layoutControl1.Controls.Add(this.txtPlasicBag1Weight);
             this.layoutControl1.Controls.Add(this.txtPartitionWeight);
             this.layoutControl1.Controls.Add(this.txtWrapSheetQty);
-            this.layoutControl1.Controls.Add(this.txtPlasicQty);
+            this.layoutControl1.Controls.Add(this.txtPlasicBag1Qty);
             this.layoutControl1.Controls.Add(this.txtPartitionQty);
             this.layoutControl1.Controls.Add(this.txtBoxWeightBx4);
             this.layoutControl1.Controls.Add(this.txtBoxWeightBx3);
@@ -158,9 +188,49 @@ namespace WeightChecking
             this.layoutControl1.Name = "layoutControl1";
             this.layoutControl1.OptionsCustomizationForm.DesignTimeCustomizationFormPositionAndSize = new System.Drawing.Rectangle(-834, 551, 650, 400);
             this.layoutControl1.Root = this.Root;
-            this.layoutControl1.Size = new System.Drawing.Size(1457, 427);
+            this.layoutControl1.Size = new System.Drawing.Size(1457, 537);
             this.layoutControl1.TabIndex = 0;
             this.layoutControl1.Text = "layoutControl1";
+            // 
+            // txtPlasicBag2Weight
+            // 
+            this.txtPlasicBag2Weight.Location = new System.Drawing.Point(1217, 269);
+            this.txtPlasicBag2Weight.Name = "txtPlasicBag2Weight";
+            this.txtPlasicBag2Weight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.txtPlasicBag2Weight.Properties.Appearance.Options.UseFont = true;
+            this.txtPlasicBag2Weight.Size = new System.Drawing.Size(228, 30);
+            this.txtPlasicBag2Weight.StyleController = this.layoutControl1;
+            this.txtPlasicBag2Weight.TabIndex = 31;
+            // 
+            // txtPlasicBag2Qty
+            // 
+            this.txtPlasicBag2Qty.Location = new System.Drawing.Point(1217, 226);
+            this.txtPlasicBag2Qty.Name = "txtPlasicBag2Qty";
+            this.txtPlasicBag2Qty.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.txtPlasicBag2Qty.Properties.Appearance.Options.UseFont = true;
+            this.txtPlasicBag2Qty.Size = new System.Drawing.Size(228, 30);
+            this.txtPlasicBag2Qty.StyleController = this.layoutControl1;
+            this.txtPlasicBag2Qty.TabIndex = 30;
+            // 
+            // txtFoarmSheetWeight
+            // 
+            this.txtFoarmSheetWeight.Location = new System.Drawing.Point(968, 369);
+            this.txtFoarmSheetWeight.Name = "txtFoarmSheetWeight";
+            this.txtFoarmSheetWeight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.txtFoarmSheetWeight.Properties.Appearance.Options.UseFont = true;
+            this.txtFoarmSheetWeight.Size = new System.Drawing.Size(477, 30);
+            this.txtFoarmSheetWeight.StyleController = this.layoutControl1;
+            this.txtFoarmSheetWeight.TabIndex = 29;
+            // 
+            // txtFoarmSheetQty
+            // 
+            this.txtFoarmSheetQty.Location = new System.Drawing.Point(968, 335);
+            this.txtFoarmSheetQty.Name = "txtFoarmSheetQty";
+            this.txtFoarmSheetQty.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.txtFoarmSheetQty.Properties.Appearance.Options.UseFont = true;
+            this.txtFoarmSheetQty.Size = new System.Drawing.Size(477, 30);
+            this.txtFoarmSheetQty.StyleController = this.layoutControl1;
+            this.txtFoarmSheetQty.TabIndex = 28;
             // 
             // labSize
             // 
@@ -188,27 +258,27 @@ namespace WeightChecking
             // 
             // txtWrapSheetWeight
             // 
-            this.txtWrapSheetWeight.Location = new System.Drawing.Point(1235, 260);
+            this.txtWrapSheetWeight.Location = new System.Drawing.Point(250, 369);
             this.txtWrapSheetWeight.Name = "txtWrapSheetWeight";
             this.txtWrapSheetWeight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
             this.txtWrapSheetWeight.Properties.Appearance.Options.UseFont = true;
-            this.txtWrapSheetWeight.Size = new System.Drawing.Size(210, 30);
+            this.txtWrapSheetWeight.Size = new System.Drawing.Size(476, 30);
             this.txtWrapSheetWeight.StyleController = this.layoutControl1;
             this.txtWrapSheetWeight.TabIndex = 25;
             // 
-            // txtPlasicWeight
+            // txtPlasicBag1Weight
             // 
-            this.txtPlasicWeight.Location = new System.Drawing.Point(748, 260);
-            this.txtPlasicWeight.Name = "txtPlasicWeight";
-            this.txtPlasicWeight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
-            this.txtPlasicWeight.Properties.Appearance.Options.UseFont = true;
-            this.txtPlasicWeight.Size = new System.Drawing.Size(245, 30);
-            this.txtPlasicWeight.StyleController = this.layoutControl1;
-            this.txtPlasicWeight.TabIndex = 24;
+            this.txtPlasicBag1Weight.Location = new System.Drawing.Point(748, 269);
+            this.txtPlasicBag1Weight.Name = "txtPlasicBag1Weight";
+            this.txtPlasicBag1Weight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.txtPlasicBag1Weight.Properties.Appearance.Options.UseFont = true;
+            this.txtPlasicBag1Weight.Size = new System.Drawing.Size(227, 30);
+            this.txtPlasicBag1Weight.StyleController = this.layoutControl1;
+            this.txtPlasicBag1Weight.TabIndex = 24;
             // 
             // txtPartitionWeight
             // 
-            this.txtPartitionWeight.Location = new System.Drawing.Point(250, 260);
+            this.txtPartitionWeight.Location = new System.Drawing.Point(250, 269);
             this.txtPartitionWeight.Name = "txtPartitionWeight";
             this.txtPartitionWeight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
             this.txtPartitionWeight.Properties.Appearance.Options.UseFont = true;
@@ -218,23 +288,23 @@ namespace WeightChecking
             // 
             // txtWrapSheetQty
             // 
-            this.txtWrapSheetQty.Location = new System.Drawing.Point(1235, 226);
+            this.txtWrapSheetQty.Location = new System.Drawing.Point(250, 335);
             this.txtWrapSheetQty.Name = "txtWrapSheetQty";
             this.txtWrapSheetQty.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
             this.txtWrapSheetQty.Properties.Appearance.Options.UseFont = true;
-            this.txtWrapSheetQty.Size = new System.Drawing.Size(210, 30);
+            this.txtWrapSheetQty.Size = new System.Drawing.Size(476, 30);
             this.txtWrapSheetQty.StyleController = this.layoutControl1;
             this.txtWrapSheetQty.TabIndex = 22;
             // 
-            // txtPlasicQty
+            // txtPlasicBag1Qty
             // 
-            this.txtPlasicQty.Location = new System.Drawing.Point(748, 226);
-            this.txtPlasicQty.Name = "txtPlasicQty";
-            this.txtPlasicQty.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
-            this.txtPlasicQty.Properties.Appearance.Options.UseFont = true;
-            this.txtPlasicQty.Size = new System.Drawing.Size(245, 30);
-            this.txtPlasicQty.StyleController = this.layoutControl1;
-            this.txtPlasicQty.TabIndex = 21;
+            this.txtPlasicBag1Qty.Location = new System.Drawing.Point(748, 226);
+            this.txtPlasicBag1Qty.Name = "txtPlasicBag1Qty";
+            this.txtPlasicBag1Qty.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.txtPlasicBag1Qty.Properties.Appearance.Options.UseFont = true;
+            this.txtPlasicBag1Qty.Size = new System.Drawing.Size(227, 30);
+            this.txtPlasicBag1Qty.StyleController = this.layoutControl1;
+            this.txtPlasicBag1Qty.TabIndex = 21;
             // 
             // txtPartitionQty
             // 
@@ -352,7 +422,7 @@ namespace WeightChecking
             this.btnUpdate.Appearance.Font = new System.Drawing.Font("Tahoma", 25F);
             this.btnUpdate.Appearance.Options.UseBackColor = true;
             this.btnUpdate.Appearance.Options.UseFont = true;
-            this.btnUpdate.Location = new System.Drawing.Point(12, 328);
+            this.btnUpdate.Location = new System.Drawing.Point(12, 469);
             this.btnUpdate.Name = "btnUpdate";
             this.btnUpdate.Size = new System.Drawing.Size(1433, 45);
             this.btnUpdate.StyleController = this.layoutControl1;
@@ -362,7 +432,7 @@ namespace WeightChecking
             // 
             // txtToleranceAfterPrint
             // 
-            this.txtToleranceAfterPrint.Location = new System.Drawing.Point(967, 294);
+            this.txtToleranceAfterPrint.Location = new System.Drawing.Point(967, 403);
             this.txtToleranceAfterPrint.Name = "txtToleranceAfterPrint";
             this.txtToleranceAfterPrint.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
             this.txtToleranceAfterPrint.Properties.Appearance.Options.UseFont = true;
@@ -372,7 +442,7 @@ namespace WeightChecking
             // 
             // txtTolerance
             // 
-            this.txtTolerance.Location = new System.Drawing.Point(250, 294);
+            this.txtTolerance.Location = new System.Drawing.Point(250, 403);
             this.txtTolerance.Name = "txtTolerance";
             this.txtTolerance.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
             this.txtTolerance.Properties.Appearance.Options.UseFont = true;
@@ -426,15 +496,21 @@ namespace WeightChecking
             this.layoutControlItem14,
             this.layoutControlItem15,
             this.layoutControlItem17,
-            this.layoutControlItem18,
             this.layoutControlItem20,
-            this.layoutControlItem21,
             this.layoutControlItem5,
             this.layoutControlItem7,
             this.layoutControlItem22,
-            this.layoutControlItem23});
+            this.layoutControlItem23,
+            this.layoutControlItem18,
+            this.layoutControlItem21,
+            this.layoutControlItem24,
+            this.layoutControlItem25,
+            this.layoutControlItem26,
+            this.layoutControlItem27,
+            this.layoutControlItem28,
+            this.layoutControlItem29});
             this.Root.Name = "Root";
-            this.Root.Size = new System.Drawing.Size(1457, 427);
+            this.Root.Size = new System.Drawing.Size(1457, 537);
             this.Root.TextVisible = false;
             // 
             // layoutControlItem1
@@ -451,9 +527,9 @@ namespace WeightChecking
             // emptySpaceItem1
             // 
             this.emptySpaceItem1.AllowHotTrack = false;
-            this.emptySpaceItem1.Location = new System.Drawing.Point(0, 365);
+            this.emptySpaceItem1.Location = new System.Drawing.Point(0, 506);
             this.emptySpaceItem1.Name = "emptySpaceItem1";
-            this.emptySpaceItem1.Size = new System.Drawing.Size(1437, 42);
+            this.emptySpaceItem1.Size = new System.Drawing.Size(1437, 11);
             this.emptySpaceItem1.TextSize = new System.Drawing.Size(0, 0);
             // 
             // layoutControlItem3
@@ -461,7 +537,7 @@ namespace WeightChecking
             this.layoutControlItem3.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
             this.layoutControlItem3.AppearanceItemCaption.Options.UseFont = true;
             this.layoutControlItem3.Control = this.txtTolerance;
-            this.layoutControlItem3.Location = new System.Drawing.Point(0, 282);
+            this.layoutControlItem3.Location = new System.Drawing.Point(0, 391);
             this.layoutControlItem3.Name = "layoutControlItem3";
             this.layoutControlItem3.Size = new System.Drawing.Size(717, 34);
             this.layoutControlItem3.Text = "Tolerance (%)";
@@ -470,7 +546,7 @@ namespace WeightChecking
             // layoutControlItem6
             // 
             this.layoutControlItem6.Control = this.btnUpdate;
-            this.layoutControlItem6.Location = new System.Drawing.Point(0, 316);
+            this.layoutControlItem6.Location = new System.Drawing.Point(0, 457);
             this.layoutControlItem6.Name = "layoutControlItem6";
             this.layoutControlItem6.Size = new System.Drawing.Size(1437, 49);
             this.layoutControlItem6.TextSize = new System.Drawing.Size(0, 0);
@@ -534,8 +610,10 @@ namespace WeightChecking
             this.layoutControlItem16.AppearanceItemCaption.Options.UseFont = true;
             this.layoutControlItem16.Control = this.txtPartitionQty;
             this.layoutControlItem16.Location = new System.Drawing.Point(0, 214);
+            this.layoutControlItem16.MinSize = new System.Drawing.Size(292, 34);
             this.layoutControlItem16.Name = "layoutControlItem16";
-            this.layoutControlItem16.Size = new System.Drawing.Size(498, 34);
+            this.layoutControlItem16.Size = new System.Drawing.Size(498, 43);
+            this.layoutControlItem16.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
             this.layoutControlItem16.Text = "Partition Qty (prs)";
             this.layoutControlItem16.TextSize = new System.Drawing.Size(226, 24);
             // 
@@ -544,9 +622,11 @@ namespace WeightChecking
             this.layoutControlItem19.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
             this.layoutControlItem19.AppearanceItemCaption.Options.UseFont = true;
             this.layoutControlItem19.Control = this.txtPartitionWeight;
-            this.layoutControlItem19.Location = new System.Drawing.Point(0, 248);
+            this.layoutControlItem19.Location = new System.Drawing.Point(0, 257);
+            this.layoutControlItem19.MinSize = new System.Drawing.Size(292, 34);
             this.layoutControlItem19.Name = "layoutControlItem19";
-            this.layoutControlItem19.Size = new System.Drawing.Size(498, 34);
+            this.layoutControlItem19.Size = new System.Drawing.Size(498, 66);
+            this.layoutControlItem19.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
             this.layoutControlItem19.Text = "Partition Weight (g)";
             this.layoutControlItem19.TextSize = new System.Drawing.Size(226, 24);
             // 
@@ -628,52 +708,34 @@ namespace WeightChecking
             // 
             this.layoutControlItem17.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
             this.layoutControlItem17.AppearanceItemCaption.Options.UseFont = true;
-            this.layoutControlItem17.Control = this.txtPlasicQty;
+            this.layoutControlItem17.Control = this.txtPlasicBag1Qty;
             this.layoutControlItem17.Location = new System.Drawing.Point(498, 214);
+            this.layoutControlItem17.MinSize = new System.Drawing.Size(292, 34);
             this.layoutControlItem17.Name = "layoutControlItem17";
-            this.layoutControlItem17.Size = new System.Drawing.Size(487, 34);
-            this.layoutControlItem17.Text = "Plasic Qty (prs)";
+            this.layoutControlItem17.Size = new System.Drawing.Size(469, 43);
+            this.layoutControlItem17.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
+            this.layoutControlItem17.Text = "Plastic 1 Qty (prs)";
             this.layoutControlItem17.TextSize = new System.Drawing.Size(226, 24);
-            // 
-            // layoutControlItem18
-            // 
-            this.layoutControlItem18.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
-            this.layoutControlItem18.AppearanceItemCaption.Options.UseFont = true;
-            this.layoutControlItem18.Control = this.txtWrapSheetQty;
-            this.layoutControlItem18.Location = new System.Drawing.Point(985, 214);
-            this.layoutControlItem18.Name = "layoutControlItem18";
-            this.layoutControlItem18.Size = new System.Drawing.Size(452, 34);
-            this.layoutControlItem18.Text = "Wrap Sheet Qty (prs)";
-            this.layoutControlItem18.TextSize = new System.Drawing.Size(226, 24);
             // 
             // layoutControlItem20
             // 
             this.layoutControlItem20.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
             this.layoutControlItem20.AppearanceItemCaption.Options.UseFont = true;
-            this.layoutControlItem20.Control = this.txtPlasicWeight;
-            this.layoutControlItem20.Location = new System.Drawing.Point(498, 248);
+            this.layoutControlItem20.Control = this.txtPlasicBag1Weight;
+            this.layoutControlItem20.Location = new System.Drawing.Point(498, 257);
+            this.layoutControlItem20.MinSize = new System.Drawing.Size(292, 34);
             this.layoutControlItem20.Name = "layoutControlItem20";
-            this.layoutControlItem20.Size = new System.Drawing.Size(487, 34);
-            this.layoutControlItem20.Text = "Plasic Weight (g)";
+            this.layoutControlItem20.Size = new System.Drawing.Size(469, 66);
+            this.layoutControlItem20.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
+            this.layoutControlItem20.Text = "Platsic 1 Weight (g)";
             this.layoutControlItem20.TextSize = new System.Drawing.Size(226, 24);
-            // 
-            // layoutControlItem21
-            // 
-            this.layoutControlItem21.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
-            this.layoutControlItem21.AppearanceItemCaption.Options.UseFont = true;
-            this.layoutControlItem21.Control = this.txtWrapSheetWeight;
-            this.layoutControlItem21.Location = new System.Drawing.Point(985, 248);
-            this.layoutControlItem21.Name = "layoutControlItem21";
-            this.layoutControlItem21.Size = new System.Drawing.Size(452, 34);
-            this.layoutControlItem21.Text = "Wrap Sheet Weight (g)";
-            this.layoutControlItem21.TextSize = new System.Drawing.Size(226, 24);
             // 
             // layoutControlItem5
             // 
             this.layoutControlItem5.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
             this.layoutControlItem5.AppearanceItemCaption.Options.UseFont = true;
             this.layoutControlItem5.Control = this.txtToleranceAfterPrint;
-            this.layoutControlItem5.Location = new System.Drawing.Point(717, 282);
+            this.layoutControlItem5.Location = new System.Drawing.Point(717, 391);
             this.layoutControlItem5.Name = "layoutControlItem5";
             this.layoutControlItem5.Size = new System.Drawing.Size(720, 34);
             this.layoutControlItem5.Text = "Tolerance After Print (%)";
@@ -687,7 +749,7 @@ namespace WeightChecking
             this.layoutControlItem7.Location = new System.Drawing.Point(703, 112);
             this.layoutControlItem7.Name = "layoutControlItem7";
             this.layoutControlItem7.Size = new System.Drawing.Size(734, 34);
-            this.layoutControlItem7.Text = "Plasic Box Weight (g)";
+            this.layoutControlItem7.Text = "Plastic Box Weight (g)";
             this.layoutControlItem7.TextSize = new System.Drawing.Size(226, 24);
             // 
             // layoutControlItem22
@@ -712,11 +774,125 @@ namespace WeightChecking
             this.layoutControlItem23.Text = "Size";
             this.layoutControlItem23.TextSize = new System.Drawing.Size(226, 24);
             // 
+            // layoutControlItem18
+            // 
+            this.layoutControlItem18.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.layoutControlItem18.AppearanceItemCaption.Options.UseFont = true;
+            this.layoutControlItem18.Control = this.txtWrapSheetQty;
+            this.layoutControlItem18.Location = new System.Drawing.Point(0, 323);
+            this.layoutControlItem18.Name = "layoutControlItem18";
+            this.layoutControlItem18.Size = new System.Drawing.Size(718, 34);
+            this.layoutControlItem18.Text = "Wrap Sheet Qty (prs)";
+            this.layoutControlItem18.TextSize = new System.Drawing.Size(226, 24);
+            // 
+            // layoutControlItem21
+            // 
+            this.layoutControlItem21.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.layoutControlItem21.AppearanceItemCaption.Options.UseFont = true;
+            this.layoutControlItem21.Control = this.txtWrapSheetWeight;
+            this.layoutControlItem21.Location = new System.Drawing.Point(0, 357);
+            this.layoutControlItem21.Name = "layoutControlItem21";
+            this.layoutControlItem21.Size = new System.Drawing.Size(718, 34);
+            this.layoutControlItem21.Text = "Wrap Sheet Weight (g)";
+            this.layoutControlItem21.TextSize = new System.Drawing.Size(226, 24);
+            // 
+            // layoutControlItem24
+            // 
+            this.layoutControlItem24.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.layoutControlItem24.AppearanceItemCaption.Options.UseFont = true;
+            this.layoutControlItem24.Control = this.txtFoarmSheetQty;
+            this.layoutControlItem24.Location = new System.Drawing.Point(718, 323);
+            this.layoutControlItem24.MinSize = new System.Drawing.Size(292, 24);
+            this.layoutControlItem24.Name = "layoutControlItem24";
+            this.layoutControlItem24.Size = new System.Drawing.Size(719, 34);
+            this.layoutControlItem24.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
+            this.layoutControlItem24.Text = "Foarm Qty (prs)";
+            this.layoutControlItem24.TextSize = new System.Drawing.Size(226, 24);
+            // 
+            // layoutControlItem25
+            // 
+            this.layoutControlItem25.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.layoutControlItem25.AppearanceItemCaption.Options.UseFont = true;
+            this.layoutControlItem25.Control = this.txtFoarmSheetWeight;
+            this.layoutControlItem25.Location = new System.Drawing.Point(718, 357);
+            this.layoutControlItem25.MinSize = new System.Drawing.Size(292, 24);
+            this.layoutControlItem25.Name = "layoutControlItem25";
+            this.layoutControlItem25.Size = new System.Drawing.Size(719, 34);
+            this.layoutControlItem25.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
+            this.layoutControlItem25.Text = "Foarm Weight (g)";
+            this.layoutControlItem25.TextSize = new System.Drawing.Size(226, 24);
+            // 
+            // layoutControlItem26
+            // 
+            this.layoutControlItem26.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.layoutControlItem26.AppearanceItemCaption.Options.UseFont = true;
+            this.layoutControlItem26.Control = this.txtPlasicBag2Qty;
+            this.layoutControlItem26.Location = new System.Drawing.Point(967, 214);
+            this.layoutControlItem26.MinSize = new System.Drawing.Size(292, 24);
+            this.layoutControlItem26.Name = "layoutControlItem26";
+            this.layoutControlItem26.Size = new System.Drawing.Size(470, 43);
+            this.layoutControlItem26.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
+            this.layoutControlItem26.Text = "Plastic 2 Qty (prs)";
+            this.layoutControlItem26.TextSize = new System.Drawing.Size(226, 24);
+            // 
+            // layoutControlItem27
+            // 
+            this.layoutControlItem27.AppearanceItemCaption.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.layoutControlItem27.AppearanceItemCaption.Options.UseFont = true;
+            this.layoutControlItem27.Control = this.txtPlasicBag2Weight;
+            this.layoutControlItem27.Location = new System.Drawing.Point(967, 257);
+            this.layoutControlItem27.MinSize = new System.Drawing.Size(292, 24);
+            this.layoutControlItem27.Name = "layoutControlItem27";
+            this.layoutControlItem27.Size = new System.Drawing.Size(470, 66);
+            this.layoutControlItem27.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
+            this.layoutControlItem27.Text = "Plastic 2 Weight (g)";
+            this.layoutControlItem27.TextSize = new System.Drawing.Size(226, 24);
+            // 
+            // ckDecorarion
+            // 
+            this.ckDecorarion.Location = new System.Drawing.Point(12, 437);
+            this.ckDecorarion.Name = "ckDecorarion";
+            this.ckDecorarion.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.ckDecorarion.Properties.Appearance.Options.UseFont = true;
+            this.ckDecorarion.Properties.Caption = "Decoration (Printing)";
+            this.ckDecorarion.Size = new System.Drawing.Size(714, 28);
+            this.ckDecorarion.StyleController = this.layoutControl1;
+            this.ckDecorarion.TabIndex = 32;
+            // 
+            // layoutControlItem28
+            // 
+            this.layoutControlItem28.Control = this.ckDecorarion;
+            this.layoutControlItem28.Location = new System.Drawing.Point(0, 425);
+            this.layoutControlItem28.Name = "layoutControlItem28";
+            this.layoutControlItem28.Size = new System.Drawing.Size(718, 32);
+            this.layoutControlItem28.TextSize = new System.Drawing.Size(0, 0);
+            this.layoutControlItem28.TextVisible = false;
+            // 
+            // ckMetalScan
+            // 
+            this.ckMetalScan.Location = new System.Drawing.Point(730, 437);
+            this.ckMetalScan.Name = "ckMetalScan";
+            this.ckMetalScan.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.ckMetalScan.Properties.Appearance.Options.UseFont = true;
+            this.ckMetalScan.Properties.Caption = "Metal Scan";
+            this.ckMetalScan.Size = new System.Drawing.Size(715, 28);
+            this.ckMetalScan.StyleController = this.layoutControl1;
+            this.ckMetalScan.TabIndex = 33;
+            // 
+            // layoutControlItem29
+            // 
+            this.layoutControlItem29.Control = this.ckMetalScan;
+            this.layoutControlItem29.Location = new System.Drawing.Point(718, 425);
+            this.layoutControlItem29.Name = "layoutControlItem29";
+            this.layoutControlItem29.Size = new System.Drawing.Size(719, 32);
+            this.layoutControlItem29.TextSize = new System.Drawing.Size(0, 0);
+            this.layoutControlItem29.TextVisible = false;
+            // 
             // frmUpdateTolerance
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1457, 427);
+            this.ClientSize = new System.Drawing.Size(1457, 537);
             this.Controls.Add(this.layoutControl1);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -724,11 +900,15 @@ namespace WeightChecking
             this.Text = "Update information";
             ((System.ComponentModel.ISupportInitialize)(this.layoutControl1)).EndInit();
             this.layoutControl1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicBag2Weight.Properties)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicBag2Qty.Properties)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtFoarmSheetWeight.Properties)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtFoarmSheetQty.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtWrapSheetWeight.Properties)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicWeight.Properties)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicBag1Weight.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtPartitionWeight.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtWrapSheetQty.Properties)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicQty.Properties)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txtPlasicBag1Qty.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtPartitionQty.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtBoxWeightBx4.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtBoxWeightBx3.Properties)).EndInit();
@@ -760,13 +940,21 @@ namespace WeightChecking
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem14)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem15)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem17)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem18)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem20)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem21)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem5)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem7)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem22)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem23)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem18)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem21)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem24)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem25)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem26)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem27)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ckDecorarion.Properties)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem28)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ckMetalScan.Properties)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlItem29)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -807,10 +995,10 @@ namespace WeightChecking
         private LayoutControlItem layoutControlItem14;
         private LayoutControlItem layoutControlItem15;
         private TextEdit txtWrapSheetWeight;
-        private TextEdit txtPlasicWeight;
+        private TextEdit txtPlasicBag1Weight;
         private TextEdit txtPartitionWeight;
         private TextEdit txtWrapSheetQty;
-        private TextEdit txtPlasicQty;
+        private TextEdit txtPlasicBag1Qty;
         private TextEdit txtPartitionQty;
         private LayoutControlItem layoutControlItem16;
         private LayoutControlItem layoutControlItem17;
@@ -822,5 +1010,17 @@ namespace WeightChecking
         private LayoutControlItem layoutControlItem22;
         private LabelControl labSize;
         private LayoutControlItem layoutControlItem23;
+        private TextEdit txtPlasicBag2Weight;
+        private TextEdit txtPlasicBag2Qty;
+        private TextEdit txtFoarmSheetWeight;
+        private TextEdit txtFoarmSheetQty;
+        private LayoutControlItem layoutControlItem24;
+        private LayoutControlItem layoutControlItem25;
+        private LayoutControlItem layoutControlItem26;
+        private LayoutControlItem layoutControlItem27;
+        private CheckEdit ckMetalScan;
+        private CheckEdit ckDecorarion;
+        private LayoutControlItem layoutControlItem28;
+        private LayoutControlItem layoutControlItem29;
     }
 }

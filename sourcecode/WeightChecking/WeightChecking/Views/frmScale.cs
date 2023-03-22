@@ -226,7 +226,8 @@ namespace WeightChecking
             Thread.Sleep(10000);
             SendDynamicString(" ", " ", " ");
 
-            //BarcodeHandle(2, "A100455,6814322206-NB79-E064,200,2,P,2/5,1900056,1/2|2,18226.2023,,,");
+            //_scaleValueStable = 2784;
+            //BarcodeHandle(1, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
         }
 
         private void frmScale_FormClosing(object sender, FormClosingEventArgs e)
@@ -519,8 +520,29 @@ namespace WeightChecking
 
                         using (var connection = GlobalVariables.GetDbConnection())
                         {
+                            #region Kiểm tra xem thùng này đã được log vào scanData chưa
+                            //para.Add("QRLabel", _scanData.BarcodeString);
+                            //var checkInfo = connection.Query<tblScanDataCheckModel>("sp_tblScanDataCheck", para, commandType: CommandType.StoredProcedure).ToList();
                             var para = new DynamicParameters();
+                            para.Add("_QrCode", _scanDataMetal.BarcodeString);
+                            var checkInfo = connection.Query<tblScanDataModel>("sp_tblScanDataGetByQrCode", para, commandType: CommandType.StoredProcedure).ToList();
+                            foreach (var item in checkInfo)
+                            {
+                                if (
+                                    (item.Pass == 1 && (item.Status == 2 || GlobalVariables.Station == StationEnum.IDC_1))
+                                    //|| (item.Pass == 0 && item.ActualDeviationPairs == 0 && item.ApprovedBy != Guid.Empty)
+                                    || (item.Pass == 0 && item.Status == 2 && item.ActualDeviationPairs == 0)
+                                    )
+                                {
+                                    Debug.WriteLine($"ProductNumber: {item.ProductNumber} đã kiểm tra OK, không được.");
+                                    this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Thùng này đã check OK."; });
+                                    _metalScannerStatus = 1;
 
+                                    return;
+                                }
+                            }
+                            #endregion
+                            
                             para = new DynamicParameters();
                             para.Add("@ProductNumber", _scanDataMetal.ProductNumber);
                             para.Add("@SpecialCase", specialCaseMetal);
@@ -529,20 +551,44 @@ namespace WeightChecking
 
                             if (res != null)
                             {
-                                if (res.MetalScan == 1 && ocFirstCharMetal != "PR")
+                                if (res.AveWeight1Prs > 0)
                                 {
-                                    Debug.WriteLine($"ProductNumber: {res.ProductNumber} có kiểm tra kim loại.");
-                                    this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng kiểm kim loại."; });
-                                    _metalScannerStatus = 0;
-                                    //GlobalVariables.MyEvent.MetalPusher = 0;
+                                    if (res.MetalScan == 1 && ocFirstCharMetal != "PR")
+                                    {
+                                        Debug.WriteLine($"ProductNumber: {res.ProductNumber} có kiểm tra kim loại.");
+                                        this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng kiểm kim loại."; });
+                                        _metalScannerStatus = 0;
+                                        //GlobalVariables.MyEvent.MetalPusher = 0;
+                                    }
+                                    else if (res.MetalScan == 0)
+                                    {
+                                        Debug.WriteLine($"ProductNumber: {res.ProductNumber} không kiểm tra kim loại.");
+                                        this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng không kiểm kim loại."; });
+                                        // gui data xuong PLC
+                                        _metalScannerStatus = 2;
+                                        //GlobalVariables.MyEvent.MetalPusher = 2;
+                                    }
                                 }
-                                else if (res.MetalScan == 0)
+                                else
                                 {
-                                    Debug.WriteLine($"ProductNumber: {res.ProductNumber} không kiểm tra kim loại.");
-                                    this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng không kiểm kim loại."; });
-                                    // gui data xuong PLC
-                                    _metalScannerStatus = 2;
-                                    //GlobalVariables.MyEvent.MetalPusher = 2;
+                                    Debug.WriteLine($"Item '{_scanDataWeight.ProductNumber}' không có khối lượng/1 đôi. Xin hãy kiểm tra lại thông tin."
+                                        , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                                    this.Invoke((MethodInvoker)delegate
+                                    {
+                                        labErrInfoMetal.Text = "Không có khối lượng đôi. Weight/Prs.";
+                                    });
+                                    _metalScannerStatus = 1;//bao reject cho PLC
+
+                                    para = null;
+                                    para = new DynamicParameters();
+                                    para.Add("ProductNumber", _scanDataWeight.ProductNumber);
+                                    para.Add("ProductName", _scanDataWeight.ProductName);
+                                    para.Add("OcNum", _scanDataWeight.OcNo);
+                                    para.Add("Note", "Chưa có data trong file QC.");
+                                    para.Add("QrCode", _scanDataWeight.BarcodeString);
+
+                                    connection.Execute("sp_tblItemMissingInfoInsert", para, commandType: CommandType.StoredProcedure);
                                 }
                             }
                             else
@@ -556,7 +602,7 @@ namespace WeightChecking
                                     , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "ProductItem chưa có trên hệ thống."; });
 
-                                ResetControl();
+                                _metalScannerStatus = 1;//bao reject cho PLC
 
                                 para = null;
                                 para = new DynamicParameters();
@@ -713,7 +759,7 @@ namespace WeightChecking
                         {
                             Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
                         }
-                        //Debug.WriteLine($"da can xong. stable {_stableScale}");
+                        Debug.WriteLine($"da can xong. stable {_stableScale}");
 
                         _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
                         //truy vấn thông tin 
@@ -850,6 +896,7 @@ namespace WeightChecking
 
                                             this.Invoke((MethodInvoker)delegate
                                             {
+                                                labResult.Text = "Fail";
                                                 labResult.BackColor = Color.Red;
                                                 labErrInfoScale.Text = "Quantity box error.";
                                             });
@@ -1025,11 +1072,11 @@ namespace WeightChecking
                                             labResult.Text = "Pass";
                                             labResult.BackColor = Color.Green;
                                             labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Khối lượng OK.";
+                                            labErrInfoScale.Text = "Khối lượng OK. In tem.";
                                         });
 
                                         //kiểm tra xem data đã có trên hệ thống hay chưa
-                                        if (statusLogData == 0)
+                                        if (statusLogData == 0 || statusLogData == 1)
                                         {
                                             //gui lenh in
                                             SendDynamicString((_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")
@@ -1170,6 +1217,7 @@ namespace WeightChecking
 
                                     this.Invoke((MethodInvoker)delegate
                                     {
+                                        labResult.Text = "Fail";
                                         labResult.BackColor = Color.Red;
                                         labErrInfoScale.Text = "Không có khối lượng đôi. Weight/Prs.";
                                     });
@@ -1198,6 +1246,7 @@ namespace WeightChecking
 
                                 this.Invoke((MethodInvoker)delegate
                                 {
+                                    labResult.Text = "Fail";
                                     labResult.BackColor = Color.Red;
                                     labErrInfoScale.Text = "ProductItem không có trong hệ thống.";
                                 });
@@ -1864,10 +1913,21 @@ namespace WeightChecking
             if (!_readQrStatus[1])
             {
                 Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
-                this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem."; });
+                this.Invoke((MethodInvoker)delegate
+                {
+                    labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem.";
+
+                    labResult.Text = "Fail";
+                    labResult.BackColor = Color.Red;
+                    labResult.ForeColor = Color.White;
+                });
                 //hết thời gian đọc QR code mà chưa đọc được
                 //gui data xuong PLC báo reject metalPusher
                 GlobalVariables.MyEvent.WeightPusher = 1;
+                //bật đèn đỏ
+                GlobalVariables.MyEvent.StatusLightPLC = 1;
+
+
             }
             _readQrStatus[1] = false;//xóa biến này cho lần đọc kế tiếp
         }

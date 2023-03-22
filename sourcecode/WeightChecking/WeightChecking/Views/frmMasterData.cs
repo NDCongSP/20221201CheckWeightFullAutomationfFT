@@ -69,8 +69,8 @@ namespace WeightChecking
             try
             {
                 frmUpdateTolerance frmUpdate = new frmUpdateTolerance();
-                frmUpdate._info.ProductNumber = _productNumber;
-                frmUpdate._info.CodeItemSize = _codeItemZise;
+                frmUpdate.ItemInfo.ProductNumber = _productNumber;
+                frmUpdate.ItemInfo.CodeItemSize = _codeItemZise;
 
                 frmUpdate.ShowDialog();
             }

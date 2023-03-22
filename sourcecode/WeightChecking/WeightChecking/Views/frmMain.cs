@@ -1047,84 +1047,119 @@ namespace WeightChecking
                     #region Log DB
                     using (var con = GlobalVariables.GetDbConnection())
                     {
+                        con.Execute("truncate table tblCoreDataCodeItemSize");//xóa hết data trong bảng rồi add vào lại
+
                         foreach (var item in coreData)
                         {
                             var para = new DynamicParameters();
+                            
+                            para.Add("@CodeItemSize", item.CodeItemSize);
+                            para.Add("@MainItemName", item.MainItemName);
+                            para.Add("@MetalScan", item.MetalScan);
+                            para.Add("@Color", item.Color);
+                            para.Add("@Printing", item.Printing);
+                            para.Add("@Date", item.Date);
+                            para.Add("@Size", item.Size);
+                            para.Add("@AveWeight1Prs", item.AveWeight1Prs);
+                            para.Add("@BoxQtyBx1", item.BoxQtyBx1);
+                            para.Add("@BoxQtyBx2", item.BoxQtyBx2);
+                            para.Add("@BoxQtyBx3", item.BoxQtyBx3);
+                            para.Add("@BoxQtyBx4", item.BoxQtyBx4);
+                            para.Add("@BoxWeightBx1", item.BoxWeightBx1);
+                            para.Add("@BoxWeightBx2", item.BoxWeightBx2);
+                            para.Add("@BoxWeightBx3", item.BoxWeightBx3);
+                            para.Add("@BoxWeightBx4", item.BoxWeightBx4);
+                            para.Add("@PartitionQty", item.PartitionQty);
+                            para.Add("@PlasicBag1Qty", item.PlasicBag1Qty);
+                            para.Add("@PlasicBag2Qty", item.PlasicBag2Qty);
+                            para.Add("@WrapSheetQty", item.WrapSheetQty);
+                            para.Add("@FoamSheetQty", item.FoamSheetQty);
+                            para.Add("@PartitionWeight", item.PartitionWeight);
+                            para.Add("@PlasicBag1Weight", item.PlasicBag1Weight);
+                            para.Add("@PlasicBag2Weight", item.PlasicBag2Weight);
+                            para.Add("@WrapSheetWeight", item.WrapSheetWeight);
+                            para.Add("@FoamSheetWeight", item.FoamSheetWeight);
+                            para.Add("@PlasicBoxWeight", item.PlasicBoxWeight);
+                            para.Add("@Tolerance", item.Tolerance);
+                            para.Add("@ToleranceAfterPrint", item.ToleranceAfterPrint);
+                            con.Execute("sp_tblCoreDataCodeitemSizeInsert", para, commandType: CommandType.StoredProcedure);
 
-                            var sfdsf = con.Query<tblCoreDataCodeItemSizeModel>($"select * from tblCoreDataCodeItemSize " +
-                                $"where CodeItemSize = '{item.CodeItemSize}' and Printing = {item.Printing}").FirstOrDefault();
-                            if (sfdsf == null)
-                            {
-                                para.Add("@CodeItemSize", item.CodeItemSize);
-                                para.Add("@MainItemName", item.MainItemName);
-                                para.Add("@MetalScan", item.MetalScan);
-                                para.Add("@Color", item.Color);
-                                para.Add("@Printing", item.Printing);
-                                para.Add("@Date", item.Date);
-                                para.Add("@Size", item.Size);
-                                para.Add("@AveWeight1Prs", item.AveWeight1Prs);
-                                para.Add("@BoxQtyBx1", item.BoxQtyBx1);
-                                para.Add("@BoxQtyBx2", item.BoxQtyBx2);
-                                para.Add("@BoxQtyBx3", item.BoxQtyBx3);
-                                para.Add("@BoxQtyBx4", item.BoxQtyBx4);
-                                para.Add("@BoxWeightBx1", item.BoxWeightBx1);
-                                para.Add("@BoxWeightBx2", item.BoxWeightBx2);
-                                para.Add("@BoxWeightBx3", item.BoxWeightBx3);
-                                para.Add("@BoxWeightBx4", item.BoxWeightBx4);
-                                para.Add("@PartitionQty", item.PartitionQty);
-                                para.Add("@PlasicBag1Qty", item.PlasicBag1Qty);
-                                para.Add("@PlasicBag2Qty", item.PlasicBag2Qty);
-                                para.Add("@WrapSheetQty", item.WrapSheetQty);
-                                para.Add("@FoamSheetQty", item.FoamSheetQty);
-                                para.Add("@PartitionWeight", item.PartitionWeight);
-                                para.Add("@PlasicBag1Weight", item.PlasicBag1Weight);
-                                para.Add("@PlasicBag2Weight", item.PlasicBag2Weight);
-                                para.Add("@WrapSheetWeight", item.WrapSheetWeight);
-                                para.Add("@FoamSheetWeight", item.FoamSheetWeight);
-                                para.Add("@PlasicBoxWeight", item.PlasicBoxWeight);
-                                para.Add("@Tolerance", item.Tolerance);
-                                para.Add("@ToleranceAfterPrint", item.ToleranceAfterPrint);
-                                con.Execute("sp_tblCoreDataCodeitemSizeInsert", para, commandType: CommandType.StoredProcedure);
-                            }
-                            else
-                            {
-                                para.Add("@CodeItemSize", item.CodeItemSize);
-                                para.Add("@MainItemName", item.MainItemName);
-                                para.Add("@MetalScan", item.MetalScan);
-                                para.Add("@Color", item.Color);
-                                para.Add("@Printing", item.Printing);
-                                //para.Add("@Date", item.Date);
-                                para.Add("@Size", item.Size);
-                                para.Add("@AveWeight1Prs", item.AveWeight1Prs);
-                                para.Add("@BoxQtyBx1", item.BoxQtyBx1);
-                                para.Add("@BoxQtyBx2", item.BoxQtyBx2);
-                                para.Add("@BoxQtyBx3", item.BoxQtyBx3);
-                                para.Add("@BoxQtyBx4", item.BoxQtyBx4);
-                                para.Add("@BoxWeightBx1", item.BoxWeightBx1);
-                                para.Add("@BoxWeightBx2", item.BoxWeightBx2);
-                                para.Add("@BoxWeightBx3", item.BoxWeightBx3);
-                                para.Add("@BoxWeightBx4", item.BoxWeightBx4);
-                                para.Add("@PartitionQty", item.PartitionQty);
-                                para.Add("@PlasicBag1Qty", item.PlasicBag1Qty);
-                                para.Add("@PlasicBag2Qty", item.PlasicBag2Qty);
-                                para.Add("@WrapSheetQty", item.WrapSheetQty);
-                                para.Add("@FoamSheetQty", item.FoamSheetQty);
-                                para.Add("@PartitionWeight", item.PartitionWeight);
-                                para.Add("@PlasicBag1Weight", item.PlasicBag1Weight);
-                                para.Add("@PlasicBag2Weight", item.PlasicBag2Weight);
-                                para.Add("@WrapSheetWeight", item.WrapSheetWeight);
-                                para.Add("@FoamSheetWeight", item.FoamSheetWeight);
-                                para.Add("@PlasicBoxWeight", item.PlasicBoxWeight);
-                                para.Add("@Tolerance", item.Tolerance);
-                                para.Add("@ToleranceAfterPrint", item.ToleranceAfterPrint);
+                            #region Comments
+                            //var sfdsf = con.Query<tblCoreDataCodeItemSizeModel>($"select * from tblCoreDataCodeItemSize " +
+                            //    $"where CodeItemSize = '{item.CodeItemSize}' and Printing = {item.Printing}").FirstOrDefault();
+                            //if (sfdsf == null)
+                            //{
+                            //    para.Add("@CodeItemSize", item.CodeItemSize);
+                            //    para.Add("@MainItemName", item.MainItemName);
+                            //    para.Add("@MetalScan", item.MetalScan);
+                            //    para.Add("@Color", item.Color);
+                            //    para.Add("@Printing", item.Printing);
+                            //    para.Add("@Date", item.Date);
+                            //    para.Add("@Size", item.Size);
+                            //    para.Add("@AveWeight1Prs", item.AveWeight1Prs);
+                            //    para.Add("@BoxQtyBx1", item.BoxQtyBx1);
+                            //    para.Add("@BoxQtyBx2", item.BoxQtyBx2);
+                            //    para.Add("@BoxQtyBx3", item.BoxQtyBx3);
+                            //    para.Add("@BoxQtyBx4", item.BoxQtyBx4);
+                            //    para.Add("@BoxWeightBx1", item.BoxWeightBx1);
+                            //    para.Add("@BoxWeightBx2", item.BoxWeightBx2);
+                            //    para.Add("@BoxWeightBx3", item.BoxWeightBx3);
+                            //    para.Add("@BoxWeightBx4", item.BoxWeightBx4);
+                            //    para.Add("@PartitionQty", item.PartitionQty);
+                            //    para.Add("@PlasicBag1Qty", item.PlasicBag1Qty);
+                            //    para.Add("@PlasicBag2Qty", item.PlasicBag2Qty);
+                            //    para.Add("@WrapSheetQty", item.WrapSheetQty);
+                            //    para.Add("@FoamSheetQty", item.FoamSheetQty);
+                            //    para.Add("@PartitionWeight", item.PartitionWeight);
+                            //    para.Add("@PlasicBag1Weight", item.PlasicBag1Weight);
+                            //    para.Add("@PlasicBag2Weight", item.PlasicBag2Weight);
+                            //    para.Add("@WrapSheetWeight", item.WrapSheetWeight);
+                            //    para.Add("@FoamSheetWeight", item.FoamSheetWeight);
+                            //    para.Add("@PlasicBoxWeight", item.PlasicBoxWeight);
+                            //    para.Add("@Tolerance", item.Tolerance);
+                            //    para.Add("@ToleranceAfterPrint", item.ToleranceAfterPrint);
+                            //    con.Execute("sp_tblCoreDataCodeitemSizeInsert", para, commandType: CommandType.StoredProcedure);
+                            //}
+                            //else
+                            //{
+                            //    para.Add("@CodeItemSize", item.CodeItemSize);
+                            //    para.Add("@MainItemName", item.MainItemName);
+                            //    para.Add("@MetalScan", item.MetalScan);
+                            //    para.Add("@Color", item.Color);
+                            //    para.Add("@Printing", item.Printing);
+                            //    //para.Add("@Date", item.Date);
+                            //    para.Add("@Size", item.Size);
+                            //    para.Add("@AveWeight1Prs", item.AveWeight1Prs);
+                            //    para.Add("@BoxQtyBx1", item.BoxQtyBx1);
+                            //    para.Add("@BoxQtyBx2", item.BoxQtyBx2);
+                            //    para.Add("@BoxQtyBx3", item.BoxQtyBx3);
+                            //    para.Add("@BoxQtyBx4", item.BoxQtyBx4);
+                            //    para.Add("@BoxWeightBx1", item.BoxWeightBx1);
+                            //    para.Add("@BoxWeightBx2", item.BoxWeightBx2);
+                            //    para.Add("@BoxWeightBx3", item.BoxWeightBx3);
+                            //    para.Add("@BoxWeightBx4", item.BoxWeightBx4);
+                            //    para.Add("@PartitionQty", item.PartitionQty);
+                            //    para.Add("@PlasicBag1Qty", item.PlasicBag1Qty);
+                            //    para.Add("@PlasicBag2Qty", item.PlasicBag2Qty);
+                            //    para.Add("@WrapSheetQty", item.WrapSheetQty);
+                            //    para.Add("@FoamSheetQty", item.FoamSheetQty);
+                            //    para.Add("@PartitionWeight", item.PartitionWeight);
+                            //    para.Add("@PlasicBag1Weight", item.PlasicBag1Weight);
+                            //    para.Add("@PlasicBag2Weight", item.PlasicBag2Weight);
+                            //    para.Add("@WrapSheetWeight", item.WrapSheetWeight);
+                            //    para.Add("@FoamSheetWeight", item.FoamSheetWeight);
+                            //    para.Add("@PlasicBoxWeight", item.PlasicBoxWeight);
+                            //    para.Add("@Tolerance", item.Tolerance);
+                            //    para.Add("@ToleranceAfterPrint", item.ToleranceAfterPrint);
 
-                                //if (item.CodeItemSize == "7112321903-*-0018")
-                                //{
-                                //    var sx = 11;
-                                //}
+                            //    //if (item.CodeItemSize == "7112321903-*-0018")
+                            //    //{
+                            //    //    var sx = 11;
+                            //    //}
 
-                                con.Execute("sp_tblCoreDataCodeitemSizeUpdate", para, commandType: CommandType.StoredProcedure);
-                            }
+                            //    con.Execute("sp_tblCoreDataCodeitemSizeUpdate", para, commandType: CommandType.StoredProcedure);
+                            //}
+                            #endregion
                         }
                     }
                     #endregion
