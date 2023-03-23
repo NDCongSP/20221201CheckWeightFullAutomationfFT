@@ -222,12 +222,13 @@ namespace WeightChecking
             InitializeScaner();
 
             //Khởi tạo máy in AnserU2 Smart one
-            SerialPortOpen();
-            Thread.Sleep(10000);
-            SendDynamicString(" ", " ", " ");
+            //SerialPortOpen();
+            //Thread.Sleep(10000);
+            //SendDynamicString(" ", " ", " ");
 
             //_scaleValueStable = 2784;
             //BarcodeHandle(1, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
+            GlobalVariables.MyEvent.SensorBeforeWeightScan = 1;
         }
 
         private void frmScale_FormClosing(object sender, FormClosingEventArgs e)
