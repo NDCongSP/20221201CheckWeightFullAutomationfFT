@@ -54,6 +54,7 @@ namespace WeightChecking
         // Declare CoreScannerClass
         private CCoreScanner _cCoreScannerClass;
         private string _barcodeString1 = null, _barcodeString2 = null, _barcodeString3 = null;//checkMetal--checkWeight--printing
+        private DateTime _timeScanQrStart, _timeScanQrEnd;
 
         private SerialPort _serialPort;
 
@@ -543,7 +544,7 @@ namespace WeightChecking
                                 }
                             }
                             #endregion
-                            
+
                             para = new DynamicParameters();
                             para.Add("@ProductNumber", _scanDataMetal.ProductNumber);
                             para.Add("@SpecialCase", specialCaseMetal);
@@ -1468,6 +1469,7 @@ namespace WeightChecking
 
         void OnBarcodeEvent(short eventType, ref string pscanData)
         {
+            //tính thời gian cho lần scan đầu tiên
             var r = eventType;
             string barcode = pscanData;//string từ scanner trả về
 

@@ -218,5 +218,17 @@ namespace WeightChecking.Properties {
                 this["TimeCheckQrScale"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public double TimeScanQr {
+            get {
+                return ((double)(this["TimeScanQr"]));
+            }
+            set {
+                this["TimeScanQr"] = value;
+            }
+        }
     }
 }

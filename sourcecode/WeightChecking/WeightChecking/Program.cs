@@ -39,6 +39,7 @@ namespace WeightChecking
             GlobalVariables.ScannerIdPrint = Properties.Settings.Default.ScannerIdPrint;
             GlobalVariables.TimeCheckQrMetal = Properties.Settings.Default.TimeCheckQrMetal;
             GlobalVariables.TimeCheckQrScale = Properties.Settings.Default.TimeCheckQrScale;
+            GlobalVariables.TimeScanQr = Properties.Settings.Default.TimeScanQr;
             GlobalVariables.UpdatePath = Properties.Settings.Default.UpdatePath;
 
             if (Properties.Settings.Default.Station == 0)
@@ -68,7 +69,7 @@ namespace WeightChecking
             #endregion
 
             #region Get danh sách tất cả các OC đang sử dụng
-            using (var connection =GlobalVariables.GetDbConnectionWinline())
+            using (var connection = GlobalVariables.GetDbConnectionWinline())
             {
                 GlobalVariables.OcUsingList = connection.Query<OcUsingModel>("sp_IdcGetListOcName").ToList();
             }
