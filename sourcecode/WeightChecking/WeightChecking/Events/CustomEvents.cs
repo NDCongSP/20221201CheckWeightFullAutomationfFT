@@ -207,7 +207,7 @@ namespace WeightChecking
 
         #region Conveyor
         private int _metalPusher = 0, _metalPusher1 = 0, _weightPusher = 0, _printPusher = 0;
-        private int _sensorBeforeMetalScan = 0, _sensorAfterMetalScan = 0, _metalCheckResult = 0, _sensorBeforeWeightScan = 0, _sensorMiddleMetal = 0;
+        private int _sensorBeforeMetalScan = 0, _sensorAfterMetalScan = 0, _metalCheckResult = 0, _sensorBeforeWeightScan = 0, _sensorAfterWeightScan = 0, _sensorMiddleMetal = 0, _sensorAfterPrintScannerFG = 0, _sensorAfterPrintScannerPrinting = 0;
 
         /// <summary>
         /// Biến báo sự kiện cho pusher metal scan.
@@ -253,6 +253,19 @@ namespace WeightChecking
                 {
                     _sensorBeforeWeightScan = value;
                     OnSensorBeforeWeightScanAction(value);
+                }
+            }
+        }
+
+        public int SensorAfterWeightScan
+        {
+            get => _sensorAfterWeightScan;
+            set
+            {
+                if (value != _sensorAfterWeightScan)
+                {
+                    _sensorAfterWeightScan = value;
+                    OnSensorAfterWeightScanAction(value);
                 }
             }
         }
@@ -313,7 +326,7 @@ namespace WeightChecking
             get => _sensorMiddleMetal;
             set
             {
-                if (value!=_sensorMiddleMetal)
+                if (value != _sensorMiddleMetal)
                 {
                     _sensorMiddleMetal = value;
                     OnSensorMiddleMetalAction(value);
@@ -343,6 +356,31 @@ namespace WeightChecking
                 {
                     _metalCheckResult = value;
                     OnMetalCheckResultAction(value);
+                }
+            }
+        }
+
+        public int SensorAfterPrintScannerFG
+        {
+            get => _sensorAfterPrintScannerFG;
+            set
+            {
+                if (value != _sensorAfterPrintScannerFG)
+                {
+                    _sensorAfterPrintScannerFG = value;
+                    OnSensorAfterPrintScannerAction(value);
+                }
+            }
+        }
+        public int SensorAfterPrintScannerPrinting
+        {
+            get => _sensorAfterPrintScannerPrinting;
+            set
+            {
+                if (value != _sensorAfterPrintScannerPrinting)
+                {
+                    _sensorAfterPrintScannerPrinting = value;
+                    OnSensorAfterPrintScannerAction(value);
                 }
             }
         }
@@ -380,6 +418,18 @@ namespace WeightChecking
                 _eventHandleSensorBeforeWeightScan -= value;
             }
         }
+        private event EventHandler<TagValueChangeEventArgs> _eventHandleSensorAfterWeightScan;
+        public event EventHandler<TagValueChangeEventArgs> EventHandleSensorAfterWeightScan
+        {
+            add
+            {
+                _eventHandleSensorAfterWeightScan += value;
+            }
+            remove
+            {
+                _eventHandleSensorAfterWeightScan -= value;
+            }
+        }
         private event EventHandler<TagValueChangeEventArgs> _eventHandlerWeightPusher;
         public event EventHandler<TagValueChangeEventArgs> EventHandlerWeightPusher
         {
@@ -392,6 +442,13 @@ namespace WeightChecking
         {
             add { _eventHandlerPrintPusher += value; }
             remove { _eventHandlerPrintPusher -= value; }
+        }
+
+        private event EventHandler<TagValueChangeEventArgs> _eventHandlerSensorAfterPrintScanner;
+        public event EventHandler<TagValueChangeEventArgs> EventHandlerSensorAfterPrintScanner
+        {
+            add { _eventHandlerSensorAfterPrintScanner += value; }
+            remove { _eventHandlerSensorAfterPrintScanner -= value; }
         }
 
         private event EventHandler<TagValueChangeEventArgs> _eventHandleSensorBeforeMetalScan;
@@ -457,6 +514,10 @@ namespace WeightChecking
         {
             _eventHandleSensorBeforeWeightScan?.Invoke(this, new TagValueChangeEventArgs(value));
         }
+        void OnSensorAfterWeightScanAction(int value)
+        {
+            _eventHandleSensorAfterWeightScan?.Invoke(this, new TagValueChangeEventArgs(value));
+        }
         void OnWeightPusherAction(int value)
         {
             _eventHandlerWeightPusher?.Invoke(this, new TagValueChangeEventArgs(value));
@@ -482,6 +543,11 @@ namespace WeightChecking
         void OnMetalCheckResultAction(int value)
         {
             _eventHandleMetalCheckResult?.Invoke(this, new TagValueChangeEventArgs(value));
+        }
+
+        private void OnSensorAfterPrintScannerAction(int value)
+        {
+            _eventHandlerSensorAfterPrintScanner?.Invoke(this, new TagValueChangeEventArgs(value));
         }
         #endregion
 
