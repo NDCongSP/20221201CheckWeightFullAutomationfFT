@@ -264,9 +264,12 @@ namespace WeightChecking
             InitializeScaner();
 
             //Khởi tạo máy in AnserU2 Smart one
-            //SerialPortOpen();
-            //Thread.Sleep(10000);
-            //SendDynamicString(" ", " ", " ");
+            if (!GlobalVariables.IsTest)
+            {
+                SerialPortOpen();
+                Thread.Sleep(10000);
+                SendDynamicString(" ", " ", " ");
+            }
 
             GlobalVariables.AppStatus = "READY";
 
@@ -656,7 +659,7 @@ namespace WeightChecking
                                         _metalScannerStatus = 0;
                                         //GlobalVariables.MyEvent.MetalPusher = 0;
                                     }
-                                    else if (res.MetalScan == 0)
+                                    else if (res.MetalScan == 0 || (res.MetalScan == 1 && ocFirstCharMetal == "PR"))
                                     {
                                         Debug.WriteLine($"ProductNumber: {res.ProductNumber} không kiểm tra kim loại.");
                                         this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng không kiểm kim loại."; });
@@ -1717,6 +1720,10 @@ namespace WeightChecking
                     //this.Invoke((MethodInvoker)delegate { txtDataAscii1.Text = xmlDoc.GetElementsByTagName("datalabel")[0].InnerText; });
                     _barcodeString1 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
+                    //reset model;
+                    _scanDataMetal = null;
+                    _scanDataMetal = new tblScanDataModel();
+
                     BarcodeHandle(1, _barcodeString1);
                 }
             }
@@ -1731,6 +1738,11 @@ namespace WeightChecking
                     _readQrStatus[1] = true;
 
                     _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+
+                    //reset model;
+                    _scanDataWeight = null;
+                    _scanDataWeight = new tblScanDataModel();
+
                     BarcodeHandle(2, _barcodeString2);
                 }
             }
@@ -1745,6 +1757,10 @@ namespace WeightChecking
                     _readQrStatus[2] = true;
 
                     _barcodeString3 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+                    //reset model;
+                    _scanDataPrint = null;
+                    _scanDataPrint = new tblScanDataModel();
+
                     BarcodeHandle(3, _barcodeString3);
                 }
             }

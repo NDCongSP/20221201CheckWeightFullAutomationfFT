@@ -71,6 +71,7 @@ namespace WeightChecking
         public static string PrintResult { get; set; } = "";//ket qua tra ve khi thuc hien in
         public static string  UpdatePath { get; set; }
         public static string AppStatus { get; set; } = "DANG KHỞI ĐỘNG...";
+        public static bool IsTest { get; set; } = false;//biến báo đang ở chế độ test hay chạy chính
 
         #region Printing
         // Print the file.
