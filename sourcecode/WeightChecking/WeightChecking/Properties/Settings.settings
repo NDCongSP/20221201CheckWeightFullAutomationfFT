@@ -21,7 +21,7 @@
       <Value Profile="(Default)">\\10.40.10.9\Public$\05_IT\01_Update\21- IDCScaleSystem\Update.xml</Value>
     </Setting>
     <Setting Name="IsScale" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="IsCounter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

@@ -157,6 +157,8 @@ namespace WeightChecking
                 {
                     _scannerIsBussy[1] = false;
                 }
+
+                Debug.WriteLine($"Event Sensor after scale: {o.NewValue}|ScannerBussy{_scannerIsBussy[1]}");
             };
             //khi thùng đụng cảm biến sau printing scanner thì reset biến báo bận cho scanner trạm print quét tiếp
             GlobalVariables.MyEvent.EventHandlerSensorAfterPrintScanner += (s, o) =>
@@ -165,12 +167,11 @@ namespace WeightChecking
                 {
                     _scannerIsBussy[2] = false;
                 }
+                Debug.WriteLine($"Event Sensor after scale: {o.NewValue}|ScannerBussy{_scannerIsBussy[2]}");
             };
 
             GlobalVariables.MyEvent.EventHandleSensorMiddleMetal += (s, o) =>
             {
-                Debug.WriteLine($"Event Sensor middle metal: {o.NewValue}");
-
                 if (o.NewValue == 1)
                 {
                     //xáo báo bận để cho phép scanner quét tiếp thùng.
@@ -179,6 +180,8 @@ namespace WeightChecking
                     _isStartCountTimer = false;
                     GlobalVariables.MyEvent.MetalPusher = _metalScannerStatus;
                 }
+
+                Debug.WriteLine($"Sensor middle metal: {o.NewValue}|ScannerBussy{_scannerIsBussy[0]}");
             };
 
             GlobalVariables.MyEvent.EventHandleSensorBeforeWeightScan += (s, o) =>
@@ -191,14 +194,14 @@ namespace WeightChecking
                     _ckQrWeightScanTask = new Task(() => CheckReadQrWeight());
                     _ckQrWeightScanTask.Start();
                 }
-                else
-                {
-                    if (_ckQrWeightScanTask != null)
-                    {
-                        _ckQrWeightScanTask.Wait();
-                        _ckQrWeightScanTask.Dispose();
-                    }
-                }
+                //else
+                //{
+                //    if (_ckQrWeightScanTask != null)
+                //    {
+                //        _ckQrWeightScanTask.Wait();
+                //        _ckQrWeightScanTask.Dispose();
+                //    }
+                //}
             };
 
             GlobalVariables.MyEvent.EventHandleSensorAfterMetalScan += (s, o) =>
@@ -1544,6 +1547,7 @@ namespace WeightChecking
                                 this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 GlobalVariables.MyEvent.PrintPusher = 1;
+                                //_scannerIsBussy[2] = false;
                                 return;
                             }
 
@@ -1567,6 +1571,7 @@ namespace WeightChecking
                                 this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 GlobalVariables.MyEvent.PrintPusher = 1;
+                                //_scannerIsBussy[2] = false;
                                 return;
                             }
 
@@ -1612,6 +1617,7 @@ namespace WeightChecking
                                 }
                                 else
                                 {
+                                    GlobalVariables.MyEvent.PrintPusher = 0;
                                     this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng FG."; });
                                 }
                             }
