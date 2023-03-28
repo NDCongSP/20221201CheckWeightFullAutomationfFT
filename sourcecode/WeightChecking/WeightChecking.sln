@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32228.343
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeightChecking", "WeightChecking\WeightChecking.csproj", "{128A07EE-4022-4DD6-9154-F34229C5F7C0}"
 EndProject
@@ -9,11 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S7Server", "S7Server\S7Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S7Client", "S7Client\S7Client.csproj", "{00332B45-EBE5-4A9E-94B3-E6B5B1202EA0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZebraSDKTest", "..\..\..\OtherSourceCode\20230104ZebraSDK\ZebraSDKTest\ZebraSDKTest\ZebraSDKTest.csproj", "{02A4DA74-D385-4A85-BDA7-9AECE3322D23}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnserU2_cSharp", "..\AnserU2_DK\AnserU2_cSharp\AnserU2_cSharp.csproj", "{AE748927-C553-41F3-904A-5D488CAE6785}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PLCPi", "..\..\..\OtherSourceCode\2014PLCPiProject\PLCPiForPC\PLCPi\PLCPi\PLCPi.csproj", "{15DD2F14-1735-4D96-BA90-B57E90BEB545}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZebraSDKTest", "..\..\..\20230104ZebraSDK\ZebraSDKTest\ZebraSDKTest\ZebraSDKTest.csproj", "{02A4DA74-D385-4A85-BDA7-9AECE3322D23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PLCPi", "..\..\..\2014PLCPiProject\PLCPiForPC\PLCPi\PLCPi\PLCPi.csproj", "{15DD2F14-1735-4D96-BA90-B57E90BEB545}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,14 +33,14 @@ Global
 		{00332B45-EBE5-4A9E-94B3-E6B5B1202EA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00332B45-EBE5-4A9E-94B3-E6B5B1202EA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00332B45-EBE5-4A9E-94B3-E6B5B1202EA0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AE748927-C553-41F3-904A-5D488CAE6785}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AE748927-C553-41F3-904A-5D488CAE6785}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE748927-C553-41F3-904A-5D488CAE6785}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE748927-C553-41F3-904A-5D488CAE6785}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02A4DA74-D385-4A85-BDA7-9AECE3322D23}.Release|Any CPU.Build.0 = Release|Any CPU
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Release|Any CPU.ActiveCfg = Release|Any CPU

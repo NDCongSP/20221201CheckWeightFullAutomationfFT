@@ -1,6 +1,7 @@
 ﻿using CoreScanner;
 using Dapper;
 using DevExpress.XtraEditors;
+using DevExpress.XtraEditors.Filtering.Templates;
 using DevExpress.XtraPrinting;
 using DevExpress.XtraReports.UI;
 using DevExpress.XtraSplashScreen;
@@ -274,7 +275,8 @@ namespace WeightChecking
             GlobalVariables.AppStatus = "READY";
 
             //_scaleValueStable = 2784;
-            //BarcodeHandle(2, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
+            // Test khi ko có tay scan QR/barcode
+            //BarcodeHandle(3, "PRT0006,6812322201-NBO2-E028,45,12,P,14/15,190000,1/2|2,21485.2023,1,1,12");
             //GlobalVariables.MyEvent.SensorBeforeWeightScan = 1;
         }
 
@@ -1614,14 +1616,62 @@ namespace WeightChecking
                                 if (resultCheckOc != null)
                                 {
                                     Debug.WriteLine($"ProductNumber: {res.ProductNumber} là hàng sơn.");
-                                    this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng sơn."; });
+                                    this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng sơn."; labErrInfoPrint.ForeColor = Color.DarkGray; });
 
                                     GlobalVariables.MyEvent.PrintPusher = 1;
+
+                                    // xử lý insert RackStorage cho hàng sơn
+
+                                    // check nếu QRCode hiện tại có nằm trong kho
+                                    para = new DynamicParameters();
+                                    para.Add("@qr", barcodeString);
+                                    para.Add("@userId", "");
+                                    para.Add("@mode", "TRANSFER");
+                                    // hàng sơn đến từ kho 2 (FFT)
+                                    para.Add("@whFrom", 2);
+                                    // đi sơn sẽ vào kho 10 (FFT)
+                                    para.Add("@whTo", 10);
+                                    para.Add("@lock", 0);
+                                    para.Add("@inputQuantity", null);
+
+                                    (int Accept, string Message) = connection.Query<(int Accept, string Message)>("DOGE_WH.dbo.sp_lmpScannerClient_ScanningLabel_CheckLabel", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
+                                    // thùng hàng có trong kho -> có thể transfer
+                                    if(Accept > 0)
+                                    {
+                                        string machineName = System.Environment.MachineName;
+
+                                        para = new DynamicParameters();                                        
+                                        para.Add("@qr", barcodeString);
+                                        para.Add("@userId", machineName);
+                                        para.Add("@mode", "TRANSFER");
+                                        // hàng sơn đến từ kho 2 (FFT)
+                                        para.Add("@whFrom", 2);
+                                        // đi sơn sẽ vào kho 10 (FFT)
+                                        para.Add("@whTo", 10);
+                                        para.Add("@deviceId", machineName);
+                                        para.Add("@scanTime", DateTime.Now);
+                                        para.Add("@ipAdd", "");
+                                        para.Add("@postingText", "");
+                                        para.Add("@inputQuantity", null);
+                                        para.Add("@id", null);
+
+                                        connection.Execute("DOGE_WH.dbo.sp_lmpScannerClient_ScannedLabel_Insert", para, commandType: CommandType.StoredProcedure);
+                                        Debug.WriteLine($"ProductNumber: {res.ProductNumber} đã cập nhật kho.");
+                                        this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Thùng hàng này đã cập nhật kho thành công"; });
+                                    }
+                                    else
+                                    {
+                                        Debug.WriteLine($"ProductNumber: {res.ProductNumber} không có trong kho.");
+                                        this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Thùng hàng sơn này không thể cập nhật kho"; labErrInfoPrint.ForeColor = Color.DarkRed; });
+                                    }
+
                                 }
                                 else
                                 {
                                     GlobalVariables.MyEvent.PrintPusher = 0;
                                     this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng FG."; });
+
+                                    // xử lý insert RackStorage cho hàng FinishGoods
                                 }
                             }
                         }

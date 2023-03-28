@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="snap7.net, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\DLL modbus\snap7.net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -80,7 +84,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\OtherSourceCode\2014PLCPiProject\PLCPiForPC\PLCPi\PLCPi\PLCPi.csproj">
+    <ProjectReference Include="..\..\..\..\2014PLCPiProject\PLCPiForPC\PLCPi\PLCPi\PLCPi.csproj">
       <Project>{15dd2f14-1735-4d96-ba90-b57e90beb545}</Project>
       <Name>PLCPi</Name>
     </ProjectReference>

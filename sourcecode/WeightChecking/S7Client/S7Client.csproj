@@ -36,9 +36,6 @@
     <Reference Include="PLCPi">
       <HintPath>..\..\DLL modbus\PLCPi.dll</HintPath>
     </Reference>
-    <Reference Include="snap7.net">
-      <HintPath>..\..\..\..\20220816CheckWeightFramasVn\sourceCode\DLL modbus\PLCPidllPC\snap7.net.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
