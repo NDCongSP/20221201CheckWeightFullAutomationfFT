@@ -57,6 +57,10 @@ namespace S7Server
             this.label17 = new System.Windows.Forms.Label();
             this.labSensorMiddleMetal = new System.Windows.Forms.Label();
             this.txtSensoeMiddleMetal = new System.Windows.Forms.TextBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this._txtSensorPrintLeft = new System.Windows.Forms.TextBox();
+            this._txtSensorPrintRight = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -320,14 +324,52 @@ namespace S7Server
             this.txtSensoeMiddleMetal.TabIndex = 42;
             this.txtSensoeMiddleMetal.Text = "0";
             // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label18.Location = new System.Drawing.Point(736, 340);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(260, 16);
+            this.label18.TabIndex = 40;
+            this.label18.Text = "Vùng Nhớ DB1[8] sensor print left FG";
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label19.Location = new System.Drawing.Point(736, 426);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(214, 16);
+            this.label19.TabIndex = 40;
+            this.label19.Text = "Vùng Nhớ DB1[4]  metal result";
+            // 
+            // _txtSensorPrintLeft
+            // 
+            this._txtSensorPrintLeft.Location = new System.Drawing.Point(739, 377);
+            this._txtSensorPrintLeft.Name = "_txtSensorPrintLeft";
+            this._txtSensorPrintLeft.Size = new System.Drawing.Size(130, 20);
+            this._txtSensorPrintLeft.TabIndex = 42;
+            this._txtSensorPrintLeft.Text = "0";
+            // 
+            // _txtSensorPrintRight
+            // 
+            this._txtSensorPrintRight.Location = new System.Drawing.Point(739, 463);
+            this._txtSensorPrintRight.Name = "_txtSensorPrintRight";
+            this._txtSensorPrintRight.Size = new System.Drawing.Size(130, 20);
+            this._txtSensorPrintRight.TabIndex = 42;
+            this._txtSensorPrintRight.Text = "0";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(827, 516);
+            this.ClientSize = new System.Drawing.Size(1235, 516);
             this.Controls.Add(this.button1);
+            this.Controls.Add(this._txtSensorPrintRight);
             this.Controls.Add(this.textBox3);
             this.Controls.Add(this.txtSensoeMiddleMetal);
+            this.Controls.Add(this._txtSensorPrintLeft);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.textBox4);
             this.Controls.Add(this.txtpp);
@@ -340,7 +382,9 @@ namespace S7Server
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label16);
             this.Controls.Add(this.label5);
+            this.Controls.Add(this.label19);
             this.Controls.Add(this.label17);
+            this.Controls.Add(this.label18);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label7);
@@ -390,6 +434,10 @@ namespace S7Server
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label labSensorMiddleMetal;
         private System.Windows.Forms.TextBox txtSensoeMiddleMetal;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.TextBox _txtSensorPrintLeft;
+        private System.Windows.Forms.TextBox _txtSensorPrintRight;
     }
 }
 

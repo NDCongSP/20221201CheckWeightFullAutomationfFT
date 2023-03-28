@@ -256,6 +256,7 @@
     <Compile Include="Models\ApprovedModel.cs" />
     <Compile Include="Models\ApprovedReportModel.cs" />
     <Compile Include="Models\OcUsingModel.cs" />
+    <Compile Include="Models\ScanDataRejectModel.cs" />
     <Compile Include="Models\ScanDataReport1Model.cs" />
     <Compile Include="Models\ScanDataReportModel.cs" />
     <Compile Include="Models\tblScanDataCheckModel.cs" />

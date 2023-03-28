@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,12 +33,16 @@ namespace WeightChecking
         public double BoxWeightBx3 { get; set; }
         public double BoxWeightBx4 { get; set; }
         public int PartitionQty { get; set; }
+        [DisplayName("PlasticBag1Qty")]
         public int PlasicBag1Qty { get; set; }
+        [DisplayName("PlasticBag2Qty")]
         public int PlasicBag2Qty { get; set; }
         public int WrapSheetQty { get; set; }
         public int FoamSheetQty { get; set; }
         public double PartitionWeight { get; set; }
+        [DisplayName("PlasticBag1Weight")]
         public double PlasicBag1Weight { get; set; }
+        [DisplayName("PlasticBag2Weight")]
         public double PlasicBag2Weight { get; set; }
         public double WrapSheetWeight { get; set; }
         public double FoamSheetWeight { get; set; }

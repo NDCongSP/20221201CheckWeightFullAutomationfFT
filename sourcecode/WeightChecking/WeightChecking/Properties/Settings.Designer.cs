@@ -39,7 +39,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.207.7")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.80.3")]
         public string ipConveyor {
             get {
                 return ((string)(this["ipConveyor"]));
@@ -101,7 +101,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool IsScale {
             get {
                 return ((bool)(this["IsScale"]));
@@ -221,13 +221,27 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("5")]
-        public double TimeScanQr {
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IsTest {
             get {
-                return ((double)(this["TimeScanQr"]));
+                return ((bool)(this["IsTest"]));
             }
             set {
-                this["TimeScanQr"] = value;
+                this["IsTest"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fF3bb/osXwqYNhSCfyKvNWvXPUgvQLnsbz+Nd6Vj/7Bp3JpDzU1SquQf9r/UjvioXIcrdYeK" +
+            "JIBZxfUIaWnODCfVyoZD4vtKfTY2bzuwo+x9IWaUwNDM8sXy0vvVfwBcTaxNaqOPWxs7wJ2VL5tVKN6N" +
+            "Xz6gB+a8K0JokfzGUFtGBP4RKiPCgVqqhImSXhPA27fwcNR/ExwoYestgqmQS8+")]
+        public string conStringTest {
+            get {
+                return ((string)(this["conStringTest"]));
+            }
+            set {
+                this["conStringTest"] = value;
             }
         }
     }

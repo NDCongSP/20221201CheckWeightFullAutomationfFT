@@ -21,6 +21,7 @@ namespace S7Server
         private byte _pp = 0;
         private byte _m = 0;
         private byte _sensorMiddleMetal = 0;
+        byte _printLeftSensor = 0, _printRightSensor = 0;
 
 
         private PLCPi _plcPi = new PLCPi();
@@ -49,6 +50,36 @@ namespace S7Server
             textBox1.TextChanged += TextBox1_TextChanged;
             textBox2.TextChanged += TextBox2_TextChanged;
             textBox3.TextChanged += TextBox3_TextChanged;
+
+            _txtSensorPrintLeft.TextChanged += (s, o) =>
+            {
+                TextBox t = (TextBox)s;
+
+                try
+                {
+                    _printLeftSensor = Convert.ToByte(t.Text);
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+            };
+            _txtSensorPrintRight.TextChanged += (s, o) =>
+            {
+                TextBox t = (TextBox)s;
+
+                try
+                {
+                    _printRightSensor = Convert.ToByte(t.Text);
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+            };
+
 
             txtmp.TextChanged += (s, o) =>
             {
@@ -107,7 +138,8 @@ namespace S7Server
                 }
             };
 
-            txtSensoeMiddleMetal.TextChanged += (s, o) => {
+            txtSensoeMiddleMetal.TextChanged += (s, o) =>
+            {
                 TextBox t = (TextBox)s;
 
                 try
@@ -188,6 +220,8 @@ namespace S7Server
             _plcPi.S7Ethernet.Server.DataBlock[4] = _metalCheckResult;
             _plcPi.S7Ethernet.Server.DataBlock[5] = _metalSensorAfter;
             _plcPi.S7Ethernet.Server.DataBlock[7] = _sensorMiddleMetal;
+            _plcPi.S7Ethernet.Server.DataBlock[8] = _printLeftSensor;
+            _plcPi.S7Ethernet.Server.DataBlock[9] = _printRightSensor;
 
             _timer.Enabled = true;
         }

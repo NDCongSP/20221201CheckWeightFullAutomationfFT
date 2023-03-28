@@ -39,6 +39,9 @@ namespace WeightChecking
             this.xtraTabPage3 = new DevExpress.XtraTab.XtraTabPage();
             this.grcMissInfo = new DevExpress.XtraGrid.GridControl();
             this.grvMissInfo = new DevExpress.XtraGrid.Views.Grid.GridView();
+            this.xtraTabPage4 = new DevExpress.XtraTab.XtraTabPage();
+            this.grcReject = new DevExpress.XtraGrid.GridControl();
+            this.grvReject = new DevExpress.XtraGrid.Views.Grid.GridView();
             ((System.ComponentModel.ISupportInitialize)(this.grcReports)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.grvReports)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.xtraTabControl1)).BeginInit();
@@ -50,6 +53,9 @@ namespace WeightChecking
             this.xtraTabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grcMissInfo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.grvMissInfo)).BeginInit();
+            this.xtraTabPage4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.grcReject)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.grvReject)).BeginInit();
             this.SuspendLayout();
             // 
             // grcReports
@@ -71,6 +77,7 @@ namespace WeightChecking
             // 
             this.grvReports.GridControl = this.grcReports;
             this.grvReports.Name = "grvReports";
+            this.grvReports.OptionsBehavior.ReadOnly = true;
             this.grvReports.OptionsDetail.ShowEmbeddedDetailIndent = DevExpress.Utils.DefaultBoolean.False;
             this.grvReports.OptionsView.ColumnAutoWidth = false;
             // 
@@ -85,7 +92,8 @@ namespace WeightChecking
             this.xtraTabControl1.TabPages.AddRange(new DevExpress.XtraTab.XtraTabPage[] {
             this.xtraTabPage1,
             this.xtraTabPage2,
-            this.xtraTabPage3});
+            this.xtraTabPage3,
+            this.xtraTabPage4});
             // 
             // xtraTabPage1
             // 
@@ -124,6 +132,7 @@ namespace WeightChecking
             // 
             this.grvApprove.GridControl = this.grcApprove;
             this.grvApprove.Name = "grvApprove";
+            this.grvApprove.OptionsBehavior.ReadOnly = true;
             this.grvApprove.OptionsDetail.ShowEmbeddedDetailIndent = DevExpress.Utils.DefaultBoolean.True;
             this.grvApprove.OptionsView.ColumnAutoWidth = false;
             // 
@@ -155,8 +164,35 @@ namespace WeightChecking
             // 
             this.grvMissInfo.GridControl = this.grcMissInfo;
             this.grvMissInfo.Name = "grvMissInfo";
+            this.grvMissInfo.OptionsBehavior.ReadOnly = true;
             this.grvMissInfo.OptionsDetail.ShowEmbeddedDetailIndent = DevExpress.Utils.DefaultBoolean.True;
             this.grvMissInfo.OptionsView.ColumnAutoWidth = false;
+            // 
+            // xtraTabPage4
+            // 
+            this.xtraTabPage4.Appearance.Header.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold);
+            this.xtraTabPage4.Appearance.Header.Options.UseFont = true;
+            this.xtraTabPage4.Controls.Add(this.grcReject);
+            this.xtraTabPage4.Name = "xtraTabPage4";
+            this.xtraTabPage4.Size = new System.Drawing.Size(1408, 754);
+            this.xtraTabPage4.Text = "Reject";
+            // 
+            // grcReject
+            // 
+            this.grcReject.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grcReject.Location = new System.Drawing.Point(0, 0);
+            this.grcReject.MainView = this.grvReject;
+            this.grcReject.Name = "grcReject";
+            this.grcReject.Size = new System.Drawing.Size(1408, 754);
+            this.grcReject.TabIndex = 0;
+            this.grcReject.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
+            this.grvReject});
+            // 
+            // grvReject
+            // 
+            this.grvReject.GridControl = this.grcReject;
+            this.grvReject.Name = "grvReject";
+            this.grvReject.OptionsBehavior.ReadOnly = true;
             // 
             // frmReports
             // 
@@ -177,6 +213,9 @@ namespace WeightChecking
             this.xtraTabPage3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.grcMissInfo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.grvMissInfo)).EndInit();
+            this.xtraTabPage4.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.grcReject)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.grvReject)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -193,5 +232,8 @@ namespace WeightChecking
         private DevExpress.XtraTab.XtraTabPage xtraTabPage3;
         private DevExpress.XtraGrid.GridControl grcMissInfo;
         private DevExpress.XtraGrid.Views.Grid.GridView grvMissInfo;
+        private DevExpress.XtraTab.XtraTabPage xtraTabPage4;
+        private DevExpress.XtraGrid.GridControl grcReject;
+        private DevExpress.XtraGrid.Views.Grid.GridView grvReject;
     }
 }
