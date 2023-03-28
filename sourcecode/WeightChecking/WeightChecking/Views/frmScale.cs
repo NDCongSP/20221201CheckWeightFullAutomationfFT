@@ -1655,9 +1655,18 @@ namespace WeightChecking
                                         para.Add("@inputQuantity", null);
                                         para.Add("@id", null);
 
-                                        connection.Execute("DOGE_WH.dbo.sp_lmpScannerClient_ScannedLabel_Insert", para, commandType: CommandType.StoredProcedure);
-                                        Debug.WriteLine($"ProductNumber: {res.ProductNumber} đã cập nhật kho.");
-                                        this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Thùng hàng này đã cập nhật kho thành công"; });
+                                        var resInsertTransferRackStorage = connection.Execute("DOGE_WH.dbo.sp_lmpScannerClient_ScannedLabel_Insert", para, commandType: CommandType.StoredProcedure);
+                                        if(resInsertTransferRackStorage > 0)
+                                        {
+                                            Debug.WriteLine($"ProductNumber: {res.ProductNumber} đã cập nhật kho.");
+                                            this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Thùng hàng này đã cập nhật kho thành công"; });
+                                        }
+                                        else
+                                        {
+                                            Debug.WriteLine($"ProductNumber: {res.ProductNumber} cập nhật kho thất bại.");
+                                            this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Cập nhật kho thất bại"; labErrInfoPrint.ForeColor = Color.DarkRed; });
+                                        }
+                                        
                                     }
                                     else
                                     {
