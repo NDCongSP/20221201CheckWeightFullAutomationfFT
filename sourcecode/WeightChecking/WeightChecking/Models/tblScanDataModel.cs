@@ -30,7 +30,11 @@ namespace WeightChecking
         public int ActualMetalScan { get; set; } = 0;
         public double AveWeight1Prs { get; set; }
         public double StdNetWeight { get; set; }
-        public double Tolerance { get; set; }
+
+        //public double Tolerance { get; set; }
+        public double LowerTolerance { get; set; }
+        public double UpperTolerance { get; set; }
+
         public double BoxWeight { get; set; }
         public double PackageWeight { get; set; }
         public double StdGrossWeight { get; set; }

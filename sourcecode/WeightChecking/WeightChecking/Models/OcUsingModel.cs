@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-  public   class OcUsingModel
+    public class OcUsingModel
     {
         public string OcNo { get; set; }//t357.c018
         public string OcFirstChar { get; set; }//căt ra từ OcNo, lấy 2 ký tự đầu để so sánh với QR code

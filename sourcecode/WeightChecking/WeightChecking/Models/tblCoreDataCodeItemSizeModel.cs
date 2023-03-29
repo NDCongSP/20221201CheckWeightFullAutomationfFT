@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,19 +27,27 @@ namespace WeightChecking
         public double BoxWeightBx3 { get; set; }
         public double BoxWeightBx4 { get; set; }
         public double PartitionQty { get; set; }
+        [DisplayName("PlasticBag1Qty")]
         public double PlasicBag1Qty { get; set; }
+        [DisplayName("PlasticBag2Qty")]
         public double PlasicBag2Qty { get; set; }
         public double WrapSheetQty { get; set; }
         public double FoamSheetQty { get; set; }
         public double PartitionWeight { get; set; } = 60;
+        [DisplayName("PlasticBag1Weight")]
         public double PlasicBag1Weight { get; set; }
+        [DisplayName("PlasticBag2Weight")]
         public double PlasicBag2Weight { get; set; }
         public double WrapSheetWeight { get; set; }
         public double FoamSheetWeight { get; set; }
+        [DisplayName("PlasticBoxWeight")]
         public double PlasicBoxWeight { get; set; } = 1210;
-        public double Tolerance { get; set; } = 5;
-        public double ToleranceAfterPrint { get; set; } = 7;
+        public double LowerToleranceOfCartonBox { get; set; } = 0;
+        public double UpperToleranceOfCartonBox { get; set; } = 0;
+        public double LowerToleranceOfPlasticBox { get; set; } = 0;
+        public double UpperToleranceOfPlasticBox { get; set; } = 0;
         public DateTime CreatedDate { get; set; }
+        [Browsable(false)]
         public bool IsActived { get; set; }
     }
 }

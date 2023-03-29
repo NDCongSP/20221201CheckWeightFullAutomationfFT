@@ -47,7 +47,10 @@ namespace WeightChecking
         public double WrapSheetWeight { get; set; }
         public double FoamSheetWeight { get; set; }
         public double PlasicBoxWeight { get; set; }
-        public double Tolerance { get; set; }
-        public double ToleranceAfterPrint { get; set; }
+        public double LowerToleranceOfCartonBox { get; set; } = 0;
+        public double UpperToleranceOfCartonBox { get; set; } = 0;
+        public double LowerToleranceOfPlasticBox { get; set; } = 0;
+        public double UpperToleranceOfPlasticBox { get; set; } = 0;
+        public DateTime CreatedDate { get; set; }//Thời gian item được get từ WL về
     }
 }

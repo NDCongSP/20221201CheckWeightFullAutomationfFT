@@ -266,15 +266,15 @@ namespace WeightChecking
             //Khởi tạo máy in AnserU2 Smart one
             if (!GlobalVariables.IsTest)
             {
-                SerialPortOpen();
-                Thread.Sleep(10000);
-                SendDynamicString(" ", " ", " ");
+                //SerialPortOpen();
+                //Thread.Sleep(10000);
+                //SendDynamicString(" ", " ", " ");
             }
 
             GlobalVariables.AppStatus = "READY";
 
             //_scaleValueStable = 2784;
-            //BarcodeHandle(2, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
+            BarcodeHandle(2, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
             //GlobalVariables.MyEvent.SensorBeforeWeightScan = 1;
         }
 
@@ -299,131 +299,32 @@ namespace WeightChecking
 
         private void ResetControl()
         {
-            #region hiển thị thông tin
-            if (labRealWeight.InvokeRequired)
+            this.Invoke((MethodInvoker)delegate
             {
-                labRealWeight.Invoke(new Action(() =>
-                {
-                    labRealWeight.Text = "0";
-                }));
-            }
-            else labRealWeight.Text = "0";
+                labRealWeight.Text = "0";
+                labNetWeight.Text = "0";
+                labOcNo.Text = string.Empty;
+                labProductCode.Text = string.Empty;
+                labProductName.Text = string.Empty;
+                labQuantity.Text = "0";
+                labColor.Text = string.Empty;
+                labSize.Text = string.Empty;
+                labAveWeight.Text = "0";
+                labLowerTolerance.Text = "0";
+                labLowerToleranceWeight.Text = "0";
+                labUpperTolerance.Text = "0";
+                labUpperToleranceWeight.Text = "0";
+                labBoxWeight.Text = "0";
+                labAccessoriesWeight.Text = "0";
+                labGrossWeight.Text = "0";
 
-            if (labNetWeight.InvokeRequired)
-            {
-                labNetWeight.Invoke(new Action(() =>
-                {
-                    labNetWeight.Text = "0";
-                }));
-            }
-            else labNetWeight.Text = "0";
-
-            if (labOcNo.InvokeRequired)
-            {
-                labOcNo.Invoke(new Action(() => { labOcNo.Text = string.Empty; }));
-            }
-            else labOcNo.Text = string.Empty;
-
-            if (labProductCode.InvokeRequired)
-            {
-                labProductCode.Invoke(new Action(() => { labProductCode.Text = string.Empty; }));
-            }
-            else labProductCode.Text = string.Empty;
-
-            if (labProductName.InvokeRequired)
-            {
-                labProductName.Invoke(new Action(() => { labProductName.Text = string.Empty; }));
-            }
-            else labProductName.Text = string.Empty;
-
-            if (labQuantity.InvokeRequired)
-            {
-                labQuantity.Invoke(new Action(() => { labQuantity.Text = "0"; }));
-            }
-            else labQuantity.Text = "0";
-
-            if (labColor.InvokeRequired)
-            {
-                labColor.Invoke(new Action(() => { labColor.Text = string.Empty; }));
-            }
-            else labColor.Text = string.Empty;
-
-            if (labSize.InvokeRequired)
-            {
-                labSize.Invoke(new Action(() => { labSize.Text = string.Empty; }));
-            }
-            else labSize.Text = string.Empty;
-
-            if (labAveWeight.InvokeRequired)
-            {
-                labAveWeight.Invoke(new Action(() => { labAveWeight.Text = "0"; }));
-            }
-            else labAveWeight.Text = "0";
-
-            if (labToloren.InvokeRequired)
-            {
-                labToloren.Invoke(new Action(() => { labToloren.Text = "0"; }));
-            }
-            else labToloren.Text = "0";
-
-            if (labBoxWeight.InvokeRequired)
-            {
-                labBoxWeight.Invoke(new Action(() => { labBoxWeight.Text = "0"; }));
-            }
-            else labBoxWeight.Text = "0";
-
-            if (labAccessoriesWeight.InvokeRequired)
-            {
-                labAccessoriesWeight.Invoke(new Action(() => { labAccessoriesWeight.Text = "0"; }));
-            }
-            else labAccessoriesWeight.Text = "0";
-
-            if (labGrossWeight.InvokeRequired)
-            {
-                labGrossWeight.Invoke(new Action(() => { labGrossWeight.Text = "0"; }));
-            }
-            else labGrossWeight.Text = "0";
-
-            if (labResult.InvokeRequired)
-            {
-                labResult.Invoke(new Action(() =>
-                {
-                    labResult.Text = "Pass/Fail";
-                    labResult.BackColor = Color.Gray;
-                    labResult.ForeColor = Color.White;
-                }));
-            }
-            else
-            {
                 labResult.Text = "Pass/Fail";
                 labResult.BackColor = Color.Gray;
                 labResult.ForeColor = Color.White;
-            }
 
-            if (labCalculatedPairs.InvokeRequired)
-            {
-                labCalculatedPairs.Invoke(new Action(() =>
-                {
-                    labCalculatedPairs.Text = "0";
-                }));
-            }
-            else
-            {
                 labCalculatedPairs.Text = "0";
-            }
-
-            if (labDeviationPairs.InvokeRequired)
-            {
-                labDeviationPairs.Invoke(new Action(() =>
-                {
-                    labDeviationPairs.Text = "0";
-                }));
-            }
-            else
-            {
                 labDeviationPairs.Text = "0";
-            }
-            #endregion
+            });
         }
 
         /// <summary>
@@ -763,6 +664,10 @@ namespace WeightChecking
                         bool isFail = false;
                         bool isPass = false;
 
+                        double lowerToleranceOfBox = 0, upperToleranceOfBox = 0;
+                        double nwPlus = 0;
+                        double nwSub = 0;
+
                         double ratioFailWeight = 0;//biến chứa ratioFailWeight của lần fail trước
 
                         #region xử lý barcode lấy ra các giá trị theo code
@@ -1015,6 +920,10 @@ namespace WeightChecking
                                     {
                                         _scanDataWeight.Status = 2;//báo trạng thái hàng ko đi sơn, hoặc hàng sơn đã được sơn rồi
 
+                                        //lấy tolerance theo thùng giấy
+                                        lowerToleranceOfBox = res.LowerToleranceOfCartonBox;
+                                        upperToleranceOfBox = res.UpperToleranceOfCartonBox;
+
                                         if (_scanDataWeight.Quantity <= res.BoxQtyBx4)
                                         {
                                             _scanDataWeight.BoxWeight = res.BoxWeightBx4;
@@ -1098,6 +1007,10 @@ namespace WeightChecking
                                     }
                                     else //if (_scanDataWeight.Decoration == 1 && _scanDataWeight.OcNo.Contains("PR"))//hàng trước sơn. chỉ có trạm SSFG01 mới nhảy vào đây
                                     {
+                                        //lấy tolerance theo thùng nhựa
+                                        lowerToleranceOfBox = res.LowerToleranceOfPlasticBox;
+                                        upperToleranceOfBox = res.UpperToleranceOfPlasticBox;
+
                                         if (GlobalVariables.AfterPrinting == 0 && _scanDataWeight.OcNo.Contains("PR"))
                                         {
                                             _scanDataWeight.Status = 1;// báo trạng thái hàng sơn cần đưa đi sơn, trạm SSFG01
@@ -1128,7 +1041,10 @@ namespace WeightChecking
                                     }
 
                                     _scanDataWeight.StdNetWeight = Math.Round(_scanDataWeight.Quantity * _scanDataWeight.AveWeight1Prs, 3);
-                                    _scanDataWeight.Tolerance = Math.Round(_scanDataWeight.StdNetWeight * (res.Tolerance / 100), 3);
+
+                                    //_scanDataWeight.Tolerance = Math.Round(_scanDataWeight.StdNetWeight * (res.Tolerance / 100), 3);
+                                    _scanDataWeight.LowerTolerance = Math.Round(_scanDataWeight.StdNetWeight * (lowerToleranceOfBox / 100), 3);
+                                    _scanDataWeight.UpperTolerance = Math.Round(_scanDataWeight.StdNetWeight * (upperToleranceOfBox / 100), 3);
 
                                     //luu ý các Quantity partition-Plasic-WrapSheet trên DB nó là tính số Prs
                                     //sau khi đọc về phải lấy QtyPrs quét trên label / Quantity partition-Plasic-WrapSheet ==> qty * weight ==> Weight package weight
@@ -1189,13 +1105,15 @@ namespace WeightChecking
                                         labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
                                         labNetWeight.Text = _scanDataWeight.StdNetWeight.ToString();
                                         labOcNo.Text = _scanDataWeight.OcNo;
+                                        labBoxId.Text = _scanDataWeight.BoxNo;
                                         labProductCode.Text = _scanDataWeight.ProductNumber;
                                         labProductName.Text = _scanDataWeight.ProductName;
                                         labQuantity.Text = _scanDataWeight.Quantity.ToString();
                                         labColor.Text = res.Color;
                                         labSize.Text = res.SizeName;
                                         labAveWeight.Text = _scanDataWeight.AveWeight1Prs.ToString();
-                                        labToloren.Text = _scanDataWeight.Tolerance.ToString();
+                                        labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
+                                        labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
                                         labBoxWeight.Text = _scanDataWeight.BoxWeight.ToString();
                                         labAccessoriesWeight.Text = _scanDataWeight.PackageWeight.ToString();
                                         labGrossWeight.Text = _scanDataWeight.StdGrossWeight.ToString();
@@ -1207,8 +1125,10 @@ namespace WeightChecking
                                     _scanDataWeight.Deviation = Math.Round(_scanDataWeight.NetWeight - _scanDataWeight.StdNetWeight, 3);
 
                                     #region tính toán số pairs chênh lệch và hiển thị label
-                                    var nwPlus = _scanDataWeight.StdNetWeight + _scanDataWeight.Tolerance;
-                                    var nwSub = _scanDataWeight.StdNetWeight - _scanDataWeight.Tolerance;
+                                    //var nwPlus = _scanDataWeight.StdNetWeight + _scanDataWeight.Tolerance;
+                                    //var nwSub = _scanDataWeight.StdNetWeight - _scanDataWeight.Tolerance;
+                                    nwPlus = _scanDataWeight.StdNetWeight + _scanDataWeight.UpperTolerance;
+                                    nwSub = _scanDataWeight.StdNetWeight - _scanDataWeight.LowerTolerance;
 
                                     if (((_scanDataWeight.NetWeight > nwPlus) && (_scanDataWeight.NetWeight - nwPlus < _scanDataWeight.AveWeight1Prs / 2))
                                     || ((_scanDataWeight.NetWeight < nwSub) && (nwSub - _scanDataWeight.NetWeight < _scanDataWeight.AveWeight1Prs / 2))
@@ -1381,7 +1301,8 @@ namespace WeightChecking
                                     para.Add("@ActualMetalScan", _scanDataWeight.ActualMetalScan);
                                     para.Add("@AveWeight1Prs", _scanDataWeight.AveWeight1Prs);
                                     para.Add("@StdNetWeight", _scanDataWeight.StdNetWeight);
-                                    para.Add("@Tolerance", _scanDataWeight.Tolerance);
+                                    para.Add("@LowerTolerance", _scanDataWeight.LowerTolerance);
+                                    para.Add("@UpperTolerance", _scanDataWeight.UpperTolerance);
                                     para.Add("@Boxweight", _scanDataWeight.BoxWeight);
                                     para.Add("@PackageWeight", _scanDataWeight.PackageWeight);
                                     para.Add("@StdGrossWeight", _scanDataWeight.StdGrossWeight);
@@ -1403,6 +1324,29 @@ namespace WeightChecking
 
                                     //var id = para.Get<string>("Id");
 
+                                    #endregion
+
+                                    #region hiển thị thông tin
+                                    this.Invoke((MethodInvoker)delegate
+                                    {
+                                        labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
+                                        labNetWeight.Text = _scanDataWeight.StdNetWeight.ToString();
+                                        labOcNo.Text = _scanDataWeight.OcNo;
+                                        labBoxId.Text = _scanDataWeight.BoxNo;
+                                        labProductCode.Text = _scanDataWeight.ProductNumber;
+                                        labProductName.Text = _scanDataWeight.ProductName;
+                                        labQuantity.Text = _scanDataWeight.Quantity.ToString();
+                                        labColor.Text = res.Color;
+                                        labSize.Text = res.SizeName;
+                                        labAveWeight.Text = _scanDataWeight.AveWeight1Prs.ToString();
+                                        labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
+                                        labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
+                                        //labLowerToleranceWeight.Text = nwSub.ToString("#.###");
+                                        //labUpperToleranceWeight.Text = nwPlus.ToString("#.###");
+                                        labBoxWeight.Text = _scanDataWeight.BoxWeight.ToString();
+                                        labAccessoriesWeight.Text = _scanDataWeight.PackageWeight.ToString();
+                                        labGrossWeight.Text = _scanDataWeight.StdGrossWeight.ToString();
+                                    });
                                     #endregion
                                 }
                                 else
@@ -1512,6 +1456,8 @@ namespace WeightChecking
                             labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
                             labDeviation.Text = _scanDataWeight.Deviation.ToString();
                             labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
+                            labLowerToleranceWeight.Text = nwSub.ToString("#.###");
+                            labUpperToleranceWeight.Text = nwPlus.ToString("#.###");
                         });
                         #endregion
 
