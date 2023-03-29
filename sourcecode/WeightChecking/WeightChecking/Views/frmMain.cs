@@ -1063,10 +1063,12 @@ namespace WeightChecking
                     {
                         con.Execute("truncate table tblCoreDataCodeItemSize");//xóa hết data trong bảng rồi add vào lại
 
-                        var executeResult = con.Execute("INSERT INTO tblCoreDataCodeItemSize (CodeItemSize,MainItemName,MetalScan,Color,Printing,Date,Size,AveWeight1Prs,BoxQtyBx1,BoxQtyBx2,BoxQtyBx3,BoxQtyBx4," +
+                        var executeResult = con.Execute("INSERT INTO tblCoreDataCodeItemSize (CodeItemSize,MainItemName,MetalScan,Color,Printing,Date,Size,AveWeight1Prs" +
+                            ",BoxQtyBx1,BoxQtyBx2,BoxQtyBx3,BoxQtyBx4,BoxWeightBx1,BoxWeightBx2,BoxWeightBx3,BoxWeightBx4," +
                                "PartitionQty,PlasicBag1Qty,PlasicBag2Qty,WrapSheetQty,FoamSheetQty,PartitionWeight,PlasicBag1Weight,PlasicBag2Weight" +
                                ",WrapSheetWeight,FoamSheetWeight,PlasicBoxWeight,LowerToleranceOfCartonBox,UpperToleranceOfCartonBox,LowerToleranceOfPlasticBox,UpperToleranceOfPlasticBox) " +
                            "VALUES (@CodeItemSize,@MainItemName,@MetalScan,@Color,@Printing,@Date,@Size,@AveWeight1Prs,@BoxQtyBx1,@BoxQtyBx2,@BoxQtyBx3,@BoxQtyBx4," +
+                                    "@BoxWeightBx1,@BoxWeightBx2,@BoxWeightBx3,@BoxWeightBx4," +
                                "@PartitionQty,@PlasicBag1Qty,@PlasicBag2Qty,@WrapSheetQty,@FoamSheetQty,@PartitionWeight,@PlasicBag1Weight,@PlasicBag2Weight" +
                                ",@WrapSheetWeight,@FoamSheetWeight,@PlasicBoxWeight,@LowerToleranceOfCartonBox,@UpperToleranceOfCartonBox,@LowerToleranceOfPlasticBox,@UpperToleranceOfPlasticBox)"
                            , coreData);

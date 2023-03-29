@@ -266,15 +266,15 @@ namespace WeightChecking
             //Khởi tạo máy in AnserU2 Smart one
             if (!GlobalVariables.IsTest)
             {
-                //SerialPortOpen();
-                //Thread.Sleep(10000);
-                //SendDynamicString(" ", " ", " ");
+                SerialPortOpen();
+                Thread.Sleep(10000);
+                SendDynamicString(" ", " ", " ");
             }
 
             GlobalVariables.AppStatus = "READY";
 
             //_scaleValueStable = 2784;
-            BarcodeHandle(2, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
+            //BarcodeHandle(2, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
             //GlobalVariables.MyEvent.SensorBeforeWeightScan = 1;
         }
 
