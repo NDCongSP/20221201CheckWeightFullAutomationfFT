@@ -830,7 +830,7 @@ namespace WeightChecking
                         {
                             Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
                         }
-                        Debug.WriteLine($"da can xong. stable {_stableScale}");
+                        //Debug.WriteLine($"da can xong. stable {_stableScale}");
 
                         _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
                         //truy vấn thông tin 
@@ -1495,7 +1495,7 @@ namespace WeightChecking
                                 Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
-                                GlobalVariables.MyEvent.PrintPusher = 1;
+                                GlobalVariables.MyEvent.PrintPusher = 0;
                                 //_scannerIsBussy[2] = false;
                                 return;
                             }
@@ -1519,7 +1519,7 @@ namespace WeightChecking
                                 Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
-                                GlobalVariables.MyEvent.PrintPusher = 1;
+                                GlobalVariables.MyEvent.PrintPusher = 0;
                                 //_scannerIsBussy[2] = false;
                                 return;
                             }

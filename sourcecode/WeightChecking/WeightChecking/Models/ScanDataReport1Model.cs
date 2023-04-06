@@ -9,7 +9,7 @@ namespace WeightChecking
     public class ScanDataReport1Model
     {
         public string BarcodeString { get; set; } = null;
-        public string IdLable { get; set; } = null;
+        public string IdLabel { get; set; } = null;
         public string OcNo { get; set; } = null;
         public string ProductNumber { get; set; } = null;
         public string ProductName { get; set; } = null;
