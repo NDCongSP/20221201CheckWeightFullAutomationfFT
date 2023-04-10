@@ -72,6 +72,7 @@ namespace WeightChecking
         public static string  UpdatePath { get; set; }
         public static string AppStatus { get; set; } = "DANG KHỞI ĐỘNG...";
         public static bool IsTest { get; set; } = false;//biến báo đang ở chế độ test hay chạy chính
+        public static bool IsOutsoleMode { get; set; } = true;
 
         #region Printing
         // Print the file.

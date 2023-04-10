@@ -472,7 +472,8 @@
   </Target>
   <Target Name="CopyDLLs" AfterTargets="Build">
     <Message Text="Executing CopyDLLs task" Importance="High" />
-    <Copy SourceFiles="$(TargetDir)$(AssemblyName).exe;$(TargetDir)$(AssemblyName).exe.config;$(TargetDir)$(AssemblyName).pdb" DestinationFolder="$(OutputPath)\..\Update" />
+    <Copy SourceFiles="$(TargetDir)$(AssemblyName).exe;$(TargetDir)$(AssemblyName).pdb" DestinationFolder="$(OutputPath)\..\Update" />
+    <!--<Copy SourceFiles="$(TargetDir)$(AssemblyName).exe;$(TargetDir)$(AssemblyName).exe.config;$(TargetDir)$(AssemblyName).pdb" DestinationFolder="$(OutputPath)\..\Update" />-->
     <!--<Copy SourceFiles="$(TargetDir)\Reports\rptFormula.repx" DestinationFolder="$(OutputPath)\..\Update\Reports" />-->
     <Message Text="Copied build files" Importance="High" />
     <ZipDirectory SourceDirectory="$(OutputPath)\..\Update" DestinationFile="$(OutputPath)\..\Update.zip" Overwrite="true" />

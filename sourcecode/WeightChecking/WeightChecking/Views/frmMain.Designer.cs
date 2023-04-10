@@ -47,12 +47,13 @@ namespace WeightChecking
             this.repositoryItemDateEdit1 = new DevExpress.XtraEditors.Repository.RepositoryItemDateEdit();
             this._barEditItemToDate = new DevExpress.XtraBars.BarEditItem();
             this.repositoryItemDateEdit2 = new DevExpress.XtraEditors.Repository.RepositoryItemDateEdit();
-            this.barStaticItemVersion = new DevExpress.XtraBars.BarStaticItem();
             this._barEditItemCombStation = new DevExpress.XtraBars.BarEditItem();
             this.repositoryItemComboBox1 = new DevExpress.XtraEditors.Repository.RepositoryItemComboBox();
             this._barButtonItemExportMasterData = new DevExpress.XtraBars.BarButtonItem();
             this._barButtonItemExportMissItem = new DevExpress.XtraBars.BarButtonItem();
             this.barButtonItemTest = new DevExpress.XtraBars.BarButtonItem();
+            this._barCheckItemOutsole = new DevExpress.XtraBars.BarCheckItem();
+            this.barStaticItemVersion = new DevExpress.XtraBars.BarStaticItem();
             this.ribbonPageHome = new DevExpress.XtraBars.Ribbon.RibbonPage();
             this.ribbonPageGroupHome = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.ribbonPageMasterData = new DevExpress.XtraBars.Ribbon.RibbonPage();
@@ -60,6 +61,7 @@ namespace WeightChecking
             this.ribbonPageReports = new DevExpress.XtraBars.Ribbon.RibbonPage();
             this.ribbonPageGroupFilter = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this._ribbonPageGroupActions = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
+            this.repositoryItemCheckEdit1 = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
             this.ribbonStatusBar1 = new DevExpress.XtraBars.Ribbon.RibbonStatusBar();
             this.ribbonPage2 = new DevExpress.XtraBars.Ribbon.RibbonPage();
             this.documentManager1 = new DevExpress.XtraBars.Docking2010.DocumentManager(this.components);
@@ -71,6 +73,7 @@ namespace WeightChecking
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemDateEdit2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemDateEdit2.CalendarTimeProperties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemComboBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.repositoryItemCheckEdit1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.documentManager1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tabbedView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).BeginInit();
@@ -95,13 +98,14 @@ namespace WeightChecking
             this._barButtonItemExportExcel,
             this._barEditItemFromDate,
             this._barEditItemToDate,
-            this.barStaticItemVersion,
             this._barEditItemCombStation,
             this._barButtonItemExportMasterData,
             this._barButtonItemExportMissItem,
-            this.barButtonItemTest});
+            this.barButtonItemTest,
+            this._barCheckItemOutsole,
+            this.barStaticItemVersion});
             this.ribbonControl1.Location = new System.Drawing.Point(0, 0);
-            this.ribbonControl1.MaxItemId = 23;
+            this.ribbonControl1.MaxItemId = 26;
             this.ribbonControl1.Name = "ribbonControl1";
             this.ribbonControl1.Pages.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPage[] {
             this.ribbonPageHome,
@@ -110,7 +114,8 @@ namespace WeightChecking
             this.ribbonControl1.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
             this.repositoryItemDateEdit1,
             this.repositoryItemDateEdit2,
-            this.repositoryItemComboBox1});
+            this.repositoryItemComboBox1,
+            this.repositoryItemCheckEdit1});
             this.ribbonControl1.Size = new System.Drawing.Size(1918, 177);
             this.ribbonControl1.StatusBar = this.ribbonStatusBar1;
             // 
@@ -253,13 +258,6 @@ namespace WeightChecking
             this.repositoryItemDateEdit2.EditFormat.FormatType = DevExpress.Utils.FormatType.DateTime;
             this.repositoryItemDateEdit2.Name = "repositoryItemDateEdit2";
             // 
-            // barStaticItemVersion
-            // 
-            this.barStaticItemVersion.Alignment = DevExpress.XtraBars.BarItemLinkAlignment.Right;
-            this.barStaticItemVersion.Caption = "barStaticItem1";
-            this.barStaticItemVersion.Id = 17;
-            this.barStaticItemVersion.Name = "barStaticItemVersion";
-            // 
             // _barEditItemCombStation
             // 
             this._barEditItemCombStation.Caption = "Station    ";
@@ -306,6 +304,28 @@ namespace WeightChecking
             this.barButtonItemTest.Name = "barButtonItemTest";
             this.barButtonItemTest.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItemTest_ItemClick);
             // 
+            // _barCheckItemOutsole
+            // 
+            this._barCheckItemOutsole.Caption = "Cân hàng Outsole";
+            this._barCheckItemOutsole.CheckBoxVisibility = DevExpress.XtraBars.CheckBoxVisibility.BeforeText;
+            this._barCheckItemOutsole.Id = 24;
+            this._barCheckItemOutsole.ItemAppearance.Hovered.Font = new System.Drawing.Font("Tahoma", 15F, System.Drawing.FontStyle.Bold);
+            this._barCheckItemOutsole.ItemAppearance.Hovered.ForeColor = System.Drawing.Color.Red;
+            this._barCheckItemOutsole.ItemAppearance.Hovered.Options.UseFont = true;
+            this._barCheckItemOutsole.ItemAppearance.Hovered.Options.UseForeColor = true;
+            this._barCheckItemOutsole.ItemAppearance.Normal.Font = new System.Drawing.Font("Tahoma", 15F, System.Drawing.FontStyle.Bold);
+            this._barCheckItemOutsole.ItemAppearance.Normal.ForeColor = System.Drawing.Color.Red;
+            this._barCheckItemOutsole.ItemAppearance.Normal.Options.UseFont = true;
+            this._barCheckItemOutsole.ItemAppearance.Normal.Options.UseForeColor = true;
+            this._barCheckItemOutsole.Name = "_barCheckItemOutsole";
+            // 
+            // barStaticItemVersion
+            // 
+            this.barStaticItemVersion.Alignment = DevExpress.XtraBars.BarItemLinkAlignment.Right;
+            this.barStaticItemVersion.Caption = "barStaticItem1";
+            this.barStaticItemVersion.Id = 25;
+            this.barStaticItemVersion.Name = "barStaticItemVersion";
+            // 
             // ribbonPageHome
             // 
             this.ribbonPageHome.Groups.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageGroup[] {
@@ -321,7 +341,7 @@ namespace WeightChecking
             this.ribbonPageGroupHome.ItemLinks.Add(this.barButtonItemPrint);
             this.ribbonPageGroupHome.ItemLinks.Add(this.barButtonItemResetCountMetal);
             this.ribbonPageGroupHome.ItemLinks.Add(this._barButtonItemUpVersion);
-            this.ribbonPageGroupHome.ItemLinks.Add(this.barButtonItemTest);
+            this.ribbonPageGroupHome.ItemLinks.Add(this._barCheckItemOutsole);
             this.ribbonPageGroupHome.Name = "ribbonPageGroupHome";
             this.ribbonPageGroupHome.Text = "Actions";
             // 
@@ -366,6 +386,11 @@ namespace WeightChecking
             this._ribbonPageGroupActions.ItemLinks.Add(this._barButtonItemExportMissItem);
             this._ribbonPageGroupActions.Name = "_ribbonPageGroupActions";
             this._ribbonPageGroupActions.Text = "Actions";
+            // 
+            // repositoryItemCheckEdit1
+            // 
+            this.repositoryItemCheckEdit1.AutoHeight = false;
+            this.repositoryItemCheckEdit1.Name = "repositoryItemCheckEdit1";
             // 
             // ribbonStatusBar1
             // 
@@ -427,6 +452,7 @@ namespace WeightChecking
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemDateEdit2.CalendarTimeProperties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemDateEdit2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemComboBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.repositoryItemCheckEdit1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.documentManager1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tabbedView1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).EndInit();
@@ -465,12 +491,14 @@ namespace WeightChecking
         private DevExpress.XtraBars.BarEditItem _barEditItemToDate;
         private DevExpress.XtraEditors.Repository.RepositoryItemDateEdit repositoryItemDateEdit2;
         private DevExpress.XtraBars.Ribbon.RibbonPageGroup _ribbonPageGroupActions;
-        private DevExpress.XtraBars.BarStaticItem barStaticItemVersion;
         private DevExpress.XtraBars.BarEditItem _barEditItemCombStation;
         private DevExpress.XtraEditors.Repository.RepositoryItemComboBox repositoryItemComboBox1;
         private DevExpress.XtraBars.BarButtonItem _barButtonItemExportMasterData;
         private DevExpress.XtraBars.BarButtonItem _barButtonItemExportMissItem;
         private DevExpress.XtraBars.BarButtonItem barButtonItemTest;
+        private DevExpress.XtraBars.BarCheckItem _barCheckItemOutsole;
+        private DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit repositoryItemCheckEdit1;
+        private DevExpress.XtraBars.BarStaticItem barStaticItemVersion;
     }
 }
 
