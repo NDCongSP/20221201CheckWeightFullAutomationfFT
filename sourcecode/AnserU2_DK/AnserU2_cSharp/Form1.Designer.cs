@@ -52,6 +52,8 @@ namespace AnserU2_cSharp
             this.btnSetDelay = new System.Windows.Forms.Button();
             this.txtString3 = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.txtString4 = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btn_Setspeed
@@ -208,10 +210,10 @@ namespace AnserU2_cSharp
             // 
             this.labStatus.Cursor = System.Windows.Forms.Cursors.Default;
             this.labStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labStatus.Location = new System.Drawing.Point(1, 282);
+            this.labStatus.Location = new System.Drawing.Point(13, 356);
             this.labStatus.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labStatus.Name = "labStatus";
-            this.labStatus.Size = new System.Drawing.Size(798, 100);
+            this.labStatus.Size = new System.Drawing.Size(776, 153);
             this.labStatus.TabIndex = 28;
             this.labStatus.Text = "Status:";
             this.labStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -310,11 +312,31 @@ namespace AnserU2_cSharp
             this.label6.TabIndex = 22;
             this.label6.Text = "String 3";
             // 
+            // txtString4
+            // 
+            this.txtString4.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtString4.Location = new System.Drawing.Point(161, 306);
+            this.txtString4.Margin = new System.Windows.Forms.Padding(2);
+            this.txtString4.Name = "txtString4";
+            this.txtString4.Size = new System.Drawing.Size(172, 23);
+            this.txtString4.TabIndex = 19;
+            this.txtString4.Text = "Pass";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(159, 290);
+            this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(43, 13);
+            this.label7.TabIndex = 22;
+            this.label7.Text = "String 4";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 418);
+            this.ClientSize = new System.Drawing.Size(800, 518);
             this.Controls.Add(this.labStatus);
             this.Controls.Add(this.Label_counter);
             this.Controls.Add(this.btnSetDelay);
@@ -325,12 +347,14 @@ namespace AnserU2_cSharp
             this.Controls.Add(this.label5);
             this.Controls.Add(this.btn_GetSpeed);
             this.Controls.Add(this.Label3);
+            this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.txtDelayPV);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.txt_speedPV);
+            this.Controls.Add(this.txtString4);
             this.Controls.Add(this.txtString3);
             this.Controls.Add(this.txtString2);
             this.Controls.Add(this.txtString1);
@@ -370,6 +394,8 @@ namespace AnserU2_cSharp
         internal System.Windows.Forms.Button btnSetDelay;
         internal System.Windows.Forms.TextBox txtString3;
         internal System.Windows.Forms.Label label6;
+        internal System.Windows.Forms.TextBox txtString4;
+        internal System.Windows.Forms.Label label7;
     }
 }
 

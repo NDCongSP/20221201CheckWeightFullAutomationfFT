@@ -70,5 +70,7 @@ namespace WeightChecking
             get { return Math.Round((DeviationPairs * AveWeight1Prs) / StdGrossWeight, 2); }
             set { }
         }
+
+        public int ProductCategory { get; set; }
     }
 }

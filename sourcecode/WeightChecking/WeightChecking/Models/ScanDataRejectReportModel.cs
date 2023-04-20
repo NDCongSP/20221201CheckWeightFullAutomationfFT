@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-    public class ScanDataRejectModel
+    public class ScanDataRejectReportModel
     {
         public string BarcodeString { get; set; }
         public string IdLabel { get; set; }
@@ -19,12 +19,5 @@ namespace WeightChecking
         public string ScannerStation { get; set; }
         public string Reason { get; set; }
         public DateTime CreatedDate { get; set; }
-
-        [Browsable(false)]
-        public Guid ID { get; set; }
-        [Browsable(false)]
-        public string CreatedMachine { get; set; }
-        [Browsable(false)]
-        public int IsActived { get; set; }
     }
 }

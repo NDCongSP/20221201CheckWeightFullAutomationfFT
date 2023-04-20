@@ -26,6 +26,8 @@ namespace WeightChecking
         static void Main()
         {
             #region Đọc các thông số cấu hình ban đầu từ settings
+            GlobalVariables.IsTest = Properties.Settings.Default.IsTest;
+
             if (!GlobalVariables.IsTest)
             {
                 GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");
@@ -48,7 +50,6 @@ namespace WeightChecking
             GlobalVariables.TimeCheckQrMetal = Properties.Settings.Default.TimeCheckQrMetal;
             GlobalVariables.TimeCheckQrScale = Properties.Settings.Default.TimeCheckQrScale;
             GlobalVariables.UpdatePath = Properties.Settings.Default.UpdatePath;
-            GlobalVariables.IsTest = Properties.Settings.Default.IsTest; ;
 
             if (Properties.Settings.Default.Station == 0)
             {

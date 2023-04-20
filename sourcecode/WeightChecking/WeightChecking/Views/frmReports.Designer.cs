@@ -33,9 +33,6 @@ namespace WeightChecking
             this.grvReports = new DevExpress.XtraGrid.Views.Grid.GridView();
             this.xtraTabControl1 = new DevExpress.XtraTab.XtraTabControl();
             this.xtraTabPage1 = new DevExpress.XtraTab.XtraTabPage();
-            this.xtraTabPage2 = new DevExpress.XtraTab.XtraTabPage();
-            this.grcApprove = new DevExpress.XtraGrid.GridControl();
-            this.grvApprove = new DevExpress.XtraGrid.Views.Grid.GridView();
             this.xtraTabPage3 = new DevExpress.XtraTab.XtraTabPage();
             this.grcMissInfo = new DevExpress.XtraGrid.GridControl();
             this.grvMissInfo = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -47,9 +44,6 @@ namespace WeightChecking
             ((System.ComponentModel.ISupportInitialize)(this.xtraTabControl1)).BeginInit();
             this.xtraTabControl1.SuspendLayout();
             this.xtraTabPage1.SuspendLayout();
-            this.xtraTabPage2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.grcApprove)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.grvApprove)).BeginInit();
             this.xtraTabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grcMissInfo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.grvMissInfo)).BeginInit();
@@ -91,7 +85,6 @@ namespace WeightChecking
             this.xtraTabControl1.TabIndex = 1;
             this.xtraTabControl1.TabPages.AddRange(new DevExpress.XtraTab.XtraTabPage[] {
             this.xtraTabPage1,
-            this.xtraTabPage2,
             this.xtraTabPage3,
             this.xtraTabPage4});
             // 
@@ -103,38 +96,6 @@ namespace WeightChecking
             this.xtraTabPage1.Name = "xtraTabPage1";
             this.xtraTabPage1.Size = new System.Drawing.Size(1408, 754);
             this.xtraTabPage1.Text = "Scan Data";
-            // 
-            // xtraTabPage2
-            // 
-            this.xtraTabPage2.Appearance.Header.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold);
-            this.xtraTabPage2.Appearance.Header.Options.UseFont = true;
-            this.xtraTabPage2.Controls.Add(this.grcApprove);
-            this.xtraTabPage2.Name = "xtraTabPage2";
-            this.xtraTabPage2.Size = new System.Drawing.Size(1408, 754);
-            this.xtraTabPage2.Text = "Approved Print";
-            // 
-            // grcApprove
-            // 
-            this.grcApprove.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grcApprove.EmbeddedNavigator.Buttons.Edit.Enabled = false;
-            this.grcApprove.EmbeddedNavigator.Buttons.EndEdit.Enabled = false;
-            this.grcApprove.EmbeddedNavigator.Buttons.Remove.Enabled = false;
-            this.grcApprove.Location = new System.Drawing.Point(0, 0);
-            this.grcApprove.MainView = this.grvApprove;
-            this.grcApprove.Name = "grcApprove";
-            this.grcApprove.Size = new System.Drawing.Size(1408, 754);
-            this.grcApprove.TabIndex = 1;
-            this.grcApprove.UseEmbeddedNavigator = true;
-            this.grcApprove.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
-            this.grvApprove});
-            // 
-            // grvApprove
-            // 
-            this.grvApprove.GridControl = this.grcApprove;
-            this.grvApprove.Name = "grvApprove";
-            this.grvApprove.OptionsBehavior.ReadOnly = true;
-            this.grvApprove.OptionsDetail.ShowEmbeddedDetailIndent = DevExpress.Utils.DefaultBoolean.True;
-            this.grvApprove.OptionsView.ColumnAutoWidth = false;
             // 
             // xtraTabPage3
             // 
@@ -207,9 +168,6 @@ namespace WeightChecking
             ((System.ComponentModel.ISupportInitialize)(this.xtraTabControl1)).EndInit();
             this.xtraTabControl1.ResumeLayout(false);
             this.xtraTabPage1.ResumeLayout(false);
-            this.xtraTabPage2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.grcApprove)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.grvApprove)).EndInit();
             this.xtraTabPage3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.grcMissInfo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.grvMissInfo)).EndInit();
@@ -226,9 +184,6 @@ namespace WeightChecking
         private DevExpress.XtraGrid.Views.Grid.GridView grvReports;
         private DevExpress.XtraTab.XtraTabControl xtraTabControl1;
         private DevExpress.XtraTab.XtraTabPage xtraTabPage1;
-        private DevExpress.XtraTab.XtraTabPage xtraTabPage2;
-        private DevExpress.XtraGrid.GridControl grcApprove;
-        private DevExpress.XtraGrid.Views.Grid.GridView grvApprove;
         private DevExpress.XtraTab.XtraTabPage xtraTabPage3;
         private DevExpress.XtraGrid.GridControl grcMissInfo;
         private DevExpress.XtraGrid.Views.Grid.GridView grvMissInfo;

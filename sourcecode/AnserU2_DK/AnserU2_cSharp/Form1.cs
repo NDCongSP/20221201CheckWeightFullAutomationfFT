@@ -85,7 +85,7 @@ namespace AnserU2_cSharp
                     Console.WriteLine($"in thanh cong!!!");
 
                     //xoa string
-                    SendDynamicString(" ", " ", " ");
+                    SendDynamicString(" ", " ", " ", " ");
                 }
                 else if (rcvArr[4] == 0x4F)
                 {
@@ -165,8 +165,9 @@ namespace AnserU2_cSharp
             string string1 = txtString1.Text;
             string string2 = txtString2.Text;
             string string3 = txtString3.Text;
+            string string4 = txtString4.Text;
 
-            SendDynamicString(string1, string2, string3);
+            SendDynamicString(string1, string2, string3, string4);
         }
 
         private void btn_startprint_Click(object sender, EventArgs e)
@@ -191,15 +192,15 @@ namespace AnserU2_cSharp
             _serialPort.Write(SetPtinting, 0, SetPtinting.Length);
         }
 
-        private void SendDynamicString(string string1, string string2, string string3)
+        private void SendDynamicString(string string1, string string2, string string3, string string4)
         {
-            int i = 0, j = 0, k = 0;
+            int i = 0, j = 0, k = 0, l = 0;
             int chkSUM = 0;
 
-            byte[] SetDynamicString = new byte[14 + string1.Length + string2.Length + string3.Length];
+            byte[] SetDynamicString = new byte[14 + string1.Length + string2.Length + string3.Length + string4.Length];
             SetDynamicString[0] = 0x2;
             SetDynamicString[1] = 0x0;
-            SetDynamicString[2] = (byte)(9 + string1.Length + string2.Length + string3.Length);
+            SetDynamicString[2] = (byte)(9 + string1.Length + string2.Length + string3.Length + string4.Length);
             SetDynamicString[3] = 0x0;
             SetDynamicString[4] = 0xCA; // Mã lệnh Set dynamic string
             SetDynamicString[5] = 0;
@@ -207,17 +208,19 @@ namespace AnserU2_cSharp
             SetDynamicString[7] = (byte)(string1.Length); // Chiều dài của string 1
             SetDynamicString[8] = (byte)(string2.Length); // Chiều dài của string 2
             SetDynamicString[9] = (byte)(string3.Length); // Chiều dài của string 3
-            SetDynamicString[10] = 0; // Chiều dài của string 4
+            SetDynamicString[10] = (byte)(string4.Length); // Chiều dài của string 4
             SetDynamicString[11] = 0; // Chiều dài của string 5
 
             //chuyen string sang ASCII
             var string1Arr = string1.ToCharArray();
             var string2Arr = string2.ToCharArray();
             var string3Arr = string3.ToCharArray();
+            var string4Arr = string4.ToCharArray();
 
             byte[] string1Ascii = Encoding.ASCII.GetBytes(string1Arr);
             byte[] string2Ascii = Encoding.ASCII.GetBytes(string2Arr);
             byte[] string3Ascii = Encoding.ASCII.GetBytes(string3Arr);
+            byte[] string4Ascii = Encoding.ASCII.GetBytes(string4Arr);
 
             for (i = 0; i <= string1Ascii.Length - 1; i++)
             {
@@ -234,12 +237,17 @@ namespace AnserU2_cSharp
                 SetDynamicString[12 + i + j + k] = string3Ascii[k];// Nội dung của string 3
             }
 
+            for (l = 0; l <= string4Ascii.Length - 1; l++)
+            {
+                SetDynamicString[12 + i + j + k + l] = string4Ascii[l];// Nội dung của string 3
+            }
+
             // Tính check SUM
-            for (var c = 1; c <= i + j + k + 12; c++)
+            for (var c = 1; c <= i + j + k + l + 12; c++)
                 chkSUM = chkSUM + SetDynamicString[c];
             chkSUM = chkSUM & 0xFF;
-            SetDynamicString[i + j + k + 12] = System.Convert.ToByte(chkSUM); // Gán byte checksum vào arr
-            SetDynamicString[i + j + k + 12 + 1] = 0x3;
+            SetDynamicString[i + j + k + l + 12] = System.Convert.ToByte(chkSUM); // Gán byte checksum vào arr
+            SetDynamicString[i + j + k + l + 12 + 1] = 0x3;
 
             _serialPort.Write(SetDynamicString, 0, SetDynamicString.Length);
         }

@@ -3,7 +3,7 @@ use IDCScaleSystem;
 select top(100) * from tblScanData 
 where Actived = 1
 --and BarcodeString ='OPRT8592,6112042102-PAX0-3001,8,6,P,8/8,170000,1/1|1,,,,'
-and IdLabel = '22421.2023'
+--and IdLabel = '22421.2023'
 --and OcNo = 'A100408 '-- AND BoxNo ='1/1'
 --and Station = 0
 order by CreatedDate desc;
@@ -26,6 +26,7 @@ where ProductNumber in ('6812012210-2116-2302','6818012202-2241-3002','681232220
 order by CreatedDate desc
 
 select * from tblMetalScanResult order by createddate desc
+SELECT * FROM tblScanDataReject order by createddate desc
  
 --delete tblScanData where Id	= 'DE58C27C-E619-4398-B92A-18E9F94814DC'
 --delete tblApprovedPrintLabel where Id = 'D88CC4E5-A05F-4BCE-847A-DB31BFEDC31D'
@@ -39,7 +40,3 @@ select * from tblMetalScanResult order by createddate desc
 --F738E7B3-DA9F-43C3-927A-418552F9EE29
 
 --code approved: D7BEF08B-C830-4C67-9F2F-39D52AE178EE
-
---truncate table tblScanData
---truncate table tblWinlineProductsInfo
---truncate table tblCoreDataCodeItemSize

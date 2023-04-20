@@ -90,6 +90,7 @@ namespace WeightChecking
             this._barButtonItemExportMasterData.ItemClick += _barButtonItemExportMasterData_ItemClick;
             this._barButtonItemExportMissItem.ItemClick += _barButtonItemExportMissItem_ItemClick;
 
+            this._barCheckItemOutsole.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
             this._barCheckItemOutsole.Checked = GlobalVariables.IsOutsoleMode;
 
             this._barCheckItemOutsole.CheckedChanged += (s, o) =>
@@ -521,16 +522,20 @@ namespace WeightChecking
                             var reportModel = new List<ScanDataReport1Model>();
                             var res = connection.Query<ScanDataReportModel>("sp_tblScanDataGets", parametters, commandType: CommandType.StoredProcedure).ToList();
 
-                            var reportApproved = new List<ApprovedReportModel>();
-                            var resApproved = connection.Query<ApprovedModel>("sp_tblApprovedPrintLableSelect", parametters, commandType: CommandType.StoredProcedure).ToList();
+                            //var reportApproved = new List<ApprovedReportModel>();
+                            //var resApproved = connection.Query<ApprovedModel>("sp_tblApprovedPrintLableSelect", parametters, commandType: CommandType.StoredProcedure).ToList();
 
                             var resMissInfo = connection.Query<MissProItemModel>("sp_MissingInfoGets", parametters, commandType: CommandType.StoredProcedure).ToList();
+
+                            var resScanDataRejectReport = new List<ScanDataRejectReportModel>();
+                            var resScanDataReject = connection.Query<ScanDataRejectModel>("sp_tblScanDataRejectSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
 
                             using (Workbook wb = new Workbook())
                             {
                                 //wb.Worksheets.Remove(wb.Worksheets["Sheet1"]);
                                 wb.Worksheets["Sheet1"].Name = "DataScan";
-                                wb.Worksheets.Add("ApprovedPrintLable");
+                                //wb.Worksheets.Add("ApprovedPrintLable");
+                                wb.Worksheets.Add("DataScanReject");
                                 wb.Worksheets.Add("MissProItems");
 
                                 #region Data scan
@@ -571,8 +576,10 @@ namespace WeightChecking
                                 ws.Cells[0, 32].Value = "UserName";
                                 ws.Cells[0, 33].Value = "ApprovedName";
                                 ws.Cells[0, 34].Value = "ActualDeviationPairs";
+                                ws.Cells[0, 35].Value = "RatioFailWeight";
+                                ws.Cells[0, 36].Value = "ProductCategory";
 
-                                CellRange rHeader = ws.Range.FromLTRB(0, 0, 34, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
+                                CellRange rHeader = ws.Range.FromLTRB(0, 0, 36, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
                                 rHeader.FillColor = Color.Orange;
                                 rHeader.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Center;
                                 rHeader.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
@@ -616,7 +623,9 @@ namespace WeightChecking
                                         Station = item.Station.ToString(),
                                         UserName = item.UserName,
                                         ApprovedName = item.ApprovedName,
-                                        ActualDeviationPairs = item.ActualDeviationPairs
+                                        ActualDeviationPairs = item.ActualDeviationPairs,
+                                        RatioFailWeight = item.RatioFailWeight,
+                                        ProductCategory = item.ProductCategory
                                     });
                                 }
                                 ws.Import(reportModel, 1, 0);
@@ -625,59 +634,110 @@ namespace WeightChecking
                                 ws.Range[$"AC2:AD{res.Count}"].NumberFormat = "#,#0";
                                 ws.Range[$"AE2:AE{res.Count}"].NumberFormat = "yyyy/MM/dd HH:mm:ss";
 
-                                ws.Range.FromLTRB(0, 0, 34, res.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
+                                ws.Range.FromLTRB(0, 0, 36, res.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
                                 //ws.FreezeRows(0);
                                 //ws.FreezeColumns(3);
                                 ws.FreezePanes(0, 3);
-                                ws.Columns.AutoFit(0, 34);
+                                ws.Columns.AutoFit(0, 36);
                                 #endregion
 
-                                #region Approved print lable
-                                ws = wb.Worksheets["ApprovedPrintLable"];
+                                #region data scan reject
+                                ws = wb.Worksheets["DataScanReject"];
 
-                                ws.Cells[0, 0].Value = "User Name";
+                                ws.Cells[0, 0].Value = "QR Label";
                                 ws.Cells[0, 1].Value = "ID Lable";
                                 ws.Cells[0, 2].Value = "OC";
                                 ws.Cells[0, 3].Value = "Box No";
-                                ws.Cells[0, 4].Value = "Gross Weight";
-                                ws.Cells[0, 5].Value = "Station";
-                                ws.Cells[0, 6].Value = "Created Date";
-                                ws.Cells[0, 7].Value = "QR Label";
-                                ws.Cells[0, 8].Value = "Aprrove Type";
+                                ws.Cells[0, 4].Value = "Product Code";
+                                ws.Cells[0, 5].Value = "Product Name";
+                                ws.Cells[0, 6].Value = "Quantity (Prs)";
+                                ws.Cells[0, 7].Value = "Scanner Station";
+                                ws.Cells[0, 8].Value = "Reason";
+                                ws.Cells[0, 9].Value = "CreatedDate";
 
-                                rHeader = ws.Range.FromLTRB(0, 0, 8, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
+                                rHeader = ws.Range.FromLTRB(0, 0, 9, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
                                 rHeader.FillColor = Color.Orange;
                                 rHeader.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Center;
                                 rHeader.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
                                 rHeader.Font.Bold = true;
 
-                                foreach (var itemApproved in resApproved)
+                                foreach (var item in resScanDataReject)
                                 {
-                                    reportApproved.Add(new ApprovedReportModel()
+                                    resScanDataRejectReport.Add(new ScanDataRejectReportModel()
                                     {
-                                        UserName = itemApproved.UserName,
-                                        IdLable = itemApproved.IdLable,
-                                        OC = itemApproved.OC,
-                                        BoxNo = itemApproved.BoxNo,
-                                        GrossWeight = itemApproved.GrossWeight,
-                                        Station = itemApproved.Station.ToString(),
-                                        CreatedDate = itemApproved.CreatedDate,
-                                        QRLabel = itemApproved.QRLabel,
-                                        ApproveType = itemApproved.ApproveType,
+                                        BarcodeString = item.BarcodeString,
+                                        IdLabel = item.IdLabel,
+                                        OcNo = item.OcNo,
+                                        BoxId = item.IdLabel,
+                                        ProductNumber = item.ProductNumber,
+                                        ProductName = item.ProductName,
+                                        Quantity = item.Quantity,
+                                        ScannerStation = item.ScannerStation,
+                                        Reason = item.Reason,
+                                        CreatedDate = item.CreatedDate
                                     });
                                 }
-                                ws.Import(reportApproved, 1, 0);
+
+                                ws.Import(resScanDataRejectReport, 1, 0);
 
                                 //ws.Range[$"Q2:Y{res.Count}"].NumberFormat = "#,#0.00";
-                                //ws.Range[$"AB2:AC{res.Count}"].NumberFormat = "#,#0";
-                                ws.Range[$"G2:G" +
+                                ws.Range[$"G2:G{res.Count}"].NumberFormat = "#,#0";
+                                ws.Range[$"J2:J" +
                                     $"{res.Count}"].NumberFormat = "yyyy/MM/dd HH:mm:ss";
 
-                                ws.Range.FromLTRB(0, 0, 8, reportApproved.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
+                                ws.Range.FromLTRB(0, 0, 9, resScanDataRejectReport.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
                                 //ws.FreezeRows(0);
                                 //ws.FreezeColumns(3);
                                 //ws.FreezePanes(0, 3);
-                                ws.Columns.AutoFit(0, 8);
+                                ws.Columns.AutoFit(0, 9);
+                                #endregion
+
+                                #region Approved print lable
+                                //ws = wb.Worksheets["ApprovedPrintLable"];
+
+                                //ws.Cells[0, 0].Value = "User Name";
+                                //ws.Cells[0, 1].Value = "ID Lable";
+                                //ws.Cells[0, 2].Value = "OC";
+                                //ws.Cells[0, 3].Value = "Box No";
+                                //ws.Cells[0, 4].Value = "Gross Weight";
+                                //ws.Cells[0, 5].Value = "Station";
+                                //ws.Cells[0, 6].Value = "Created Date";
+                                //ws.Cells[0, 7].Value = "QR Label";
+                                //ws.Cells[0, 8].Value = "Aprrove Type";
+
+                                //rHeader = ws.Range.FromLTRB(0, 0, 8, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
+                                //rHeader.FillColor = Color.Orange;
+                                //rHeader.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Center;
+                                //rHeader.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
+                                //rHeader.Font.Bold = true;
+
+                                //foreach (var itemApproved in resApproved)
+                                //{
+                                //    reportApproved.Add(new ApprovedReportModel()
+                                //    {
+                                //        UserName = itemApproved.UserName,
+                                //        IdLable = itemApproved.IdLable,
+                                //        OC = itemApproved.OC,
+                                //        BoxNo = itemApproved.BoxNo,
+                                //        GrossWeight = itemApproved.GrossWeight,
+                                //        Station = itemApproved.Station.ToString(),
+                                //        CreatedDate = itemApproved.CreatedDate,
+                                //        QRLabel = itemApproved.QRLabel,
+                                //        ApproveType = itemApproved.ApproveType,
+                                //    });
+                                //}
+                                //ws.Import(reportApproved, 1, 0);
+
+                                ////ws.Range[$"Q2:Y{res.Count}"].NumberFormat = "#,#0.00";
+                                ////ws.Range[$"AB2:AC{res.Count}"].NumberFormat = "#,#0";
+                                //ws.Range[$"G2:G" +
+                                //    $"{res.Count}"].NumberFormat = "yyyy/MM/dd HH:mm:ss";
+
+                                //ws.Range.FromLTRB(0, 0, 8, reportApproved.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
+                                ////ws.FreezeRows(0);
+                                ////ws.FreezeColumns(3);
+                                ////ws.FreezePanes(0, 3);
+                                //ws.Columns.AutoFit(0, 8);
                                 #endregion
 
                                 #region Missing infomation

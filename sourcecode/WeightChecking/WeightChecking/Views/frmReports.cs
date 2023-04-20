@@ -81,21 +81,21 @@ namespace WeightChecking
                     #endregion
 
                     #region Approved Print
-                    var resApproved = connection.Query<ApprovedModel>("sp_tblApprovedPrintLableSelect", parametters, commandType: CommandType.StoredProcedure).ToList();
+                    //var resApproved = connection.Query<ApprovedModel>("sp_tblApprovedPrintLableSelect", parametters, commandType: CommandType.StoredProcedure).ToList();
 
-                    if (grcApprove.InvokeRequired)
-                    {
-                        grcApprove.Invoke(new Action(() =>
-                        {
-                            grcApprove.DataSource = resApproved;
-                        }));
-                    }
-                    else
-                    {
-                        grcApprove.DataSource = resApproved;
-                    }
+                    //if (grcApprove.InvokeRequired)
+                    //{
+                    //    grcApprove.Invoke(new Action(() =>
+                    //    {
+                    //        grcApprove.DataSource = resApproved;
+                    //    }));
+                    //}
+                    //else
+                    //{
+                    //    grcApprove.DataSource = resApproved;
+                    //}
 
-                    grvApprove.Columns["CreatedDate"].DisplayFormat.FormatString = "YYYY-MM-dd HH:mm:ss";
+                    //grvApprove.Columns["CreatedDate"].DisplayFormat.FormatString = "YYYY-MM-dd HH:mm:ss";
                     #endregion
 
                     #region Missing infomation
