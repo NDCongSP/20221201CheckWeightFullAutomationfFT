@@ -34,8 +34,8 @@ namespace WeightChecking
             GridView gv = (GridView)sender;
             try
             {
-                _productNumber = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber").ToString();
-                _codeItemZise = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize") != null ? gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize").ToString() : string.Empty;
+                //_productNumber = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber").ToString();
+                //_codeItemZise = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize") != null ? gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize").ToString() : string.Empty;
             }
             catch (Exception ex)
             {

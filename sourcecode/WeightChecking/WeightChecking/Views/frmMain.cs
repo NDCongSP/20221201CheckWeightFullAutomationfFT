@@ -90,7 +90,7 @@ namespace WeightChecking
             this._barButtonItemExportMasterData.ItemClick += _barButtonItemExportMasterData_ItemClick;
             this._barButtonItemExportMissItem.ItemClick += _barButtonItemExportMissItem_ItemClick;
 
-            this._barCheckItemOutsole.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
+            this._barCheckItemOutsole.Visibility = DevExpress.XtraBars.BarItemVisibility.Always;
             this._barCheckItemOutsole.Checked = GlobalVariables.IsOutsoleMode;
 
             this._barCheckItemOutsole.CheckedChanged += (s, o) =>

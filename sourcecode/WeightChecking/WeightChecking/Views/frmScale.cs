@@ -189,7 +189,7 @@ namespace WeightChecking
                 Debug.WriteLine($"Event Sensor before weight scan: {o.NewValue}");
                 //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ metal scanner
                 //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
-                if (o.NewValue == 1)
+                if (o.NewValue == 1 && GlobalVariables.IsOutsoleMode)
                 {
                     _ckQrWeightScanTask = new Task(() => CheckReadQrWeight());
                     _ckQrWeightScanTask.Start();
@@ -1397,8 +1397,8 @@ namespace WeightChecking
                                     para.Add("CreatedDate", _scanDataWeight.CreatedDate);
                                     para.Add("ApprovedBy", _scanDataWeight.ApprovedBy);
                                     para.Add("ActualDeviationPairs", _scanDataWeight.ActualDeviationPairs);
-                                    para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
-                                    para.Add("ProductCategory", _scanDataWeight.ProductCategory);
+                                    //para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
+                                    //para.Add("ProductCategory", _scanDataWeight.ProductCategory);
                                     //para.Add("Id", ParameterDirection.Output, DbType.Guid);
 
                                     var insertResult = connection.Execute("sp_tblScanDataInsert", para, commandType: CommandType.StoredProcedure);
@@ -1770,7 +1770,10 @@ namespace WeightChecking
                     _scanDataWeight = null;
                     _scanDataWeight = new tblScanDataModel();
 
-                    BarcodeHandle(2, _barcodeString2);
+                    if (GlobalVariables.IsOutsoleMode)
+                    {
+                        BarcodeHandle(2, _barcodeString2);
+                    }
                 }
             }
             else if (scannerId[0].InnerText == GlobalVariables.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
