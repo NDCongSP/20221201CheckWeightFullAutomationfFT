@@ -1189,7 +1189,7 @@ namespace WeightChecking
                                             //kiểm tra xem data đã có trên hệ thống hay chưa
                                             if (statusLogData == 0 || statusLogData == 1)
                                             {
-                                                var passMetal = _scanDataWeight.MetalScan == 1 ? "Passed metal scan" : " ";
+                                                var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
                                                 var idLabel = !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
 
                                                 SendDynamicString($"{idLabel}  {passMetal}"
@@ -1330,7 +1330,7 @@ namespace WeightChecking
                                         if (statusLogData == 0 || statusLogData == 1)
                                         {
                                             //gui lenh in
-                                            var passMetal = _scanDataWeight.MetalScan == 1 ? "Passed metal scan" : " ";
+                                            var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
                                             var idLabel = !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
 
                                             SendDynamicString($"{idLabel}  {passMetal}"
