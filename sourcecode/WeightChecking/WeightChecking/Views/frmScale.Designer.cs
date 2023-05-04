@@ -991,7 +991,7 @@ namespace WeightChecking
             this.layoutControlItem33.Name = "layoutControlItem33";
             this.layoutControlItem33.Size = new System.Drawing.Size(599, 28);
             this.layoutControlItem33.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
-            this.layoutControlItem33.Text = "QR Station Print";
+            this.layoutControlItem33.Text = "QR Station Printing";
             this.layoutControlItem33.TextSize = new System.Drawing.Size(180, 24);
             // 
             // layoutControlItem1
