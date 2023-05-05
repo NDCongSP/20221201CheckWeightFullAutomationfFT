@@ -560,26 +560,27 @@ namespace WeightChecking
                                 ws.Cells[0, 16].Value = "ActualMetalScan";
                                 ws.Cells[0, 17].Value = "AveWeight1Prs (g)";
                                 ws.Cells[0, 18].Value = "StdNetWeight (g)";
-                                ws.Cells[0, 19].Value = "Tolerance (g)";
-                                ws.Cells[0, 20].Value = "BoxWeight (g)";
-                                ws.Cells[0, 21].Value = "PackageWeight (g)";
-                                ws.Cells[0, 22].Value = "StdGrossWeight (g)";
-                                ws.Cells[0, 23].Value = "GrossWeight (g)";
-                                ws.Cells[0, 24].Value = "NetWeight (g)";
-                                ws.Cells[0, 25].Value = "Deviation (g)";
-                                ws.Cells[0, 26].Value = "Pass";
-                                ws.Cells[0, 27].Value = "Status";
-                                ws.Cells[0, 28].Value = "Calculated (prs)";
-                                ws.Cells[0, 29].Value = "DeviationPairs";
-                                ws.Cells[0, 30].Value = "CreatedDate";
-                                ws.Cells[0, 31].Value = "Station";
-                                ws.Cells[0, 32].Value = "UserName";
-                                ws.Cells[0, 33].Value = "ApprovedName";
-                                ws.Cells[0, 34].Value = "ActualDeviationPairs";
-                                ws.Cells[0, 35].Value = "RatioFailWeight";
-                                ws.Cells[0, 36].Value = "ProductCategory";
+                                ws.Cells[0, 19].Value = "Lower Tolerance (g)";
+                                ws.Cells[0, 20].Value = "Upper Tolerance (g)";
+                                ws.Cells[0, 21].Value = "BoxWeight (g)";
+                                ws.Cells[0, 22].Value = "PackageWeight (g)";
+                                ws.Cells[0, 23].Value = "StdGrossWeight (g)";
+                                ws.Cells[0, 24].Value = "GrossWeight (g)";
+                                ws.Cells[0, 25].Value = "NetWeight (g)";
+                                ws.Cells[0, 26].Value = "Deviation (g)";
+                                ws.Cells[0, 27].Value = "Pass";
+                                ws.Cells[0, 28].Value = "Status";
+                                ws.Cells[0, 29].Value = "Calculated (prs)";
+                                ws.Cells[0, 30].Value = "DeviationPairs";
+                                ws.Cells[0, 31].Value = "CreatedDate";
+                                ws.Cells[0, 32].Value = "Station";
+                                ws.Cells[0, 33].Value = "UserName";
+                                ws.Cells[0, 34].Value = "ApprovedName";
+                                ws.Cells[0, 35].Value = "ActualDeviationPairs";
+                                ws.Cells[0, 36].Value = "RatioFailWeight";
+                                ws.Cells[0, 37].Value = "ProductCategory";
 
-                                CellRange rHeader = ws.Range.FromLTRB(0, 0, 36, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
+                                CellRange rHeader = ws.Range.FromLTRB(0, 0, 37, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
                                 rHeader.FillColor = Color.Orange;
                                 rHeader.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Center;
                                 rHeader.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
@@ -608,7 +609,8 @@ namespace WeightChecking
                                         ActualMetalScan = item.ActualMetalScan,
                                         AveWeight1Prs = item.AveWeight1Prs,
                                         StdNetWeight = item.StdNetWeight,
-                                        Tolerance = item.Tolerance,
+                                        LowerTolerance = item.LowerTolerance,
+                                        UpperTolerance = item.UpperTolerance,
                                         BoxWeight = item.BoxWeight,
                                         PackageWeight = item.PackageWeight,
                                         StdGrossWeight = item.StdGrossWeight,
@@ -631,14 +633,14 @@ namespace WeightChecking
                                 ws.Import(reportModel, 1, 0);
 
                                 ws.Range[$"R2:Z{res.Count}"].NumberFormat = "#,#0.00";
-                                ws.Range[$"AC2:AD{res.Count}"].NumberFormat = "#,#0";
-                                ws.Range[$"AE2:AE{res.Count}"].NumberFormat = "yyyy/MM/dd HH:mm:ss";
+                                ws.Range[$"AC2:AE{res.Count}"].NumberFormat = "#,#0";
+                                ws.Range[$"AF2:AF{res.Count}"].NumberFormat = "yyyy/MM/dd HH:mm:ss";
 
-                                ws.Range.FromLTRB(0, 0, 36, res.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
+                                ws.Range.FromLTRB(0, 0, 37, res.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
                                 //ws.FreezeRows(0);
                                 //ws.FreezeColumns(3);
                                 ws.FreezePanes(0, 3);
-                                ws.Columns.AutoFit(0, 36);
+                                ws.Columns.AutoFit(0, 37);
                                 #endregion
 
                                 #region data scan reject
