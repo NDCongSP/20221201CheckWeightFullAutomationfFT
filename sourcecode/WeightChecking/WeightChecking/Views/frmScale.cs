@@ -273,8 +273,8 @@ namespace WeightChecking
 
             GlobalVariables.AppStatus = "READY";
 
-            //_scaleValueStable = 2784;
-            //BarcodeHandle(2, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
+            //_scaleValueStable = 8777;
+            //BarcodeHandle(2, "PRT0108,6817012201-2547-D182,140,1,P,2/20,190000,2/10|2,57345.2023,1,1,99");
             //GlobalVariables.MyEvent.SensorBeforeWeightScan = 1;
         }
 
@@ -1189,13 +1189,30 @@ namespace WeightChecking
                                             //kiểm tra xem data đã có trên hệ thống hay chưa
                                             if (statusLogData == 0 || statusLogData == 1)
                                             {
-                                                var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
-                                                var idLabel = !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
+                                                if (checkOc != null)//neu khong phai tem OC 'PRT' thì mới in tem
+                                                {
+                                                    var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
+                                                    var idLabel = !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
 
-                                                SendDynamicString($"{idLabel}  {passMetal}"
-                                                                   , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
-                                                                   , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
-                                                                  );
+                                                    SendDynamicString($"{idLabel}  {passMetal}"
+                                                                       , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
+                                                                       , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                                                      );
+                                                }
+                                                else
+                                                {
+                                                    //nếu là hàng sơn thì chỉ in ra khối lượng
+                                                    SendDynamicString($" "
+                                                                      , $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")}"
+                                                                      , " "
+                                                                     );
+
+                                                    //hien thi mau label
+                                                    this.Invoke((MethodInvoker)delegate
+                                                    {
+                                                        labErrInfoScale.Text = "Khối lượng OK. Hàng trước sơn, chỉ in khối lượng.";
+                                                    });
+                                                }
                                             }
                                             else
                                             {
