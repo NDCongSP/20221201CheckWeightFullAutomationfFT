@@ -211,7 +211,7 @@ namespace WeightChecking
 
                 if (o.NewValue == 1)
                 {
-                    if (_metalCheckResult == 1)
+                    if (_metalCheckResult == 1)//Check metal fail
                     {
                         GlobalVariables.MyEvent.MetalPusher1 = 1;
 
@@ -231,10 +231,15 @@ namespace WeightChecking
 
                             connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                         }
+
+                        //transfer from WH in comming to 964
+                        //......
                     }
                     else
                     {
                         GlobalVariables.MyEvent.MetalPusher1 = 0;
+                        ////transfer from WH 964 to WH in comming
+                        /////kiểm tra xem có trong 964 ko? nếu có thì mới transfer. không có thì ko làm gì cả
                     }
 
                     //log gia thông tin check metal vào bảng tblMetalScanResult
@@ -503,6 +508,9 @@ namespace WeightChecking
 
                         using (var connection = GlobalVariables.GetDbConnection())
                         {
+                            //If ocFirstCharMetal ="OP" auto transfer to WH_3 . Hang đi sơn về đã đc QC kiểm tra và in lại tem OPRT
+                            //ghi nhận In commming SSFG
+
                             #region Kiểm tra xem thùng này đã được log vào scanData chưa
                             //para.Add("QRLabel", _scanData.BarcodeString);
                             //var checkInfo = connection.Query<tblScanDataCheckModel>("sp_tblScanDataCheck", para, commandType: CommandType.StoredProcedure).ToList();
@@ -1227,6 +1235,11 @@ namespace WeightChecking
                                             }
                                             //GlobalVariables.RealWeight = _scanDataWeight.GrossWeight;
                                             //GlobalVariables.PrintApprove = true;
+
+                                            //transfer from 965 to in comming
+                                            //nhớ kiểm tra trước khi transfer
+                                            /////kiểm tra xem có trong 965 ko? nếu có thì mới transfer. không có thì ko làm gì cả
+                                            //...
                                         }
                                         else//thung fail
                                         {
@@ -1278,6 +1291,10 @@ namespace WeightChecking
                                                 para.Add("_reason", "Khối lượng lỗi.");
 
                                                 connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
+
+                                                //transfer from WH in comming to 965
+                                                //đã tồn tại 965 thì ko transfer
+                                                //...
                                             }
                                             else if (statusLogData == 1)
                                             {
@@ -1301,6 +1318,10 @@ namespace WeightChecking
                                                 para.Add("_reason", "Thùng này đã ghi nhận khối lượng lỗi rồi.");
 
                                                 connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
+
+                                                //transfer from WH in comming to 965
+                                                //đã tồn tại 965 thì ko transfer
+                                                //...
 
                                                 //ResetControl();
                                                 goto returnLoop;
