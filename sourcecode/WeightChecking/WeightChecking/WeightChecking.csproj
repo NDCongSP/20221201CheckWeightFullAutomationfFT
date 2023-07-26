@@ -271,6 +271,7 @@
     <Compile Include="rptLabelFail.Designer.cs">
       <DependentUpon>rptLabelFail.cs</DependentUpon>
     </Compile>
+    <Compile Include="StaticClass\AutoPostingHelper.cs" />
     <Compile Include="Views\frmConfirmPrint.cs">
       <SubType>Form</SubType>
     </Compile>

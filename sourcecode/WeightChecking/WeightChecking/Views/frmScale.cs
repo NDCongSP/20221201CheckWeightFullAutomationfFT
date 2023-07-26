@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using WeightChecking.StaticClass;
 
 namespace WeightChecking
 {
@@ -279,7 +280,7 @@ namespace WeightChecking
             GlobalVariables.AppStatus = "READY";
 
             //_scaleValueStable = 8777;
-            //BarcodeHandle(2, "PRT0108,6817012201-2547-D182,140,1,P,2/20,190000,2/10|2,57345.2023,1,1,99");
+            //BarcodeHandle(1, "A103664,6812322201-NBX2-E016,24,11,P,25/25,1900063,1/1|2");
             //GlobalVariables.MyEvent.SensorBeforeWeightScan = 1;
         }
 
@@ -508,8 +509,21 @@ namespace WeightChecking
 
                         using (var connection = GlobalVariables.GetDbConnection())
                         {
-                            //If ocFirstCharMetal ="OP" auto transfer to WH_3 . Hang đi sơn về đã đc QC kiểm tra và in lại tem OPRT
+
+                            // 2023-07-26:
                             //ghi nhận In commming SSFG
+                            DynamicParameters pIncomingIDC = new DynamicParameters();
+                            pIncomingIDC.Add("@QRCode", barcodeString);
+                            pIncomingIDC.Add("@OCNo", _scanDataMetal.OcNo);
+                            pIncomingIDC.Add("@BoxNo", _scanDataMetal.BoxNo);
+                            pIncomingIDC.Add("@IdLabel", _scanDataMetal.IdLabel);
+
+                            var resAddIDC = connection.Execute("sp_IncomingIDC_Add", pIncomingIDC, commandType: CommandType.StoredProcedure);
+                            if(resAddIDC > 0)
+                            {
+                                Debug.WriteLine($"Ghi nhận OC {_scanDataMetal.OcNo} hàng vào IDC.");
+                                this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = $"Ghi nhận OC {_scanDataMetal.OcNo} hàng vào IDC."; });
+                            }
 
                             #region Kiểm tra xem thùng này đã được log vào scanData chưa
                             //para.Add("QRLabel", _scanData.BarcodeString);
@@ -556,8 +570,19 @@ namespace WeightChecking
                             var res = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
 
                             if (res != null)
-                            {
+                            {                                                              
                                 _scanDataMetal.ProductName = res.ProductName;
+                                // 2023-07-26:
+                                //Hàng đi sơn về đã đc QC kiểm tra và in lại tem OPR hoặc hàng đi sơn nhưng có đầu đơn khác PRT thì stock in lại vào kho 3
+                                if (ocFirstCharMetal != "PR")
+                                {
+                                    if(res.Decoration == 1)// hàng sơn -> stock in kho 3
+                                    {
+                                        string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 3, connection);
+                                        this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+
+                                    }
+                                }
 
                                 if (res.AveWeight1Prs > 0)
                                 {
@@ -1682,6 +1707,11 @@ namespace WeightChecking
                                     this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng sơn."; });
 
                                     GlobalVariables.MyEvent.PrintPusher = 1;
+
+                                    // xử lý insert RackStorage cho hàng sơn (nếu là hàng đi sơn thì vào kho 10)
+                                    string resTransfer = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString, 2, 10, connection);
+                                    this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resTransfer; });
+
                                 }
                                 else
                                 {
