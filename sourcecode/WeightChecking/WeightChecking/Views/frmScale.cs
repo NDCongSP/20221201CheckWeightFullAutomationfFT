@@ -525,6 +525,28 @@ namespace WeightChecking
                                 this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = $"Ghi nhận OC {_scanDataMetal.OcNo} hàng vào IDC."; });
                             }
 
+                            // 2023-07-26:
+                            DynamicParameters pr = new DynamicParameters();
+                            pr.Add("@ProductNumber", _scanDataMetal.ProductNumber);
+                            pr.Add("@SpecialCase", specialCaseMetal);
+
+                            var resGetProductItemInfo = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", pr, commandType: CommandType.StoredProcedure).FirstOrDefault();                           
+                            if(resGetProductItemInfo != null)
+                            {
+                                //Hàng đi sơn về đã đc QC kiểm tra và in lại tem OPR hoặc hàng đi sơn nhưng có đầu đơn khác PRT thì stock in lại vào kho 3
+                                // khóa tạm đầu tháng 8 mở
+                                if (ocFirstCharMetal != "PR")
+                                {
+                                    if (resGetProductItemInfo.Decoration == 1)// hàng sơn -> stock in kho 3
+                                    {
+                                        string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 3, connection);
+                                        this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+
+                                    }
+                                }
+                            }
+                           
+
                             #region Kiểm tra xem thùng này đã được log vào scanData chưa
                             //para.Add("QRLabel", _scanData.BarcodeString);
                             //var checkInfo = connection.Query<tblScanDataCheckModel>("sp_tblScanDataCheck", para, commandType: CommandType.StoredProcedure).ToList();
@@ -572,18 +594,7 @@ namespace WeightChecking
                             if (res != null)
                             {                                                              
                                 _scanDataMetal.ProductName = res.ProductName;
-                                // 2023-07-26:
-                                //Hàng đi sơn về đã đc QC kiểm tra và in lại tem OPR hoặc hàng đi sơn nhưng có đầu đơn khác PRT thì stock in lại vào kho 3
-                                if (ocFirstCharMetal != "PR")
-                                {
-                                    if(res.Decoration == 1)// hàng sơn -> stock in kho 3
-                                    {
-                                        string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 3, connection);
-                                        this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
-
-                                    }
-                                }
-
+                               
                                 if (res.AveWeight1Prs > 0)
                                 {
                                     if (res.MetalScan == 1 && ocFirstCharMetal != "PR")
