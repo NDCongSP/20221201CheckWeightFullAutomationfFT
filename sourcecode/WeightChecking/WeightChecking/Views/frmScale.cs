@@ -1699,7 +1699,7 @@ namespace WeightChecking
                         #endregion
 
                         using (var connection = GlobalVariables.GetDbConnection())
-                        {
+                        {                           
                             var para = new DynamicParameters();
 
                             para = new DynamicParameters();
@@ -1710,6 +1710,19 @@ namespace WeightChecking
 
                             if (res != null)
                             {
+
+                                //Hàng đi sơn về đã đc QC kiểm tra và in lại tem OPR hoặc hàng đi sơn nhưng có đầu đơn khác PRT thì stock in lại vào kho 3
+                                // khóa tạm đầu tháng 8 mở
+                                if (_scanDataPrint.OcNo.Substring(0, 2) != "PR")
+                                {
+                                    if (res.Decoration == 1)// hàng sơn -> stock in kho 3
+                                    {
+                                        string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 3, connection);
+                                        this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+
+                                    }
+                                }
+
                                 var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstCharPrint && ocFirstCharPrint == "PR");
 
                                 if (resultCheckOc != null)
