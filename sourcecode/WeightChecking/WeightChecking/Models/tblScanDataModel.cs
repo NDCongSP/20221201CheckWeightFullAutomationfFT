@@ -72,5 +72,8 @@ namespace WeightChecking
         }
 
         public int ProductCategory { get; set; }
+
+        [Browsable(false)]
+        public string LotNo { get; set; } = string.Empty;
     }
 }

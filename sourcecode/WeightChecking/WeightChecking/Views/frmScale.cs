@@ -68,6 +68,25 @@ namespace WeightChecking
 
         private void FrmScale_Load(object sender, EventArgs e)
         {
+            #region Test get LotNo Brooks
+            //using (var connection = GlobalVariables.GetDbConnection())
+            //{
+            //    var para = new DynamicParameters();
+            //    para.Add("ocNo", "DTOTEST002");
+            //    para.Add("boxNo", "1/1");
+
+            //    var reader = connection.ExecuteReader("sp_GetLotOfBrooksHC", param: para, commandType: CommandType.StoredProcedure);
+            //    DataTable tableResult = new DataTable();
+            //    tableResult.Load(reader);
+
+            //    if (tableResult.Rows.Count > 0)
+            //    {
+            //        _scanDataWeight.LotNo = tableResult.Rows[0]["LotNo"].ToString();
+            //    }
+            //}
+            #endregion
+
+
             #region hien thi cac thong so dem
             this.Invoke((MethodInvoker)delegate
             {
@@ -519,7 +538,7 @@ namespace WeightChecking
                             pIncomingIDC.Add("@IdLabel", _scanDataMetal.IdLabel);
 
                             var resAddIDC = connection.Execute("sp_IncomingIDC_Add", pIncomingIDC, commandType: CommandType.StoredProcedure);
-                            if(resAddIDC > 0)
+                            if (resAddIDC > 0)
                             {
                                 Debug.WriteLine($"Ghi nhận OC {_scanDataMetal.OcNo} hàng vào IDC.");
                                 this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = $"Ghi nhận OC {_scanDataMetal.OcNo} hàng vào IDC."; });
@@ -530,8 +549,8 @@ namespace WeightChecking
                             pr.Add("@ProductNumber", _scanDataMetal.ProductNumber);
                             pr.Add("@SpecialCase", specialCaseMetal);
 
-                            var resGetProductItemInfo = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", pr, commandType: CommandType.StoredProcedure).FirstOrDefault();                           
-                            if(resGetProductItemInfo != null)
+                            var resGetProductItemInfo = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", pr, commandType: CommandType.StoredProcedure).FirstOrDefault();
+                            if (resGetProductItemInfo != null)
                             {
                                 //Hàng đi sơn về đã đc QC kiểm tra và in lại tem OPR hoặc hàng đi sơn nhưng có đầu đơn khác PRT thì stock in lại vào kho 3
                                 // khóa tạm đầu tháng 8 mở
@@ -545,7 +564,7 @@ namespace WeightChecking
                                     }
                                 }
                             }
-                           
+
 
                             #region Kiểm tra xem thùng này đã được log vào scanData chưa
                             //para.Add("QRLabel", _scanData.BarcodeString);
@@ -592,9 +611,9 @@ namespace WeightChecking
                             var res = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
 
                             if (res != null)
-                            {                                                              
+                            {
                                 _scanDataMetal.ProductName = res.ProductName;
-                               
+
                                 if (res.AveWeight1Prs > 0)
                                 {
                                     if (res.MetalScan == 1 && ocFirstCharMetal != "PR")
@@ -1407,9 +1426,25 @@ namespace WeightChecking
                                             var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
                                             var idLabel = !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
 
+                                            #region get LotNo Brooks, printing label
+                                            para = null;
+                                            para = new DynamicParameters();
+                                            para.Add("ocNo", _scanDataWeight.OcNo);
+                                            para.Add("boxNo", _scanDataWeight.BoxNo);
+
+                                            var reader = connection.ExecuteReader("sp_GetLotOfBrooksHC", param: para, commandType: CommandType.StoredProcedure);
+                                            DataTable tableResult = new DataTable();
+                                            tableResult.Load(reader);
+
+                                            if (tableResult.Rows.Count > 0)
+                                            {
+                                                _scanDataWeight.LotNo = tableResult.Rows[0]["LotNo"].ToString();
+                                            }
+                                            #endregion
+
                                             SendDynamicString($"{idLabel}  {passMetal}"
                                                                 , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
-                                                                , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                                                , $"{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}|{_scanDataWeight.LotNo}"
                                                               );
                                         }
                                         else
@@ -1473,6 +1508,7 @@ namespace WeightChecking
                                     para.Add("ActualDeviationPairs", _scanDataWeight.ActualDeviationPairs);
                                     para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
                                     para.Add("ProductCategory", _scanDataWeight.ProductCategory);
+                                    para.Add("LotNo", _scanDataWeight.LotNo);
                                     //para.Add("Id", ParameterDirection.Output, DbType.Guid);
 
                                     var insertResult = connection.Execute("sp_tblScanDataInsert", para, commandType: CommandType.StoredProcedure);
@@ -1699,7 +1735,7 @@ namespace WeightChecking
                         #endregion
 
                         using (var connection = GlobalVariables.GetDbConnection())
-                        {                           
+                        {
                             var para = new DynamicParameters();
 
                             para = new DynamicParameters();
