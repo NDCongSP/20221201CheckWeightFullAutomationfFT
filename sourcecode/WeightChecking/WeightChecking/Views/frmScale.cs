@@ -1440,19 +1440,11 @@ namespace WeightChecking
                                             {
                                                 _scanDataWeight.LotNo = tableResult.Rows[0]["LotNo"].ToString();
                                             }
-
-                                            this?.Invoke((MethodInvoker)delegate
-                                            {
-                                                labResult.Text = "HC";
-                                                labResult.BackColor = Color.Green;
-                                                labResult.ForeColor = Color.White;
-                                                labErrInfoScale.Text = $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.LotNo}";
-                                            });
                                             #endregion
 
                                             SendDynamicString($"{idLabel}  {passMetal}"
                                                                 , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
-                                                                , $"{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}|{_scanDataWeight.LotNo}"
+                                                                , $"{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")} {_scanDataWeight.LotNo}"
                                                               );
                                         }
                                         else
