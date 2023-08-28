@@ -1411,7 +1411,7 @@ namespace WeightChecking
                                         }
 
                                         //hien thi mau label
-                                        this.Invoke((MethodInvoker)delegate
+                                        this?.Invoke((MethodInvoker)delegate
                                         {
                                             labResult.Text = "HC";
                                             labResult.BackColor = Color.Green;
@@ -1440,6 +1440,14 @@ namespace WeightChecking
                                             {
                                                 _scanDataWeight.LotNo = tableResult.Rows[0]["LotNo"].ToString();
                                             }
+
+                                            this?.Invoke((MethodInvoker)delegate
+                                            {
+                                                labResult.Text = "HC";
+                                                labResult.BackColor = Color.Green;
+                                                labResult.ForeColor = Color.White;
+                                                labErrInfoScale.Text = $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.LotNo}";
+                                            });
                                             #endregion
 
                                             SendDynamicString($"{idLabel}  {passMetal}"
@@ -1451,7 +1459,7 @@ namespace WeightChecking
                                         {
                                             Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                                 $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                            this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng heel counter này đã ghi nhận OK rồi."; });
+                                            this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng heel counter này đã ghi nhận OK rồi."; });
                                             //ghi giá trị xuống PLC cân reject
                                             //GlobalVariables.MyEvent.WeightPusher = 1;
 

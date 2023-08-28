@@ -33,8 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PLCPi">
-      <HintPath>..\..\DLL modbus\PLCPi.dll</HintPath>
+    <Reference Include="PLCPi, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\DLL modbus\PLCPidllPC\PLCPi.dll</HintPath>
     </Reference>
     <Reference Include="snap7.net">
       <HintPath>..\..\..\..\20220816CheckWeightFramasVn\sourceCode\DLL modbus\PLCPidllPC\snap7.net.dll</HintPath>
