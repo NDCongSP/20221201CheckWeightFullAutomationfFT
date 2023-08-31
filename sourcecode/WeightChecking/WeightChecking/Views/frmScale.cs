@@ -552,8 +552,7 @@ namespace WeightChecking
                             var resGetProductItemInfo = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", pr, commandType: CommandType.StoredProcedure).FirstOrDefault();
                             if (resGetProductItemInfo != null)
                             {
-                                //Hàng đi sơn về đã đc QC kiểm tra và in lại tem OPR hoặc hàng đi sơn nhưng có đầu đơn khác PRT thì stock in lại vào kho 3
-                                // khóa tạm đầu tháng 8 mở
+                                //Hàng đi sơn về đã đc QC kiểm tra và in lại tem OPR hoặc hàng đi sơn nhưng có đầu đơn khác PRT thì stock in lại vào kho 3                                
                                 if (ocFirstCharMetal != "PR")
                                 {
                                     if (resGetProductItemInfo.Decoration == 1)// hàng sơn -> stock in kho 3
@@ -561,6 +560,14 @@ namespace WeightChecking
                                         string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 3, connection);
                                         this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
 
+                                    }else  // hàng ko sơn -> stock in kho 2
+                                    {
+                                        // ko phải HeelCounter thì auto posting kho 2
+                                        if (resGetProductItemInfo.ProductCategory != 11)
+                                        {
+                                            string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 2, connection);
+                                            this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+                                        }
                                     }
                                 }
                             }
@@ -1763,6 +1770,15 @@ namespace WeightChecking
                                     {
                                         string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 3, connection);
                                         this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+
+                                    }
+                                    else// hàng sơn -> stock in kho 3
+                                    {
+                                        if (res.ProductCategory != 11)
+                                        {
+                                            string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 2, connection);
+                                            this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+                                        }
 
                                     }
                                 }
