@@ -88,7 +88,7 @@ namespace WeightChecking
 
 
             #region hien thi cac thong so dem
-            this.Invoke((MethodInvoker)delegate
+           this?.Invoke((MethodInvoker)delegate
             {
                 labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
                 labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
@@ -106,7 +106,7 @@ namespace WeightChecking
             {
                 #region hien thi cac thong so dem
 
-                this.Invoke((MethodInvoker)delegate
+               this?.Invoke((MethodInvoker)delegate
                 {
                     labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
                     labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
@@ -126,7 +126,7 @@ namespace WeightChecking
                 Debug.WriteLine($"Event Scale value real time: {o.ScaleValue}");
                 _scaleValue = o.ScaleValue;
 
-                this.Invoke((MethodInvoker)delegate { labScaleValue.Text = _scaleValue.ToString(); });
+               this?.Invoke((MethodInvoker)delegate { labScaleValue.Text = _scaleValue.ToString(); });
             };
             //sự kiến lấy khối lượng cân đã chốt ổn định
             GlobalVariables.MyEvent.EventHandlerScaleValueStable += (s, o) =>
@@ -137,7 +137,7 @@ namespace WeightChecking
 
                 GlobalVariables.RealWeight = _scaleValueStable;
 
-                //this.Invoke((MethodInvoker)delegate { labScaleValue.Text = _scanData.GrossWeight.ToString(); });
+                //this?.Invoke((MethodInvoker)delegate { labScaleValue.Text = _scanData.GrossWeight.ToString(); });
             };
 
             //sự kiện báo cân đã ổn định, chốt số cân.
@@ -324,7 +324,7 @@ namespace WeightChecking
 
         private void ResetControl()
         {
-            this.Invoke((MethodInvoker)delegate
+           this?.Invoke((MethodInvoker)delegate
             {
                 labRealWeight.Text = "0";
                 labNetWeight.Text = "0";
@@ -364,7 +364,7 @@ namespace WeightChecking
                 switch (station)
                 {
                     case 1://check metal
-                        this.Invoke((MethodInvoker)delegate { labQrMetal.Text = barcodeString; });
+                       this?.Invoke((MethodInvoker)delegate { labQrMetal.Text = barcodeString; });
 
                         #region Xử lý data ban đầu theo QR code
                         _scanDataMetal.CreatedBy = GlobalVariables.UserLoginInfo.Id;
@@ -394,7 +394,7 @@ namespace WeightChecking
                             else
                             {
                                 Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "OC không đúng định dạng"; });
+                               this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "OC không đúng định dạng"; });
                                 //ghi lệnh reject do ko quet đc tem
                                 _metalScannerStatus = 1;
 
@@ -477,7 +477,7 @@ namespace WeightChecking
                             else
                             {
                                 Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "OC không đúng định dạng."; });
+                               this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 _metalScannerStatus = 1;
 
@@ -541,7 +541,7 @@ namespace WeightChecking
                             if (resAddIDC > 0)
                             {
                                 Debug.WriteLine($"Ghi nhận OC {_scanDataMetal.OcNo} hàng vào IDC.");
-                                this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = $"Ghi nhận OC {_scanDataMetal.OcNo} hàng vào IDC."; });
+                               this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = $"Ghi nhận OC {_scanDataMetal.OcNo} hàng vào IDC."; });
                             }
 
                             // 2023-07-26:
@@ -558,7 +558,7 @@ namespace WeightChecking
                                     if (resGetProductItemInfo.Decoration == 1)// hàng sơn -> stock in kho 3
                                     {
                                         string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 3, connection);
-                                        this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+                                       this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
 
                                     }else  // hàng ko sơn -> stock in kho 2
                                     {
@@ -566,7 +566,7 @@ namespace WeightChecking
                                         if (resGetProductItemInfo.ProductCategory != 11)
                                         {
                                             string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 2, connection);
-                                            this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+                                           this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
                                         }
                                     }
                                 }
@@ -588,7 +588,7 @@ namespace WeightChecking
                                     )
                                 {
                                     Debug.WriteLine($"ProductNumber: {item.ProductNumber} đã kiểm tra OK, không được.");
-                                    this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Thùng này đã check OK."; });
+                                   this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Thùng này đã check OK."; });
                                     _metalScannerStatus = 1;
 
                                     //log vao bang reject
@@ -626,14 +626,14 @@ namespace WeightChecking
                                     if (res.MetalScan == 1 && ocFirstCharMetal != "PR")
                                     {
                                         Debug.WriteLine($"ProductNumber: {res.ProductNumber} có kiểm tra kim loại.");
-                                        this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng kiểm kim loại."; });
+                                       this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng kiểm kim loại."; });
                                         _metalScannerStatus = 0;
                                         //GlobalVariables.MyEvent.MetalPusher = 0;
                                     }
                                     else if (res.MetalScan == 0 || (res.MetalScan == 1 && ocFirstCharMetal == "PR"))
                                     {
                                         Debug.WriteLine($"ProductNumber: {res.ProductNumber} không kiểm tra kim loại.");
-                                        this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng không kiểm kim loại."; });
+                                       this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "Hàng không kiểm kim loại."; });
                                         // gui data xuong PLC
                                         _metalScannerStatus = 2;
                                         //GlobalVariables.MyEvent.MetalPusher = 2;
@@ -644,7 +644,7 @@ namespace WeightChecking
                                     Debug.WriteLine($"Item '{_scanDataWeight.ProductNumber}' không có khối lượng/1 đôi. Xin hãy kiểm tra lại thông tin."
                                         , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
-                                    this.Invoke((MethodInvoker)delegate
+                                   this?.Invoke((MethodInvoker)delegate
                                     {
                                         labErrInfoMetal.Text = "Không có khối lượng đôi. Weight/Prs.";
                                     });
@@ -686,7 +686,7 @@ namespace WeightChecking
 
                                 Debug.WriteLine($"Product number {_scanDataMetal.ProductNumber} không có trong hệ thống. Hãy báo quản lý để lấy lại dữ liệu mới nhất từ Winline về."
                                     , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "ProductItem chưa có trên hệ thống."; });
+                               this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = "ProductItem chưa có trên hệ thống."; });
 
                                 _metalScannerStatus = 1;//bao reject cho PLC
 
@@ -720,7 +720,7 @@ namespace WeightChecking
                         // _readQrStatus[0] = false;//trả lại bit này để quét lần sau
                         break;
                     case 2://trạm cân
-                        this.Invoke((MethodInvoker)delegate { labQrScale.Text = barcodeString; });//hiển thị QR lên label
+                       this?.Invoke((MethodInvoker)delegate { labQrScale.Text = barcodeString; });//hiển thị QR lên label
 
                         #region Xử lý data ban đầu theo QR code
                         _scanDataWeight.CreatedBy = GlobalVariables.UserLoginInfo.Id;
@@ -761,7 +761,7 @@ namespace WeightChecking
                             else
                             {
                                 Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "OC không đúng định dạng."; });
+                               this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 GlobalVariables.MyEvent.WeightPusher = 1;
 
@@ -844,7 +844,7 @@ namespace WeightChecking
                             else
                             {
                                 Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "OC không đúng định dạng."; });
+                               this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 GlobalVariables.MyEvent.WeightPusher = 1;
 
@@ -953,7 +953,7 @@ namespace WeightChecking
                                 statusLogData = 3;
                             }
                             #endregion
-
+                            
                             para = new DynamicParameters();
                             para.Add("@ProductNumber", _scanDataWeight.ProductNumber);
                             para.Add("@SpecialCase", specialCase);
@@ -999,25 +999,25 @@ namespace WeightChecking
                                         {
                                             _scanDataWeight.BoxWeight = res.BoxWeightBx4;
 
-                                            this.Invoke((MethodInvoker)delegate { labBoxType.Text = "BX4"; });
+                                           this?.Invoke((MethodInvoker)delegate { labBoxType.Text = "BX4"; });
                                         }
                                         else if (_scanDataWeight.Quantity > res.BoxQtyBx4 && _scanDataWeight.Quantity <= res.BoxQtyBx3)
                                         {
                                             _scanDataWeight.BoxWeight = res.BoxWeightBx3;
 
-                                            this.Invoke((MethodInvoker)delegate { labBoxType.Text = "BX3"; });
+                                           this?.Invoke((MethodInvoker)delegate { labBoxType.Text = "BX3"; });
                                         }
                                         else if (_scanDataWeight.Quantity > res.BoxQtyBx3 && _scanDataWeight.Quantity <= res.BoxQtyBx2)
                                         {
                                             _scanDataWeight.BoxWeight = res.BoxWeightBx2;
 
-                                            this.Invoke((MethodInvoker)delegate { labBoxType.Text = "BX2"; });
+                                           this?.Invoke((MethodInvoker)delegate { labBoxType.Text = "BX2"; });
                                         }
                                         else if (_scanDataWeight.Quantity > res.BoxQtyBx2 && _scanDataWeight.Quantity <= res.BoxQtyBx1)
                                         {
                                             _scanDataWeight.BoxWeight = res.BoxWeightBx1;
 
-                                            this.Invoke((MethodInvoker)delegate { labBoxType.Text = "BX1"; });
+                                           this?.Invoke((MethodInvoker)delegate { labBoxType.Text = "BX1"; });
                                         }
                                         else if (_scanDataWeight.Quantity > res.BoxQtyBx1)
                                         {
@@ -1057,7 +1057,7 @@ namespace WeightChecking
 
                                             ResetControl();
 
-                                            this.Invoke((MethodInvoker)delegate
+                                           this?.Invoke((MethodInvoker)delegate
                                             {
                                                 labResult.Text = "Fail";
                                                 labResult.BackColor = Color.Red;
@@ -1069,11 +1069,11 @@ namespace WeightChecking
 
                                         if (_scanDataWeight.Decoration == 0)
                                         {
-                                            this.Invoke((MethodInvoker)delegate { labDecoration.BackColor = Color.Gray; });
+                                           this?.Invoke((MethodInvoker)delegate { labDecoration.BackColor = Color.Gray; });
                                         }
                                         else
                                         {
-                                            this.Invoke((MethodInvoker)delegate { labDecoration.BackColor = Color.Green; });
+                                           this?.Invoke((MethodInvoker)delegate { labDecoration.BackColor = Color.Green; });
                                         }
                                     }
                                     else //if (_scanDataWeight.Decoration == 1 && _scanDataWeight.OcNo.Contains("PR"))//hàng trước sơn. chỉ có trạm SSFG01 mới nhảy vào đây
@@ -1093,7 +1093,7 @@ namespace WeightChecking
 
                                         _scanDataWeight.BoxWeight = res.PlasicBoxWeight;
 
-                                        this.Invoke((MethodInvoker)delegate
+                                       this?.Invoke((MethodInvoker)delegate
                                         {
                                             labDecoration.BackColor = Color.Gold;
                                             labBoxType.Text = "Plastic";
@@ -1104,7 +1104,7 @@ namespace WeightChecking
                                     {
                                         _approveUpdateActMetalScan = false;
 
-                                        this.Invoke((MethodInvoker)delegate { labMetalScan.BackColor = Color.Gray; });
+                                       this?.Invoke((MethodInvoker)delegate { labMetalScan.BackColor = Color.Gray; });
                                     }
                                     else
                                     {
@@ -1112,7 +1112,7 @@ namespace WeightChecking
 
                                         _approveUpdateActMetalScan = true;
 
-                                        this.Invoke((MethodInvoker)delegate { labMetalScan.BackColor = Color.Gold; });
+                                       this?.Invoke((MethodInvoker)delegate { labMetalScan.BackColor = Color.Gold; });
                                     }
 
                                     _scanDataWeight.StdNetWeight = Math.Round(_scanDataWeight.Quantity * _scanDataWeight.AveWeight1Prs, 3);
@@ -1175,7 +1175,7 @@ namespace WeightChecking
                                     #endregion
 
                                     #region hiển thị thông tin
-                                    this.Invoke((MethodInvoker)delegate
+                                   this?.Invoke((MethodInvoker)delegate
                                     {
                                         labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
                                         labNetWeight.Text = _scanDataWeight.StdNetWeight.ToString();
@@ -1233,6 +1233,12 @@ namespace WeightChecking
                                     {
                                         if (_scanDataWeight.DeviationPairs == 0)
                                         {
+                                            para = null;
+                                            para = new DynamicParameters();
+                                            para.Add("@Message", $"Hàng Outsole check weight OK.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                            para.Add("Level","Log");
+                                            connection.Execute("sp_tblLog_Insert", param:para,commandType:CommandType.StoredProcedure);
+
                                             _scanDataWeight.Pass = 1;//báo thùng pass
                                             _scanDataWeight.CreatedDate = GlobalVariables.CreatedDate = DateTime.Now;//lấy thời gian để đồng bộ giữa in tem và log DB Printing
                                                                                                                      //bật tín hiệu để PLC on đèn xanh
@@ -1248,7 +1254,7 @@ namespace WeightChecking
                                             }
 
                                             //hien thi mau label
-                                            this.Invoke((MethodInvoker)delegate
+                                           this?.Invoke((MethodInvoker)delegate
                                             {
                                                 labResult.Text = "Pass";
                                                 labResult.BackColor = Color.Green;
@@ -1259,6 +1265,12 @@ namespace WeightChecking
                                             //kiểm tra xem data đã có trên hệ thống hay chưa
                                             if (statusLogData == 0 || statusLogData == 1)
                                             {
+                                                para = null;
+                                                para = new DynamicParameters();
+                                                para.Add("@Message", $"Hàng Outsole check weight OK vào in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                                para.Add("Level", "Log");
+                                                connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+
                                                 if (checkOc != null)//neu khong phai tem OC 'PRT' thì mới in tem
                                                 {
                                                     var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
@@ -1268,6 +1280,12 @@ namespace WeightChecking
                                                                        , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
                                                                        , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
                                                                       );
+
+                                                    para = null;
+                                                    para = new DynamicParameters();
+                                                    para.Add("@Message", $"Hàng Outsole check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                                    para.Add("Level", "Log");
+                                                    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
                                                 }
                                                 else
                                                 {
@@ -1277,8 +1295,15 @@ namespace WeightChecking
                                                                       , " "
                                                                      );
 
+
+                                                    para = null;
+                                                    para = new DynamicParameters();
+                                                    para.Add("@Message", $"Hàng Outsole trước sơn check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                                    para.Add("Level", "Log");
+                                                    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+
                                                     //hien thi mau label
-                                                    this.Invoke((MethodInvoker)delegate
+                                                    this?.Invoke((MethodInvoker)delegate
                                                     {
                                                         labErrInfoScale.Text = "Khối lượng OK. Hàng trước sơn, chỉ in khối lượng.";
                                                     });
@@ -1286,9 +1311,15 @@ namespace WeightChecking
                                             }
                                             else
                                             {
+                                                para = null;
+                                                para = new DynamicParameters();
+                                                para.Add("@Message", $"Hàng Outsole check weight OK nhưng đã ghi nhận dữ liệu - Cho qua mà không in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                                para.Add("Level", "Log");
+                                                connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+
                                                 Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                                     $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                                this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi."; });
+                                               this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi."; });
                                                 //ghi giá trị xuống PLC cân reject
                                                 //GlobalVariables.MyEvent.WeightPusher = 1;
 
@@ -1324,7 +1355,7 @@ namespace WeightChecking
                                             }
 
                                             //hien thi mau label
-                                            this.Invoke((MethodInvoker)delegate
+                                           this?.Invoke((MethodInvoker)delegate
                                             {
                                                 labResult.Text = "Fail";
                                                 labResult.BackColor = Color.Red;
@@ -1362,7 +1393,7 @@ namespace WeightChecking
                                             {
                                                 Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng lỗi rồi, không được phép cân lại." +
                                                      $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information); ;
-                                                this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng lỗi rồi."; });
+                                               this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng lỗi rồi."; });
                                                 //ghi giá trị xuống PLC cân reject
                                                 GlobalVariables.MyEvent.WeightPusher = 1;
 
@@ -1392,7 +1423,7 @@ namespace WeightChecking
                                             {
                                                 Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                                     $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                                this.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng OK rồi."; });
+                                               this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng OK rồi."; });
                                                 //ghi giá trị xuống PLC cân reject
                                                 GlobalVariables.MyEvent.WeightPusher = 1;
 
@@ -1403,6 +1434,12 @@ namespace WeightChecking
                                     }
                                     else//hàng heelcounter thì chỉ ghi nhận khối lượng cân và in ra tem ko có check weight
                                     {
+                                        para = null;
+                                        para = new DynamicParameters();
+                                        para.Add("@Message", $"Hàng HeelCounter check weight OK.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                        para.Add("Level", "Log");
+                                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+
                                         _scanDataWeight.Pass = 1;//báo thùng pass
                                         _scanDataWeight.CreatedDate = GlobalVariables.CreatedDate = DateTime.Now;//lấy thời gian để đồng bộ giữa in tem và log DB Printing
                                                                                                                  //bật tín hiệu để PLC on đèn xanh
@@ -1429,6 +1466,12 @@ namespace WeightChecking
                                         //kiểm tra xem data đã có trên hệ thống hay chưa
                                         if (statusLogData == 0 || statusLogData == 1)
                                         {
+                                            para = null;
+                                            para = new DynamicParameters();
+                                            para.Add("@Message", $"Hàng HeelCounter check weight OK vào in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                            para.Add("Level", "Log");
+                                            connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+
                                             //gui lenh in
                                             var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
                                             var idLabel = !string.IsNullOrEmpty(GlobalVariables.IdLabel) ? GlobalVariables.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
@@ -1453,9 +1496,21 @@ namespace WeightChecking
                                                                 , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
                                                                 , $"{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")} {_scanDataWeight.LotNo}"
                                                               );
+
+                                            para = null;
+                                            para = new DynamicParameters();
+                                            para.Add("@Message", $"Hàng HeelCounter check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                            para.Add("Level", "Log");
+                                            connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
                                         }
                                         else
                                         {
+                                            para = null;
+                                            para = new DynamicParameters();
+                                            para.Add("@Message", $"Hàng HeelCounter check weight OK đã ghi nhận data - Không in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                            para.Add("Level", "Log");
+                                            connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+
                                             Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                                 $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                             this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng heel counter này đã ghi nhận OK rồi."; });
@@ -1525,7 +1580,7 @@ namespace WeightChecking
                                     #endregion
 
                                     #region hiển thị thông tin
-                                    this.Invoke((MethodInvoker)delegate
+                                   this?.Invoke((MethodInvoker)delegate
                                     {
                                         labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
                                         labNetWeight.Text = _scanDataWeight.StdNetWeight.ToString();
@@ -1555,7 +1610,7 @@ namespace WeightChecking
 
                                     ResetControl();
 
-                                    this.Invoke((MethodInvoker)delegate
+                                   this?.Invoke((MethodInvoker)delegate
                                     {
                                         labResult.Text = "Fail";
                                         labResult.BackColor = Color.Red;
@@ -1599,7 +1654,7 @@ namespace WeightChecking
 
                                 ResetControl();
 
-                                this.Invoke((MethodInvoker)delegate
+                               this?.Invoke((MethodInvoker)delegate
                                 {
                                     labResult.Text = "Fail";
                                     labResult.BackColor = Color.Red;
@@ -1640,7 +1695,7 @@ namespace WeightChecking
                     #endregion
                     returnLoop:
                         #region hien thi cac thong so dem
-                        this.Invoke((MethodInvoker)delegate
+                       this?.Invoke((MethodInvoker)delegate
                         {
                             labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
                             labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
@@ -1664,7 +1719,7 @@ namespace WeightChecking
                         //_readQrStatus[1] = false;//trả lại bit này để quét lần sau
                         break;
                     case 3://trạm phân loại hàng sơn.
-                        this.Invoke((MethodInvoker)delegate { labQrPrint.Text = barcodeString; });
+                       this?.Invoke((MethodInvoker)delegate { labQrPrint.Text = barcodeString; });
 
                         #region Xử lý data ban đầu theo QR code
                         bool specialCasePrint = false;//dùng có các trường hợp hàng PU, trên WL decpration là 0, nhưng QC phân ra printing 0-1. beforePrinting thì get theo
@@ -1691,7 +1746,7 @@ namespace WeightChecking
                             else
                             {
                                 Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "OC không đúng định dạng."; });
+                               this?.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 GlobalVariables.MyEvent.PrintPusher = 0;
                                 //_scannerIsBussy[2] = false;
@@ -1715,7 +1770,7 @@ namespace WeightChecking
                             else
                             {
                                 Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "OC không đúng định dạng."; });
+                               this?.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "OC không đúng định dạng."; });
                                 //ghi lệnh reject do ko quet đc tem
                                 GlobalVariables.MyEvent.PrintPusher = 0;
                                 //_scannerIsBussy[2] = false;
@@ -1761,7 +1816,7 @@ namespace WeightChecking
                                     if (res.Decoration == 1)// hàng sơn -> stock in kho 3
                                     {
                                         string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 3, connection);
-                                        this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+                                       this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
 
                                     }
                                     else// hàng sơn -> stock in kho 3
@@ -1769,7 +1824,7 @@ namespace WeightChecking
                                         if (res.ProductCategory != 11)
                                         {
                                             string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 2, connection);
-                                            this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+                                           this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
                                         }
 
                                     }
@@ -1780,19 +1835,19 @@ namespace WeightChecking
                                 if (resultCheckOc != null)
                                 {
                                     Debug.WriteLine($"ProductNumber: {res.ProductNumber} là hàng sơn.");
-                                    this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng sơn."; });
+                                   this?.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng sơn."; });
 
                                     GlobalVariables.MyEvent.PrintPusher = 1;
 
                                     // xử lý insert RackStorage cho hàng sơn (nếu là hàng đi sơn thì vào kho 10)
                                     string resTransfer = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString, 2, 10, connection);
-                                    this.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resTransfer; });
+                                   this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resTransfer; });
 
                                 }
                                 else
                                 {
                                     GlobalVariables.MyEvent.PrintPusher = 0;
-                                    this.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng FG."; });
+                                   this?.Invoke((MethodInvoker)delegate { labErrInfoPrint.Text = "Hàng FG."; });
                                 }
                             }
                         }
@@ -1804,6 +1859,15 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
+                using (var connection = GlobalVariables.GetDbConnection())
+                {
+                    DynamicParameters para = new DynamicParameters();
+                    para.Add("@Message", $"Lỗi check label.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                    para.Add("Level", "LogError");
+                    para.Add("Exception", ex.Message);
+                    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                }
+                   
                 Log.Error(ex.Message, "Lỗi scale form");
             }
             finally
@@ -1888,7 +1952,7 @@ namespace WeightChecking
                     //bật biến báo đọc đc QR code từ label
                     _readQrStatus[0] = true;
 
-                    //this.Invoke((MethodInvoker)delegate { txtDataAscii1.Text = xmlDoc.GetElementsByTagName("datalabel")[0].InnerText; });
+                    //this?.Invoke((MethodInvoker)delegate { txtDataAscii1.Text = xmlDoc.GetElementsByTagName("datalabel")[0].InnerText; });
                     _barcodeString1 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
                     //reset model;
@@ -2320,7 +2384,7 @@ namespace WeightChecking
             if (!_readQrStatus[0])
             {
                 Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram metal");
-                this.Invoke((MethodInvoker)delegate
+               this?.Invoke((MethodInvoker)delegate
                 {
                     labErrInfoMetal.Text = "Không đọc được QR code, Kiểm tra lại tem.";
                     labQrMetal.Text = string.Empty;
@@ -2374,7 +2438,7 @@ namespace WeightChecking
             if (!_readQrStatus[1])
             {
                 Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
-                this.Invoke((MethodInvoker)delegate
+               this?.Invoke((MethodInvoker)delegate
                 {
                     labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem.";
                     labQrScale.Text = string.Empty;

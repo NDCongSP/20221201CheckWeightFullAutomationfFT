@@ -119,7 +119,7 @@ namespace WeightChecking
                     #region Scan data reject
                     var resScanDataReject = connection.Query<ScanDataRejectModel>("sp_tblScanDataRejectSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
 
-                    this.Invoke((MethodInvoker)delegate
+                    this?.Invoke((MethodInvoker)delegate
                     {
                         grcReject.DataSource = resScanDataReject;
                         grvReject.Columns["CreatedDate"].DisplayFormat.FormatString = "YYYY-MM-dd HH:mm:ss";

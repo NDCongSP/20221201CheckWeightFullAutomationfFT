@@ -863,7 +863,7 @@ namespace WeightChecking
             Timer t = (Timer)sender;
             t.Enabled = false;
 
-            this.Invoke((MethodInvoker)delegate
+            this?.Invoke((MethodInvoker)delegate
             {
                 barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")} " +
                     $"| {GlobalVariables.UserLoginInfo.UserName}" +
