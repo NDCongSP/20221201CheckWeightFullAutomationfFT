@@ -2407,7 +2407,7 @@ namespace WeightChecking
                     para.Add("_productNumber", _scanDataMetal.ProductNumber);
                     para.Add("_productName", _scanDataMetal.ProductName);
                     para.Add("_quantity", _scanDataMetal.Quantity);
-                    para.Add("_scannerStation", "Metal");
+                    para.Add("_scannerStation", "Identification");
                     para.Add("_reason", "Không đọc được QR code.");
 
                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
