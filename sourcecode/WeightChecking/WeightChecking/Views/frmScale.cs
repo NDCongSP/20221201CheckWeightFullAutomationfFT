@@ -409,7 +409,7 @@ namespace WeightChecking
                                     para.Add("_productNumber", _scanDataMetal.ProductNumber);
                                     para.Add("_productName", _scanDataMetal.ProductName);
                                     para.Add("_quantity", _scanDataMetal.Quantity);
-                                    para.Add("_scannerStation", "Metal");
+                                    para.Add("_scannerStation", "Identification");
                                     para.Add("_reason", "OC không đúng định dạng");
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
@@ -492,7 +492,7 @@ namespace WeightChecking
                                     para.Add("_productNumber", _scanDataMetal.ProductNumber);
                                     para.Add("_productName", _scanDataMetal.ProductName);
                                     para.Add("_quantity", _scanDataMetal.Quantity);
-                                    para.Add("_scannerStation", "Metal");
+                                    para.Add("_scannerStation", "Identification");
                                     para.Add("_reason", "OC không đúng định dạng");
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
@@ -601,7 +601,7 @@ namespace WeightChecking
                                     para.Add("_productNumber", _scanDataMetal.ProductNumber);
                                     para.Add("_productName", _scanDataMetal.ProductName);
                                     para.Add("_quantity", _scanDataMetal.Quantity);
-                                    para.Add("_scannerStation", "Metal");
+                                    para.Add("_scannerStation", "Identification");
                                     para.Add("_reason", "Thùng này đã check OK.");
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
@@ -660,7 +660,7 @@ namespace WeightChecking
                                     para.Add("_productNumber", _scanDataMetal.ProductNumber);
                                     para.Add("_productName", _scanDataMetal.ProductName);
                                     para.Add("_quantity", _scanDataMetal.Quantity);
-                                    para.Add("_scannerStation", "Metal");
+                                    para.Add("_scannerStation", "Identification");
                                     para.Add("_reason", "Không có khối lượng đôi. Average Weight/prs.");
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
@@ -700,7 +700,7 @@ namespace WeightChecking
                                 para.Add("_productNumber", _scanDataMetal.ProductNumber);
                                 para.Add("_productName", _scanDataMetal.ProductName);
                                 para.Add("_quantity", _scanDataMetal.Quantity);
-                                para.Add("_scannerStation", "Metal");
+                                para.Add("_scannerStation", "Identification");
                                 para.Add("_reason", "Product item chưa có trong hệ thống. Get data từ WL về lại.");
 
                                 connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
