@@ -1317,11 +1317,11 @@ namespace WeightChecking
                                                 para.Add("Level", "Log");
                                                 connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                                                Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
+                                                Debug.WriteLine($"Thùng OC đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                                     $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                                 this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi."; });
                                                 //ghi giá trị xuống PLC cân reject
-                                                //GlobalVariables.MyEvent.WeightPusher = 1;
+                                                GlobalVariables.MyEvent.WeightPusher = 1;
 
                                                 //ResetControl();
                                                 goto returnLoop;
@@ -1391,7 +1391,7 @@ namespace WeightChecking
                                             }
                                             else if (statusLogData == 1)
                                             {
-                                                Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng lỗi rồi, không được phép cân lại." +
+                                                Debug.WriteLine($"Thùng OC đã được quét ghi nhận khối lượng lỗi rồi, không được phép cân lại." +
                                                      $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information); ;
                                                 this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng lỗi rồi."; });
                                                 //ghi giá trị xuống PLC cân reject
@@ -1421,7 +1421,7 @@ namespace WeightChecking
                                             }
                                             else// if (statusLogData == 2)
                                             {
-                                                Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
+                                                Debug.WriteLine($"Thùng OC đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                                     $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                                 this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng OK rồi."; });
                                                 //ghi giá trị xuống PLC cân reject
@@ -1511,11 +1511,11 @@ namespace WeightChecking
                                             para.Add("Level", "Log");
                                             connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                                            Debug.WriteLine($"Thùng này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
+                                            Debug.WriteLine($"Thùng HC này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                                 $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                             this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng heel counter này đã ghi nhận OK rồi."; });
                                             //ghi giá trị xuống PLC cân reject
-                                            //GlobalVariables.MyEvent.WeightPusher = 1;
+                                            GlobalVariables.MyEvent.WeightPusher = 1;
 
                                             //ResetControl();
                                             goto returnLoop;
