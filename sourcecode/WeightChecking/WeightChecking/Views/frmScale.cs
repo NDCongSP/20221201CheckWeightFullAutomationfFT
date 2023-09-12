@@ -2408,7 +2408,7 @@ namespace WeightChecking
                     para.Add("_productName", _scanDataMetal.ProductName);
                     para.Add("_quantity", _scanDataMetal.Quantity);
                     para.Add("_scannerStation", "Identification");
-                    para.Add("_reason", "Không đọc được QR code.");
+                    para.Add("_reason", "Không đọc được QR code trạm Identification.");
 
                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                 }
@@ -2467,7 +2467,7 @@ namespace WeightChecking
                     para.Add("_productName", _scanDataWeight.ProductName);
                     para.Add("_quantity", _scanDataWeight.Quantity);
                     para.Add("_scannerStation", "Scale");
-                    para.Add("_reason", "Không đọc được QR code.");
+                    para.Add("_reason", "Không đọc được QR code trạm cân.");
 
                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                 }
