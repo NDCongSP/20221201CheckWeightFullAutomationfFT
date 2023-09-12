@@ -162,11 +162,11 @@ namespace WeightChecking
                         _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.TimeCheckQrMetal + 2)));
                         _ckQRTask.Start();
                     }
-                    else if (o.NewValue == 0)
-                    {
-                        _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.TimeCheckQrMetal)));
-                        _ckQRTask.Start();
-                    }
+                    //else if (o.NewValue == 0)
+                    //{
+                    //    _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.TimeCheckQrMetal)));
+                    //    _ckQRTask.Start();
+                    //}
                 }
             };
 
