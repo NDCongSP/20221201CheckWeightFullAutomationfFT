@@ -45,7 +45,7 @@
       <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="TimeCheckQrMetal" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">2</Value>
+      <Value Profile="(Default)">4</Value>
     </Setting>
     <Setting Name="TimeCheckQrScale" Type="System.Double" Scope="User">
       <Value Profile="(Default)">3</Value>

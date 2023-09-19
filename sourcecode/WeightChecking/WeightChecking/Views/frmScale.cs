@@ -159,7 +159,7 @@ namespace WeightChecking
 
                     if (o.NewValue == 1)
                     {
-                        _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.TimeCheckQrMetal + 2)));
+                        _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.TimeCheckQrMetal)));
                         _ckQRTask.Start();
                     }
                     //else if (o.NewValue == 0)
