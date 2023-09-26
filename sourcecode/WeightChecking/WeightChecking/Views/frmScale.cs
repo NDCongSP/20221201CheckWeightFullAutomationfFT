@@ -29,7 +29,7 @@ namespace WeightChecking
     {
         private ScaleHelper _scaleHelper;
         private Task _ckTask, _ckQRTask, _ckQrWeightScanTask;//task kiểm tra tại các trạm scanner để check xem có đoc đc QR code ko
-        private bool _isStartCountTimer = true;
+        private bool _isStartCountTimer = false;
         private int _metalScannerStatus = 0;
 
         private bool[] _readQrStatus = { false, false, false };//biến báo đọc được QR hay không. metal-weight-print
@@ -2368,6 +2368,7 @@ namespace WeightChecking
         /// </summary>
         public void CheckReadQr(int timeCheckSettings)
         {
+            Debug.WriteLine("Bat dau vao dem thoi gian doc barcode");
             double timeCheck = 0;
             DateTime startTime = DateTime.Now;
             DateTime endTime = DateTime.Now;
