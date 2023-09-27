@@ -89,6 +89,7 @@ namespace WeightChecking
             this._barButtonItemExportExcel.ItemClick += _barButtonItemExportExcel_ItemClick;
             this._barButtonItemExportMasterData.ItemClick += _barButtonItemExportMasterData_ItemClick;
             this._barButtonItemExportMissItem.ItemClick += _barButtonItemExportMissItem_ItemClick;
+            _barButtonItemDeleteBox.ItemClick += _barButtonItemDeleteBox_ItemClick;
 
             this._barCheckItemOutsole.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
             this._barCheckItemOutsole.Checked = GlobalVariables.IsOutsoleMode;
@@ -341,6 +342,20 @@ namespace WeightChecking
             this._barEditItemCombStation.EditValue = "All";
             _timer.Enabled = true;
             _timer.Tick += _timer_Tick;
+        }
+
+        private void _barButtonItemDeleteBox_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
+        {
+            try
+            {
+                frmDeleteBox frmUpdate = new frmDeleteBox();
+                frmUpdate.StartPosition = FormStartPosition.CenterScreen;
+                frmUpdate.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                XtraMessageBox.Show("Delete Box Fail." + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>

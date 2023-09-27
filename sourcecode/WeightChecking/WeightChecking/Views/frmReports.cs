@@ -1,5 +1,7 @@
 ﻿using Dapper;
+using DevExpress.Utils.Menu;
 using DevExpress.XtraEditors;
+using DevExpress.XtraGrid.Views.Grid;
 using DevExpress.XtraSplashScreen;
 using Serilog;
 using System;
@@ -20,6 +22,10 @@ namespace WeightChecking
         public string ToDate { get; set; }
         public string Station { get; set; } = "All";
 
+        Guid _id = Guid.Empty;
+        string _idLabel, _oc, _boxId = string.Empty;
+        string _passFail = "0";
+
         public frmReports()
         {
             InitializeComponent();
@@ -33,7 +39,60 @@ namespace WeightChecking
                 RefreshData();
             };
 
+            grvReports.PopupMenuShowing += GrvReports_PopupMenuShowing;
+            grvReports.SelectionChanged += GrvReports_SelectionChanged;
+
             RefreshData();
+        }
+
+        private void GrvReports_SelectionChanged(object sender, DevExpress.Data.SelectionChangedEventArgs e)
+        {
+            GridView gv = (GridView)sender;
+            try
+            {
+                _id = (Guid)gv.GetRowCellValue(gv.FocusedRowHandle, "Id");
+                _idLabel = gv.GetRowCellValue(gv.FocusedRowHandle, "IdLabel") != null ? gv.GetRowCellValue(gv.FocusedRowHandle, "IdLabel").ToString() : string.Empty;
+                _oc = (string)gv.GetRowCellValue(gv.FocusedRowHandle, "OcNo");
+                _boxId = (string)gv.GetRowCellValue(gv.FocusedRowHandle, "BoxNo");
+                _passFail = gv.GetRowCellValue(gv.FocusedRowHandle, "Pass").ToString();
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        private void GrvReports_PopupMenuShowing(object sender, DevExpress.XtraGrid.Views.Grid.PopupMenuShowingEventArgs e)
+        {
+            try
+            {
+                e.Menu.Items.Add(new DXMenuItem("Delete Box", new EventHandler(DeleteBox)));
+            }
+            catch (Exception ex)
+            {
+                XtraMessageBox.Show("Lỗi Get Data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void DeleteBox(object sender, EventArgs e)
+        {
+            try
+            {
+                frmDeleteBox frmUpdate = new frmDeleteBox()
+                {
+                    Id = _id,
+                    BoxId = _boxId,
+                    Oc = _oc,
+                    IdLabel = _idLabel,
+                    PassFail = _passFail
+                };
+                frmUpdate.StartPosition = FormStartPosition.CenterScreen;
+                frmUpdate.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                XtraMessageBox.Show("Delete Box Fail." + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         void RefreshData()

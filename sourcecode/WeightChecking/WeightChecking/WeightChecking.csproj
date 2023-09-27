@@ -256,6 +256,12 @@
     <Compile Include="Enums\RolesEnum.cs" />
     <Compile Include="Enums\StationEnum.cs" />
     <Compile Include="Events\CustomEvents.cs" />
+    <Compile Include="Views\frmDeleteBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\frmDeleteBox.Designer.cs">
+      <DependentUpon>frmDeleteBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\MissProItemModel.cs" />
     <Compile Include="Models\ApprovedModel.cs" />
     <Compile Include="Models\ApprovedReportModel.cs" />
