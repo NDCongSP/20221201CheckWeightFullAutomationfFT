@@ -685,7 +685,7 @@ namespace WeightChecking
                                         BarcodeString = item.BarcodeString,
                                         IdLabel = item.IdLabel,
                                         OcNo = item.OcNo,
-                                        BoxId = item.IdLabel,
+                                        BoxId = item.BoxId,
                                         ProductNumber = item.ProductNumber,
                                         ProductName = item.ProductName,
                                         Quantity = item.Quantity,
