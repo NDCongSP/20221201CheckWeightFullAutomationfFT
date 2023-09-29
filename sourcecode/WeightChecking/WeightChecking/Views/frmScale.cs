@@ -720,6 +720,10 @@ namespace WeightChecking
                         // _readQrStatus[0] = false;//trả lại bit này để quét lần sau
                         break;
                     case 2://trạm cân
+                        //reset model để lưu cho thùng mới
+                        _scanDataWeight = null;
+                        _scanDataWeight = new tblScanDataModel();
+
                         this?.Invoke((MethodInvoker)delegate { labQrScale.Text = barcodeString; });//hiển thị QR lên label
 
                         #region Xử lý data ban đầu theo QR code
@@ -1594,9 +1598,9 @@ namespace WeightChecking
                                          labAveWeight.Text = _scanDataWeight.AveWeight1Prs.ToString();
                                          labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
                                          labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
-                                        //labLowerToleranceWeight.Text = nwSub.ToString("#.###");
-                                        //labUpperToleranceWeight.Text = nwPlus.ToString("#.###");
-                                        labBoxWeight.Text = _scanDataWeight.BoxWeight.ToString();
+                                         //labLowerToleranceWeight.Text = nwSub.ToString("#.###");
+                                         //labUpperToleranceWeight.Text = nwPlus.ToString("#.###");
+                                         labBoxWeight.Text = _scanDataWeight.BoxWeight.ToString();
                                          labAccessoriesWeight.Text = _scanDataWeight.PackageWeight.ToString();
                                          labGrossWeight.Text = _scanDataWeight.StdGrossWeight.ToString();
                                      });
@@ -1960,6 +1964,10 @@ namespace WeightChecking
                     _scanDataMetal = new tblScanDataModel();
 
                     BarcodeHandle(1, _barcodeString1);
+
+                    //reset model;
+                    _scanDataMetal = null;
+                    _scanDataMetal = new tblScanDataModel();
                 }
             }
             else if (scannerId[0].InnerText == GlobalVariables.ScannerIdWeight.ToString())//vị trí check weight. ngay cân
@@ -1979,6 +1987,10 @@ namespace WeightChecking
                     _scanDataWeight = new tblScanDataModel();
 
                     BarcodeHandle(2, _barcodeString2);
+
+                    //reset model;
+                    _scanDataWeight = null;
+                    _scanDataWeight = new tblScanDataModel();
                 }
             }
             else if (scannerId[0].InnerText == GlobalVariables.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
@@ -1997,6 +2009,10 @@ namespace WeightChecking
                     _scanDataPrint = new tblScanDataModel();
 
                     BarcodeHandle(3, _barcodeString3);
+
+                    //reset model;
+                    _scanDataPrint = null;
+                    _scanDataPrint = new tblScanDataModel();
                 }
             }
         }
@@ -2243,7 +2259,7 @@ namespace WeightChecking
 
         private void simpleButton1_Click(object sender, EventArgs e)
         {
-            BarcodeHandle(2, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
+            //BarcodeHandle(2, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
         }
 
         private void btn_Setspeed_Click(object sender, EventArgs e)
