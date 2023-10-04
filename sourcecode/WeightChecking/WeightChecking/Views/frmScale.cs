@@ -59,6 +59,7 @@ namespace WeightChecking
 
         private SerialPort _serialPort;
 
+        private bool _firstLoad = true;
         public frmScale()
         {
             InitializeComponent();
@@ -123,7 +124,7 @@ namespace WeightChecking
             //sự kiện lấy số cân hiện tại cảu đầu cân (real time)
             GlobalVariables.MyEvent.EventHandleScaleValue += (s, o) =>
             {
-                Debug.WriteLine($"Event Scale value real time: {o.ScaleValue}");
+                //Debug.WriteLine($"Event Scale value real time: {o.ScaleValue}");
                 _scaleValue = o.ScaleValue;
 
                 this?.Invoke((MethodInvoker)delegate { labScaleValue.Text = _scaleValue.ToString(); });
@@ -131,7 +132,7 @@ namespace WeightChecking
             //sự kiến lấy khối lượng cân đã chốt ổn định
             GlobalVariables.MyEvent.EventHandlerScaleValueStable += (s, o) =>
             {
-                Debug.WriteLine($"Event Scale value stable: {o.ScaleValue}");
+                //Debug.WriteLine($"Event Scale value stable: {o.ScaleValue}");
 
                 _scaleValueStable = o.ScaleValue;
 
@@ -151,14 +152,33 @@ namespace WeightChecking
             GlobalVariables.MyEvent.EventHandleSensorBeforeMetalScan += (s, o) =>
             {
                 Debug.WriteLine($"Event Sensor before metal scan: {o.NewValue}");
+
+                //if (o.NewValue == 0)
+                //{
+                //    return;
+                //}
+
+                //if (!_firstLoad)
+                //{
+                //    while (_isStartCountTimer == true)
+                //    {
+                //        Debug.WriteLine($"Event Sensor before metal scan đang chờ: {o.NewValue} |{_isStartCountTimer}");
+                //        Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
+                //    }
+                //}
+                //else
+                //{
+                //    _firstLoad = false;
+                //}
+
+                Debug.WriteLine($"Event Sensor before metal scan đã qua vòng chờ: {o.NewValue} |{_isStartCountTimer}");
                 //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ metal scanner
                 //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
                 if (_isStartCountTimer == false)
                 {
-                    _isStartCountTimer = true;
-
-                    if (o.NewValue == 1)
+                    if (o.NewValue == 0)
                     {
+                        _isStartCountTimer = true;
                         _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.TimeCheckQrMetal)));
                         _ckQRTask.Start();
                     }
@@ -1386,6 +1406,9 @@ namespace WeightChecking
                                                 para.Add("_quantity", _scanDataWeight.Quantity);
                                                 para.Add("_scannerStation", "Scale");
                                                 para.Add("_reason", "Khối lượng lỗi.");
+                                                para.Add("_grossWeight", _scanDataWeight.GrossWeight);
+                                                para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
+                                                para.Add("@_deviationWeight", _scanDataWeight.Deviation);
 
                                                 connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
 
@@ -1413,6 +1436,9 @@ namespace WeightChecking
                                                 para.Add("_quantity", _scanDataWeight.Quantity);
                                                 para.Add("_scannerStation", "Scale");
                                                 para.Add("_reason", "Thùng này đã ghi nhận khối lượng lỗi rồi.");
+                                                para.Add("_grossWeight", _scanDataWeight.GrossWeight);
+                                                para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
+                                                para.Add("@_deviationWeight", _scanDataWeight.Deviation);
 
                                                 connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
 
@@ -2094,18 +2120,20 @@ namespace WeightChecking
                 if (rcvArr[4] == 0x30)
                 {
                     Console.WriteLine($"in thanh cong!!!");
-
+                    GlobalVariables.PrintResult = $"In thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
                     //xoa string
                     SendDynamicString(" ", " ", " ");
                 }
                 else if (rcvArr[4] == 0x4F)
                 {
                     Console.WriteLine($"Gui lenh xuong may in thanh cong!!!");
+                    GlobalVariables.PrintResult = $"Gửi lệnh xuống máy in thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
                 }
                 else if (rcvArr[4] == 0x31)
                 {
                     Console.WriteLine($"Loi. Error Code: {rcvArr[5]}. Kết nối lại máy in.");
                     // MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    GlobalVariables.PrintResult = $"Lỗi in.{rcvArr[5]}|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
 
                     StopPrint();
                     Thread.Sleep(10000);
@@ -2123,15 +2151,16 @@ namespace WeightChecking
                     delayPV = Math.Round(delayPV / 100, 2);
                 }
 
-                GlobalVariables.PrintResult = string.Empty;
-                foreach (var item in rcvArr)
-                {
-                    GlobalVariables.PrintResult += item;
-                }
+                //GlobalVariables.PrintResult = string.Empty;
+                //foreach (var item in rcvArr)
+                //{
+                //    GlobalVariables.PrintResult += item;
+                //}
             }
             catch (Exception ex)
             {
                 Log.Error(ex, $"Printing data received error: {ex.Message}");
+                GlobalVariables.PrintResult = $"Printing data received error: { ex.Message}";
             }
             finally
             {
@@ -2393,8 +2422,8 @@ namespace WeightChecking
             {
                 timeCheck = (endTime - startTime).TotalSeconds;
                 endTime = DateTime.Now;
-                Debug.WriteLine($"Dem thoi gian bao Metal Scanner fail: {timeCheck}");
-                Thread.Sleep(100);
+                //Debug.WriteLine($"Dem thoi gian bao Metal Scanner fail: {timeCheck}");
+                Thread.Sleep(10);
             }
 
             //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject
