@@ -268,6 +268,9 @@ namespace WeightChecking
                             para.Add("_quantity", _scanDataMetal.Quantity);
                             para.Add("_scannerStation", "Metal");
                             para.Add("_reason", "Dò kim loại lỗi");
+                            para.Add("_grossWeight", _scanDataMetal.GrossWeight);
+                            para.Add("@_deviationPairs", _scanDataMetal.DeviationPairs);
+                            para.Add("@_deviationWeight", _scanDataMetal.Deviation);
 
                             connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                         }
@@ -285,6 +288,7 @@ namespace WeightChecking
                     //log gia thông tin check metal vào bảng tblMetalScanResult
                     using (var connection = GlobalVariables.GetDbConnection())
                     {
+                        //MessageBox.Show("vao ghi data check metal");
                         var para = new DynamicParameters();
                         para.Add("@_barcodeString", _scanDataMetal.BarcodeString);
                         para.Add("@_productItemCode", _scanDataMetal.ProductNumber);
@@ -319,8 +323,9 @@ namespace WeightChecking
             GlobalVariables.AppStatus = "READY";
 
             //_scaleValueStable = 8777;
-            //BarcodeHandle(1, "A103664,6812322201-NBX2-E016,24,11,P,25/25,1900063,1/1|2");
-            //GlobalVariables.MyEvent.SensorBeforeWeightScan = 1;
+            //BarcodeHandle(1, "A10704344,6812012208-2667-E057,45,4,P,6/13,1900082,2/3|2,248212.2023,,,");
+            //GlobalVariables.MyEvent.MetalCheckResult = 0;
+            //GlobalVariables.MyEvent.SensorAfterMetalScan = 1;
         }
 
         private void frmScale_FormClosing(object sender, FormClosingEventArgs e)
@@ -685,7 +690,6 @@ namespace WeightChecking
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
 
-
                                     para = null;
                                     para = new DynamicParameters();
                                     para.Add("ProductNumber", _scanDataWeight.ProductNumber);
@@ -702,7 +706,7 @@ namespace WeightChecking
                                 #region gui data xuong PLC
                                 _metalScannerStatus = 1;
                                 //GlobalVariables.MyEvent.MetalPusher = 1;
-                                #endregion
+                                #endregion 
 
                                 Debug.WriteLine($"Product number {_scanDataMetal.ProductNumber} không có trong hệ thống. Hãy báo quản lý để lấy lại dữ liệu mới nhất từ Winline về."
                                     , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -1259,7 +1263,7 @@ namespace WeightChecking
                                         {
                                             para = null;
                                             para = new DynamicParameters();
-                                            para.Add("@Message", $"Hàng Outsole check weight OK.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                            para.Add("@Message", $"Hàng Outsole check weight OK.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                                             para.Add("Level", "Log");
                                             connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
@@ -1277,21 +1281,12 @@ namespace WeightChecking
                                                 GlobalVariables.RememberInfo.GoodBoxNoPrinting += 1;
                                             }
 
-                                            //hien thi mau label
-                                            this?.Invoke((MethodInvoker)delegate
-                                             {
-                                                 labResult.Text = "Pass";
-                                                 labResult.BackColor = Color.Green;
-                                                 labResult.ForeColor = Color.White;
-                                                 labErrInfoScale.Text = "Khối lượng OK. In tem.";
-                                             });
-
                                             //kiểm tra xem data đã có trên hệ thống hay chưa
                                             if (statusLogData == 0 || statusLogData == 1)
                                             {
                                                 para = null;
                                                 para = new DynamicParameters();
-                                                para.Add("@Message", $"Hàng Outsole check weight OK vào in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                                para.Add("@Message", $"Hàng Outsole check weight OK vào in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                                                 para.Add("Level", "Log");
                                                 connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
@@ -1307,7 +1302,7 @@ namespace WeightChecking
 
                                                     para = null;
                                                     para = new DynamicParameters();
-                                                    para.Add("@Message", $"Hàng Outsole check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                                    para.Add("@Message", $"Hàng Outsole check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                                                     para.Add("Level", "Log");
                                                     connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
                                                 }
@@ -1322,7 +1317,7 @@ namespace WeightChecking
 
                                                     para = null;
                                                     para = new DynamicParameters();
-                                                    para.Add("@Message", $"Hàng Outsole trước sơn check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                                    para.Add("@Message", $"Hàng Outsole trước sơn check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                                                     para.Add("Level", "Log");
                                                     connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
@@ -1337,19 +1332,42 @@ namespace WeightChecking
                                             {
                                                 para = null;
                                                 para = new DynamicParameters();
-                                                para.Add("@Message", $"Hàng Outsole check weight OK nhưng đã ghi nhận dữ liệu - Cho qua mà không in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                                para.Add("@Message", $"Hàng Outsole check weight OK nhưng đã ghi nhận dữ liệu - Cho qua mà không in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                                                 para.Add("Level", "Log");
                                                 connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
                                                 Debug.WriteLine($"Thùng OC đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                                     $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                                this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi."; });
+                                                //this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi."; });
                                                 //ghi giá trị xuống PLC cân reject
                                                 GlobalVariables.MyEvent.WeightPusher = 1;
+
+                                                //bat den đỏ 
+                                                GlobalVariables.MyEvent.StatusLightPLC = 1;
+                                                //hien thi mau label
+                                                this?.Invoke((MethodInvoker)delegate
+                                                {
+                                                    labResult.Text = "Pass";
+                                                    labResult.BackColor = Color.Red;
+                                                    labResult.ForeColor = Color.White;
+                                                    labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi.";
+                                                });
 
                                                 //ResetControl();
                                                 goto returnLoop;
                                             }
+                                            
+                                            //bat den xanh 
+                                            GlobalVariables.MyEvent.StatusLightPLC = 2;
+                                            //hien thi mau label
+                                            this?.Invoke((MethodInvoker)delegate
+                                            {
+                                                labResult.Text = "Pass";
+                                                labResult.BackColor = Color.Green;
+                                                labResult.ForeColor = Color.White;
+                                                labErrInfoScale.Text = "Khối lượng OK. In tem.";
+                                            });
+
                                             //GlobalVariables.RealWeight = _scanDataWeight.GrossWeight;
                                             //GlobalVariables.PrintApprove = true;
 
@@ -1466,14 +1484,14 @@ namespace WeightChecking
                                     {
                                         para = null;
                                         para = new DynamicParameters();
-                                        para.Add("@Message", $"Hàng HeelCounter check weight OK.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                        para.Add("@Message", $"Hàng HeelCounter check weight OK.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                                         para.Add("Level", "Log");
                                         connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
                                         _scanDataWeight.Pass = 1;//báo thùng pass
                                         _scanDataWeight.CreatedDate = GlobalVariables.CreatedDate = DateTime.Now;//lấy thời gian để đồng bộ giữa in tem và log DB Printing
                                                                                                                  //bật tín hiệu để PLC on đèn xanh
-                                        GlobalVariables.MyEvent.StatusLightPLC = 2;
+                                        //GlobalVariables.MyEvent.StatusLightPLC = 2;
 
                                         if (_scanDataWeight.Decoration == 0)
                                         {
@@ -1484,21 +1502,12 @@ namespace WeightChecking
                                             GlobalVariables.RememberInfo.GoodBoxNoPrinting += 1;
                                         }
 
-                                        //hien thi mau label
-                                        this?.Invoke((MethodInvoker)delegate
-                                        {
-                                            labResult.Text = "HC";
-                                            labResult.BackColor = Color.Green;
-                                            labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Hàng heel counter OK. Không kiểm tra khối lượng.";
-                                        });
-
                                         //kiểm tra xem data đã có trên hệ thống hay chưa
                                         if (statusLogData == 0 || statusLogData == 1)
                                         {
                                             para = null;
                                             para = new DynamicParameters();
-                                            para.Add("@Message", $"Hàng HeelCounter check weight OK vào in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                            para.Add("@Message", $"Hàng HeelCounter check weight OK vào in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                                             para.Add("Level", "Log");
                                             connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
@@ -1529,7 +1538,7 @@ namespace WeightChecking
 
                                             para = null;
                                             para = new DynamicParameters();
-                                            para.Add("@Message", $"Hàng HeelCounter check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                            para.Add("@Message", $"Hàng HeelCounter check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                                             para.Add("Level", "Log");
                                             connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
                                         }
@@ -1537,7 +1546,7 @@ namespace WeightChecking
                                         {
                                             para = null;
                                             para = new DynamicParameters();
-                                            para.Add("@Message", $"Hàng HeelCounter check weight OK đã ghi nhận data - Không in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                                            para.Add("@Message", $"Hàng HeelCounter check weight OK đã ghi nhận data - Không in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                                             para.Add("Level", "Log");
                                             connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
@@ -1547,9 +1556,29 @@ namespace WeightChecking
                                             //ghi giá trị xuống PLC cân reject
                                             GlobalVariables.MyEvent.WeightPusher = 1;
 
+                                            GlobalVariables.MyEvent.StatusLightPLC = 1;
+                                            //hien thi mau label
+                                            this?.Invoke((MethodInvoker)delegate
+                                            {
+                                                labResult.Text = "HC";
+                                                labResult.BackColor = Color.Red;
+                                                labResult.ForeColor = Color.White;
+                                                labErrInfoScale.Text = "Đã Passed";
+                                            });
+
                                             //ResetControl();
                                             goto returnLoop;
                                         }
+
+                                        GlobalVariables.MyEvent.StatusLightPLC = 2;
+                                        //hien thi mau label
+                                        this?.Invoke((MethodInvoker)delegate
+                                        {
+                                            labResult.Text = "HC";
+                                            labResult.BackColor = Color.Green;
+                                            labResult.ForeColor = Color.White;
+                                            labErrInfoScale.Text = "Hàng heel counter OK. Không kiểm tra khối lượng.";
+                                        });
                                     }
                                     #endregion
 
@@ -1892,7 +1921,7 @@ namespace WeightChecking
                 using (var connection = GlobalVariables.GetDbConnection())
                 {
                     DynamicParameters para = new DynamicParameters();
-                    para.Add("@Message", $"Lỗi check label.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}");
+                    para.Add("@Message", $"Lỗi check label.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                     para.Add("Level", "LogError");
                     para.Add("Exception", ex.Message);
                     connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
@@ -1990,10 +2019,6 @@ namespace WeightChecking
                     _scanDataMetal = new tblScanDataModel();
 
                     BarcodeHandle(1, _barcodeString1);
-
-                    //reset model;
-                    _scanDataMetal = null;
-                    _scanDataMetal = new tblScanDataModel();
                 }
             }
             else if (scannerId[0].InnerText == GlobalVariables.ScannerIdWeight.ToString())//vị trí check weight. ngay cân
@@ -2120,20 +2145,20 @@ namespace WeightChecking
                 if (rcvArr[4] == 0x30)
                 {
                     Console.WriteLine($"in thanh cong!!!");
-                    GlobalVariables.PrintResult = $"In thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
+                    GlobalVariables.PrintResult = $"In thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
                     //xoa string
                     SendDynamicString(" ", " ", " ");
                 }
                 else if (rcvArr[4] == 0x4F)
                 {
                     Console.WriteLine($"Gui lenh xuong may in thanh cong!!!");
-                    GlobalVariables.PrintResult = $"Gửi lệnh xuống máy in thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
+                    GlobalVariables.PrintResult = $"Gửi lệnh xuống máy in thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
                 }
                 else if (rcvArr[4] == 0x31)
                 {
                     Console.WriteLine($"Loi. Error Code: {rcvArr[5]}. Kết nối lại máy in.");
                     // MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    GlobalVariables.PrintResult = $"Lỗi in.{rcvArr[5]}|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
+                    GlobalVariables.PrintResult = $"Lỗi in.{rcvArr[5]}|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
 
                     StopPrint();
                     Thread.Sleep(10000);
@@ -2438,9 +2463,6 @@ namespace WeightChecking
                 //hết thời gian đọc QR code mà chưa đọc được
                 //gui data xuong PLC báo reject metalPusher
                 _metalScannerStatus = 1;
-
-                _scanDataMetal = null;
-                _scanDataMetal = new tblScanDataModel();
 
                 //log vao bang reject
                 using (var connection = GlobalVariables.GetDbConnection())

@@ -304,12 +304,13 @@ namespace WeightChecking
                 //vùng nhớ dataBlock 1(DB1.DB1 byte). weight pusher
                 GlobalVariables.MyEvent.EventHandlerWeightPusher += (s, o) =>
                 {
-                    if (o.NewValue != 0)
+                    if (o.NewValue == 1)
                     {
-                        GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, new byte[] { (byte)o.NewValue });
+                        GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, new byte[] { 1 });
+                        Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                        GlobalVariables.MyEvent.WeightPusher = 0;
                     }
                     Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
-                    GlobalVariables.MyEvent.WeightPusher = 0;
                 };
                 //vùng nhớ dataBlock 1(DB1.DB2 byte). printing pusher
                 GlobalVariables.MyEvent.EventHandlerPrintPusher += (s, o) =>
