@@ -436,6 +436,9 @@ namespace WeightChecking
                                     para.Add("_quantity", _scanDataMetal.Quantity);
                                     para.Add("_scannerStation", "Identification");
                                     para.Add("_reason", "OC không đúng định dạng");
+                                    para.Add("_grossWeight", _scanDataMetal.GrossWeight);
+                                    para.Add("@_deviationPairs", _scanDataMetal.DeviationPairs);
+                                    para.Add("@_deviationWeight", _scanDataMetal.Deviation);
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                                 }
@@ -519,6 +522,9 @@ namespace WeightChecking
                                     para.Add("_quantity", _scanDataMetal.Quantity);
                                     para.Add("_scannerStation", "Identification");
                                     para.Add("_reason", "OC không đúng định dạng");
+                                    para.Add("_grossWeight", _scanDataMetal.GrossWeight);
+                                    para.Add("@_deviationPairs", _scanDataMetal.DeviationPairs);
+                                    para.Add("@_deviationWeight", _scanDataMetal.Deviation);
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                                 }
@@ -628,6 +634,9 @@ namespace WeightChecking
                                     para.Add("_quantity", _scanDataMetal.Quantity);
                                     para.Add("_scannerStation", "Identification");
                                     para.Add("_reason", "Thùng này đã check OK.");
+                                    para.Add("_grossWeight", _scanDataMetal.GrossWeight);
+                                    para.Add("@_deviationPairs", _scanDataMetal.DeviationPairs);
+                                    para.Add("@_deviationWeight", _scanDataMetal.Deviation);
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
 
@@ -687,6 +696,9 @@ namespace WeightChecking
                                     para.Add("_quantity", _scanDataMetal.Quantity);
                                     para.Add("_scannerStation", "Identification");
                                     para.Add("_reason", "Không có khối lượng đôi. Average Weight/prs.");
+                                    para.Add("_grossWeight", _scanDataMetal.GrossWeight);
+                                    para.Add("@_deviationPairs", _scanDataMetal.DeviationPairs);
+                                    para.Add("@_deviationWeight", _scanDataMetal.Deviation);
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
 
@@ -726,6 +738,9 @@ namespace WeightChecking
                                 para.Add("_quantity", _scanDataMetal.Quantity);
                                 para.Add("_scannerStation", "Identification");
                                 para.Add("_reason", "Product item chưa có trong hệ thống. Get data từ WL về lại.");
+                                para.Add("_grossWeight", _scanDataMetal.GrossWeight);
+                                para.Add("@_deviationPairs", _scanDataMetal.DeviationPairs);
+                                para.Add("@_deviationWeight", _scanDataMetal.Deviation);
 
                                 connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
 
@@ -806,6 +821,9 @@ namespace WeightChecking
                                     para.Add("_quantity", _scanDataWeight.Quantity);
                                     para.Add("_scannerStation", "Scale");
                                     para.Add("_reason", "OC không đúng định dạng");
+                                    para.Add("_grossWeight", _scanDataWeight.GrossWeight);
+                                    para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
+                                    para.Add("@_deviationWeight", _scanDataWeight.Deviation);
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                                 }
@@ -890,6 +908,9 @@ namespace WeightChecking
                                     para.Add("_quantity", _scanDataWeight.Quantity);
                                     para.Add("_scannerStation", "Scale");
                                     para.Add("_reason", "OC không đúng định dạng");
+                                    para.Add("_grossWeight", _scanDataWeight.GrossWeight);
+                                    para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
+                                    para.Add("@_deviationWeight", _scanDataWeight.Deviation);
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                                 }
@@ -1079,6 +1100,9 @@ namespace WeightChecking
                                             para.Add("_quantity", _scanDataWeight.Quantity);
                                             para.Add("_scannerStation", "Scale");
                                             para.Add("_reason", $"Số lượng vượt quá giới hạn thùng BX1 ({res.BoxQtyBx1})");
+                                            para.Add("_grossWeight", _scanDataWeight.GrossWeight);
+                                            para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
+                                            para.Add("@_deviationWeight", _scanDataWeight.Deviation);
 
                                             connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
 
@@ -1692,6 +1716,9 @@ namespace WeightChecking
                                     para.Add("_quantity", _scanDataWeight.Quantity);
                                     para.Add("_scannerStation", "Scale");
                                     para.Add("_reason", "Không có khối lượng đôi. Average Weight/prs.");
+                                    para.Add("_grossWeight", _scanDataWeight.GrossWeight);
+                                    para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
+                                    para.Add("@_deviationWeight", _scanDataWeight.Deviation);
 
                                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
 
@@ -1737,6 +1764,9 @@ namespace WeightChecking
                                 para.Add("_quantity", _scanDataWeight.Quantity);
                                 para.Add("_scannerStation", "Scale");
                                 para.Add("_reason", "Product item chưa có trong hệ thống. Get data từ WL về lại.");
+                                para.Add("_grossWeight", _scanDataWeight.GrossWeight);
+                                para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
+                                para.Add("@_deviationWeight", _scanDataWeight.Deviation);
 
                                 connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
 
@@ -2477,6 +2507,9 @@ namespace WeightChecking
                     para.Add("_quantity", _scanDataMetal.Quantity);
                     para.Add("_scannerStation", "Identification");
                     para.Add("_reason", "Không đọc được QR code trạm Identification.");
+                    para.Add("_grossWeight", _scanDataMetal.GrossWeight);
+                    para.Add("@_deviationPairs", _scanDataMetal.DeviationPairs);
+                    para.Add("@_deviationWeight", _scanDataMetal.Deviation);
 
                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                 }
@@ -2536,6 +2569,9 @@ namespace WeightChecking
                     para.Add("_quantity", _scanDataWeight.Quantity);
                     para.Add("_scannerStation", "Scale");
                     para.Add("_reason", "Không đọc được QR code trạm cân.");
+                    para.Add("_grossWeight", _scanDataWeight.GrossWeight);
+                    para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
+                    para.Add("@_deviationWeight", _scanDataWeight.Deviation);
 
                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                 }
