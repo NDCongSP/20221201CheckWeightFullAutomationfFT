@@ -667,13 +667,16 @@ namespace WeightChecking
                                 ws.Cells[0, 2].Value = "OC";
                                 ws.Cells[0, 3].Value = "Box No";
                                 ws.Cells[0, 4].Value = "Product Code";
-                                ws.Cells[0, 5].Value = "Product Name";
-                                ws.Cells[0, 6].Value = "Quantity (Prs)";
-                                ws.Cells[0, 7].Value = "Scanner Station";
-                                ws.Cells[0, 8].Value = "Reason";
-                                ws.Cells[0, 9].Value = "CreatedDate";
+                                ws.Cells[0, 5].Value = "Scanner Station";
+                                ws.Cells[0, 6].Value = "Reason";
+                                ws.Cells[0, 7].Value = "Quantity (Prs)";
+                                ws.Cells[0, 8].Value = "GrossWeight";
+                                ws.Cells[0, 9].Value = "DeviationPairs";
+                                ws.Cells[0, 10].Value = "DeviationWeight";
+                                ws.Cells[0, 11].Value = "CreatedDate";
+                                ws.Cells[0, 12].Value = "Product Name";
 
-                                rHeader = ws.Range.FromLTRB(0, 0, 9, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
+                                rHeader = ws.Range.FromLTRB(0, 0, 12, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
                                 rHeader.FillColor = Color.Orange;
                                 rHeader.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Center;
                                 rHeader.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
@@ -692,22 +695,24 @@ namespace WeightChecking
                                         Quantity = item.Quantity,
                                         ScannerStation = item.ScannerStation,
                                         Reason = item.Reason,
-                                        CreatedDate = item.CreatedDate
+                                        CreatedDate = item.CreatedDate,
+                                        GrossWeight = item.GrossWeight,
+                                        DeviationPairs = item.DeviationPairs,
+                                        DeviationWeight = item.DeviationWeight,
                                     });
                                 }
 
                                 ws.Import(resScanDataRejectReport, 1, 0);
 
                                 //ws.Range[$"Q2:Y{res.Count}"].NumberFormat = "#,#0.00";
-                                ws.Range[$"G2:G{res.Count}"].NumberFormat = "#,#0";
-                                ws.Range[$"J2:J" +
-                                    $"{res.Count}"].NumberFormat = "yyyy/MM/dd HH:mm:ss";
+                                ws.Range[$"H2:K{res.Count}"].NumberFormat = "#,#0";
+                                ws.Range[$"L2:L{res.Count}"].NumberFormat = "yyyy/MM/dd HH:mm:ss";
 
-                                ws.Range.FromLTRB(0, 0, 9, resScanDataRejectReport.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
+                                ws.Range.FromLTRB(0, 0, 12, resScanDataRejectReport.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
                                 //ws.FreezeRows(0);
                                 //ws.FreezeColumns(3);
-                                //ws.FreezePanes(0, 3);
-                                ws.Columns.AutoFit(0, 9);
+                                ws.FreezePanes(0, 3);
+                                ws.Columns.AutoFit(0, 12);
                                 #endregion
 
                                 #region Approved print lable

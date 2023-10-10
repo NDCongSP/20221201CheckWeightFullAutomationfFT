@@ -154,6 +154,7 @@ namespace WeightChecking
             this.grvReject.GridControl = this.grcReject;
             this.grvReject.Name = "grvReject";
             this.grvReject.OptionsBehavior.ReadOnly = true;
+            this.grvReject.OptionsView.ColumnAutoWidth = false;
             // 
             // frmReports
             // 
