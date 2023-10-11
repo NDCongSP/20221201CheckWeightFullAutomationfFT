@@ -19,6 +19,7 @@ namespace WeightChecking
         public string Oc { get; set; } = string.Empty;
         public string BoxId { get; set; } = string.Empty;
         public string PassFail { get; set; } = "0";
+        public string QrBarcode { get; set; } = string.Empty;
 
         public frmDeleteBox()
         {
@@ -62,11 +63,18 @@ namespace WeightChecking
                     if (IdLabel != string.Empty)
                     {
                         para.Add("IdLabel", IdLabel);
+                        para.Add("IsOc", 1);
                     }
-                    else
+                    else if(string.IsNullOrEmpty(QrBarcode))
                     {
                         para.Add("Oc", Oc);
                         para.Add("BoxId", BoxId);
+                        para.Add("IsOc", 1);
+                    }
+                    else
+                    {
+                        para.Add("IsOc", 0);
+                        para.Add("Barcode", QrBarcode);
                     }
                     para.Add("IsPass", PassFail);
 

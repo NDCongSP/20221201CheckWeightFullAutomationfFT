@@ -363,6 +363,9 @@
     <EmbeddedResource Include="Views\frmConfirmPrint.resx">
       <DependentUpon>frmConfirmPrint.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\frmDeleteBox.resx">
+      <DependentUpon>frmDeleteBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\frmMasterData.resx">
       <DependentUpon>frmMasterData.cs</DependentUpon>
     </EmbeddedResource>

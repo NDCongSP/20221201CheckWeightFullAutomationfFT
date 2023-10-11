@@ -56,7 +56,7 @@ namespace WeightChecking
                 _boxId = (string)gv.GetRowCellValue(gv.FocusedRowHandle, "BoxNo");
                 _passFail = gv.GetRowCellValue(gv.FocusedRowHandle, "Pass").ToString();
             }
-            catch (Exception ex)
+            catch
             {
 
             }
