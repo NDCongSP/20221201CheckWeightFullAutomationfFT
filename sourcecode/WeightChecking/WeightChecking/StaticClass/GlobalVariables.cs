@@ -69,6 +69,7 @@ namespace WeightChecking
         public static List<tblSpecialCaseModel> SpecialCaseList { get; set; } = new List<tblSpecialCaseModel>();
 
         public static string PrintResult { get; set; } = "";//ket qua tra ve khi thuc hien in
+        public static string PrintedResult { get; set; } = "";//ket qua tra ve khi thuc hien in
         public static string  UpdatePath { get; set; }
         public static string AppStatus { get; set; } = "DANG KHỞI ĐỘNG...";
         public static bool IsTest { get; set; } = false;//biến báo đang ở chế độ test hay chạy chính

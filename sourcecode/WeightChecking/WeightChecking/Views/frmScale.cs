@@ -2547,7 +2547,7 @@ namespace WeightChecking
                     para.Add("Exception", ex.Message);
                     connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                    if (station == 2)
+                    //if (station == 2)
                     {
                         para = null;
                         para = new DynamicParameters();
@@ -2558,7 +2558,7 @@ namespace WeightChecking
                         para.Add("_productNumber", _scanDataWeight.ProductNumber);
                         para.Add("_productName", _scanDataWeight.ProductName);
                         para.Add("_quantity", _scanDataWeight.Quantity);
-                        para.Add("_scannerStation", "Scale");
+                        para.Add("_scannerStation", $"Scanner {station}");
                         para.Add("_reason", $"System fail. Ex:{ex.Message}.");
                         para.Add("_grossWeight", _scanDataWeight.GrossWeight);
                         para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
@@ -2680,9 +2680,9 @@ namespace WeightChecking
 
                     BarcodeHandle(2, _barcodeString2);
 
-                    //reset model;
-                    _scanDataWeight = null;
-                    _scanDataWeight = new tblScanDataModel();
+                    ////reset model;
+                    //_scanDataWeight = null;
+                    //_scanDataWeight = new tblScanDataModel();
                 }
             }
             else if (scannerId[0].InnerText == GlobalVariables.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
@@ -2786,7 +2786,20 @@ namespace WeightChecking
                 if (rcvArr[4] == 0x30)
                 {
                     Console.WriteLine($"in thanh cong!!!");
-                    GlobalVariables.PrintResult = $"In thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
+                    GlobalVariables.PrintedResult = $"In thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
+
+                    using (var connection=GlobalVariables.GetDbConnection())
+                    {
+                        DynamicParameters para = new DynamicParameters();
+                        para.Add("@Message", GlobalVariables.PrintedResult);
+                        para.Add("Level", "Printer");
+
+                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                    }
+
+                    //reset model;
+                    _scanDataWeight = null;
+                    _scanDataWeight = new tblScanDataModel();
                     //xoa string
                     SendDynamicString(" ", " ", " ");
                 }
@@ -2794,12 +2807,29 @@ namespace WeightChecking
                 {
                     Console.WriteLine($"Gui lenh xuong may in thanh cong!!!");
                     GlobalVariables.PrintResult = $"Gửi lệnh xuống máy in thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
+                    using (var connection = GlobalVariables.GetDbConnection())
+                    {
+                        DynamicParameters para = new DynamicParameters();
+                        para.Add("@Message", GlobalVariables.PrintResult);
+                        para.Add("Level", "Printer");
+
+                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                    }
                 }
                 else if (rcvArr[4] == 0x31)
                 {
                     Console.WriteLine($"Loi. Error Code: {rcvArr[5]}. Kết nối lại máy in.");
                     // MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     GlobalVariables.PrintResult = $"Lỗi in.{rcvArr[5]}|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
+
+                    using (var connection = GlobalVariables.GetDbConnection())
+                    {
+                        DynamicParameters para = new DynamicParameters();
+                        para.Add("@Message", GlobalVariables.PrintResult);
+                        para.Add("Level", "Printer");
+
+                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                    }
 
                     StopPrint();
                     Thread.Sleep(10000);

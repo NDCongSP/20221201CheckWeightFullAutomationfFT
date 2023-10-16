@@ -892,7 +892,7 @@ namespace WeightChecking
                     $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}. Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
                     $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
                     $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" +
-                    $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}. PrintResult: {GlobalVariables.PrintResult}";
+                    $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}. PrintResult: {GlobalVariables.PrintResult}--{GlobalVariables.PrintedResult}";
 
                 barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
             });
