@@ -367,7 +367,13 @@ namespace WeightChecking
         private void MyEvent_EventHandleStatusLightPLC(object sender, TagValueChangeEventArgs e)
         {
             _writeHoldingRegisterArr[1] = (byte)e.NewValue;
+        Loop1:
             GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+
+            if (!GlobalVariables.ModbusStatus)
+            {
+                goto Loop1;
+            }
 
             //else//thùng cân fail
             //{

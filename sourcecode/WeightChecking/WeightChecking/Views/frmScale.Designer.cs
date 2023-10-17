@@ -444,9 +444,9 @@ namespace WeightChecking
             this.labMetalScan.Appearance.Options.UseFont = true;
             this.labMetalScan.Appearance.Options.UseTextOptions = true;
             this.labMetalScan.Appearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
-            this.labMetalScan.Location = new System.Drawing.Point(450, 310);
+            this.labMetalScan.Location = new System.Drawing.Point(566, 310);
             this.labMetalScan.Name = "labMetalScan";
-            this.labMetalScan.Size = new System.Drawing.Size(645, 47);
+            this.labMetalScan.Size = new System.Drawing.Size(529, 47);
             this.labMetalScan.StyleController = this.layoutControl1;
             this.labMetalScan.TabIndex = 32;
             this.labMetalScan.Text = "Metal Scan";
@@ -547,7 +547,7 @@ namespace WeightChecking
             this.labDecoration.Appearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
             this.labDecoration.Location = new System.Drawing.Point(24, 310);
             this.labDecoration.Name = "labDecoration";
-            this.labDecoration.Size = new System.Drawing.Size(422, 47);
+            this.labDecoration.Size = new System.Drawing.Size(538, 47);
             this.labDecoration.StyleController = this.layoutControl1;
             this.labDecoration.TabIndex = 24;
             this.labDecoration.Text = "Printing";
@@ -919,7 +919,7 @@ namespace WeightChecking
             this.layoutControlItem21.Location = new System.Drawing.Point(0, 263);
             this.layoutControlItem21.MinSize = new System.Drawing.Size(72, 28);
             this.layoutControlItem21.Name = "layoutControlItem21";
-            this.layoutControlItem21.Size = new System.Drawing.Size(426, 51);
+            this.layoutControlItem21.Size = new System.Drawing.Size(542, 51);
             this.layoutControlItem21.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
             this.layoutControlItem21.TextSize = new System.Drawing.Size(0, 0);
             this.layoutControlItem21.TextVisible = false;
@@ -927,10 +927,10 @@ namespace WeightChecking
             // layoutControlItem26
             // 
             this.layoutControlItem26.Control = this.labMetalScan;
-            this.layoutControlItem26.Location = new System.Drawing.Point(426, 263);
+            this.layoutControlItem26.Location = new System.Drawing.Point(542, 263);
             this.layoutControlItem26.MinSize = new System.Drawing.Size(101, 28);
             this.layoutControlItem26.Name = "layoutControlItem26";
-            this.layoutControlItem26.Size = new System.Drawing.Size(649, 51);
+            this.layoutControlItem26.Size = new System.Drawing.Size(533, 51);
             this.layoutControlItem26.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom;
             this.layoutControlItem26.TextSize = new System.Drawing.Size(0, 0);
             this.layoutControlItem26.TextVisible = false;
