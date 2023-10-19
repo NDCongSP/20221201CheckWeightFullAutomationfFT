@@ -5044,8 +5044,7 @@ namespace WeightChecking
                 //0x31-49-->Fail
                 //0x30-48-->may in phan hoi in thanh cong
 
-                //Printed event
-                if (rcvArr[4] == 0x30)
+               if (rcvArr[4] == 0x30)
                 {
                     Console.WriteLine($"in thanh cong!!!");
                     GlobalVariables.PrintedResult = $"In thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
@@ -5057,7 +5056,8 @@ namespace WeightChecking
                         para.Add("Level", "Printer");
 
                         connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
-                    }
+                    }  //Printed event
+               
                     #region Log data
                     //mỗi thùng chỉ cho log vào tối da là 2 dòng trong scanData, 1 dòng pass và fail (nếu có)
                     //tính lại tỷ lệ khối lượng số đôi lỗi/ StdGrossWeight của lần scan này để log
