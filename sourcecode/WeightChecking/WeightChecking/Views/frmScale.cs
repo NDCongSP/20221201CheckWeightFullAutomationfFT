@@ -3095,6 +3095,7 @@ namespace WeightChecking
         {
             try
             {
+                SendDynamicString(" ", " ", " ");
                 //reset model để lưu cho thùng mới
                 _scanDataWeight = null;
                 _scanDataWeight = new tblScanDataModel();
@@ -4357,7 +4358,6 @@ namespace WeightChecking
                             Debug.WriteLine($"Item '{_scanDataWeight.ProductNumber}' không có khối lượng/1 đôi. Xin hãy kiểm tra lại thông tin."
                                 , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
-
                             ResetControl();
 
                             if (this.InvokeRequired)
@@ -5165,7 +5165,7 @@ namespace WeightChecking
                     //_scanDataWeight = null;
                     //_scanDataWeight = new tblScanDataModel();
                     //xoa string
-                    SendDynamicString(" ", " ", " ");
+                    //SendDynamicString(" ", " ", " ");
                 }
                 else if (rcvArr[4] == 0x4F)
                 {
@@ -5767,6 +5767,8 @@ namespace WeightChecking
             //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject
             if (!_readQrStatus[1])
             {
+                SendDynamicString(" ", " ", " ");
+
                 Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
 
                 if (this.InvokeRequired)
