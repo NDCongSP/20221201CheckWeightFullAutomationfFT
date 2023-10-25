@@ -14,11 +14,14 @@ namespace WeightChecking
         public string OcNo { get; set; }
         public string BoxId { get; set; }
         public string ProductNumber { get; set; }
-        public string ProductName { get; set; }
         public double Quantity { get; set; }
         public string ScannerStation { get; set; }
         public string Reason { get; set; }
         public DateTime CreatedDate { get; set; }
+        public double GrossWeight { get; set; }
+        public double DeviationPairs { get; set; }
+        public double DeviationWeight { get; set; }
+        public string ProductName { get; set; }
 
         [Browsable(false)]
         public Guid ID { get; set; }

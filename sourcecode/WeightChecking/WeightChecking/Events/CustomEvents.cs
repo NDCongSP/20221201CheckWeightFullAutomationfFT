@@ -278,11 +278,8 @@ namespace WeightChecking
             get => _weightPusher;
             set
             {
-                if (value != _weightPusher)
-                {
-                    _weightPusher = value;
-                    OnWeightPusherAction(value);
-                }
+                _weightPusher = value;
+                OnWeightPusherAction(value);
             }
         }
 

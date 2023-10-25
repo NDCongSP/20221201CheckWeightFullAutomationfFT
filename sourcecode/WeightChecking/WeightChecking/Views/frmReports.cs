@@ -56,7 +56,7 @@ namespace WeightChecking
                 _boxId = (string)gv.GetRowCellValue(gv.FocusedRowHandle, "BoxNo");
                 _passFail = gv.GetRowCellValue(gv.FocusedRowHandle, "Pass").ToString();
             }
-            catch (Exception ex)
+            catch
             {
 
             }
@@ -182,6 +182,11 @@ namespace WeightChecking
                     {
                         grcReject.DataSource = resScanDataReject;
                         grvReject.Columns["CreatedDate"].DisplayFormat.FormatString = "YYYY-MM-dd HH:mm:ss";
+
+                        grvReject.Columns["BarcodeString"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
+                        grvReject.Columns["IdLabel"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
+                        grvReject.Columns["OcNo"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
+                        grvReject.Columns["BoxId"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
                     });
                     #endregion
                 }

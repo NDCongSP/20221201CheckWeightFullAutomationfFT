@@ -6,8 +6,8 @@ Máy in và plC Delta chỗ bàn cân dùng kết nối COM, sử dụng bộ co
 
 THÔNG TIN IP/PORT CÁC THIẾT BỊ
 1. PC: 192.168.80.101 
-2. Convert ATC-1000 PLC: 192.168.80.1/23
-3. Convert ATC-1000 Printing: 192.168.80.2/24
+2. Convert ATC-1000 PLC: 192.168.80.2/23
+3. Convert ATC-1000 Printing: 192.168.80.1/24
 4. PLC Conveyor: S7-1200 Profinet: 192.168.80.3
 
 THÔNG TIN ĐỊA CHỈ MAPPING

@@ -39,7 +39,7 @@ namespace WeightChecking
 
         Timer _timer = new Timer() { Interval = 500 };
 
-        byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] _writeHoldingRegisterArr = { 0, 1 };
         int _countDisconnectPlc = 0;
         private System.Threading.Tasks.Task _tskModbus, _tskProfinet;
@@ -216,8 +216,23 @@ namespace WeightChecking
 
                     if (GlobalVariables.ModbusStatus)
                     {
+                        //ghi thông số delay trước khi chạy vào máy in
                         //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
-                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 7, ref _readHoldingRegisterArr);
+                        //D511 -11FF = 4607
+                        //thanh ghi D508 cua PLC Delta DPV14SS2 co dia chi la 4604
+
+                        //byte[] mangGhi = new byte[2];
+                        //GlobalVariables.MyDriver.SetWord(mangGhi, 0, 2000);
+
+                        //GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4604, 1, mangGhi);
+
+                        //if (GlobalVariables.ModbusStatus)
+                        //{
+                        //    MessageBox.Show("Ghi gia tri thanh cong");
+                        //}
+
+                        //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
+                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 8, ref _readHoldingRegisterArr);
 
                         //GlobalVariables.RememberInfo.CountMetalScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
                         ////update gia tri count vao sự kiện để trong frmScal  nó update lên giao diện
@@ -229,6 +244,8 @@ namespace WeightChecking
                         GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
                         GlobalVariables.MyEvent.SensorBeforeWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 8);
                         GlobalVariables.MyEvent.SensorAfterWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
+
+                        //var delayConveyor = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 14);
 
                         //đăng ký sự kiện bật tắt đèn tháp báo cân pass/fail
                         GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
@@ -304,12 +321,16 @@ namespace WeightChecking
                 //vùng nhớ dataBlock 1(DB1.DB1 byte). weight pusher
                 GlobalVariables.MyEvent.EventHandlerWeightPusher += (s, o) =>
                 {
-                    if (o.NewValue != 0)
+                    if (o.NewValue == 1)
                     {
-                        GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, new byte[] { (byte)o.NewValue });
+                        GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, new byte[] { 1 });
+                        Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                        //GlobalVariables.MyEvent.WeightPusher = 0;
                     }
-                    Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
-                    GlobalVariables.MyEvent.WeightPusher = 0;
+                    else
+                    {
+                        Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                    }
                 };
                 //vùng nhớ dataBlock 1(DB1.DB2 byte). printing pusher
                 GlobalVariables.MyEvent.EventHandlerPrintPusher += (s, o) =>
@@ -366,7 +387,13 @@ namespace WeightChecking
         private void MyEvent_EventHandleStatusLightPLC(object sender, TagValueChangeEventArgs e)
         {
             _writeHoldingRegisterArr[1] = (byte)e.NewValue;
+        Loop1:
             GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+
+            if (!GlobalVariables.ModbusStatus)
+            {
+                goto Loop1;
+            }
 
             //else//thùng cân fail
             //{
@@ -666,13 +693,16 @@ namespace WeightChecking
                                 ws.Cells[0, 2].Value = "OC";
                                 ws.Cells[0, 3].Value = "Box No";
                                 ws.Cells[0, 4].Value = "Product Code";
-                                ws.Cells[0, 5].Value = "Product Name";
-                                ws.Cells[0, 6].Value = "Quantity (Prs)";
-                                ws.Cells[0, 7].Value = "Scanner Station";
-                                ws.Cells[0, 8].Value = "Reason";
-                                ws.Cells[0, 9].Value = "CreatedDate";
+                                ws.Cells[0, 5].Value = "Scanner Station";
+                                ws.Cells[0, 6].Value = "Reason";
+                                ws.Cells[0, 7].Value = "Quantity (Prs)";
+                                ws.Cells[0, 8].Value = "GrossWeight";
+                                ws.Cells[0, 9].Value = "DeviationPairs";
+                                ws.Cells[0, 10].Value = "DeviationWeight";
+                                ws.Cells[0, 11].Value = "CreatedDate";
+                                ws.Cells[0, 12].Value = "Product Name";
 
-                                rHeader = ws.Range.FromLTRB(0, 0, 9, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
+                                rHeader = ws.Range.FromLTRB(0, 0, 12, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
                                 rHeader.FillColor = Color.Orange;
                                 rHeader.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Center;
                                 rHeader.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
@@ -685,28 +715,30 @@ namespace WeightChecking
                                         BarcodeString = item.BarcodeString,
                                         IdLabel = item.IdLabel,
                                         OcNo = item.OcNo,
-                                        BoxId = item.IdLabel,
+                                        BoxId = item.BoxId,
                                         ProductNumber = item.ProductNumber,
                                         ProductName = item.ProductName,
                                         Quantity = item.Quantity,
                                         ScannerStation = item.ScannerStation,
                                         Reason = item.Reason,
-                                        CreatedDate = item.CreatedDate
+                                        CreatedDate = item.CreatedDate,
+                                        GrossWeight = item.GrossWeight,
+                                        DeviationPairs = item.DeviationPairs,
+                                        DeviationWeight = item.DeviationWeight,
                                     });
                                 }
 
                                 ws.Import(resScanDataRejectReport, 1, 0);
 
                                 //ws.Range[$"Q2:Y{res.Count}"].NumberFormat = "#,#0.00";
-                                ws.Range[$"G2:G{res.Count}"].NumberFormat = "#,#0";
-                                ws.Range[$"J2:J" +
-                                    $"{res.Count}"].NumberFormat = "yyyy/MM/dd HH:mm:ss";
+                                ws.Range[$"H2:K{res.Count}"].NumberFormat = "#,#0";
+                                ws.Range[$"L2:L{res.Count}"].NumberFormat = "yyyy/MM/dd HH:mm:ss";
 
-                                ws.Range.FromLTRB(0, 0, 9, resScanDataRejectReport.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
+                                ws.Range.FromLTRB(0, 0, 12, resScanDataRejectReport.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
                                 //ws.FreezeRows(0);
                                 //ws.FreezeColumns(3);
-                                //ws.FreezePanes(0, 3);
-                                ws.Columns.AutoFit(0, 9);
+                                ws.FreezePanes(0, 3);
+                                ws.Columns.AutoFit(0, 12);
                                 #endregion
 
                                 #region Approved print lable
@@ -876,21 +908,29 @@ namespace WeightChecking
         private void _timer_Tick(object sender, EventArgs e)
         {
             Timer t = (Timer)sender;
-            t.Enabled = false;
-
-            this?.Invoke((MethodInvoker)delegate
+            try
             {
-                barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")} " +
-                    $"| {GlobalVariables.UserLoginInfo.UserName}" +
-                    $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
-                    $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}. Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
-                    $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
-                    $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" +
-                    $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}. PrintResult: {GlobalVariables.PrintResult}";
+                t.Enabled = false;
 
-                barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
-            });
-            t.Enabled = true;
+                this?.Invoke((MethodInvoker)delegate
+                {
+                    barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")} " +
+                        $"| {GlobalVariables.UserLoginInfo.UserName}" +
+                        $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
+                        $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
+                        $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
+                        $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
+                        $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" +
+                        $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}. PrintResult: {GlobalVariables.PrintResult}--{GlobalVariables.PrintedResult}";
+
+                    barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
+                });
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally { t.Enabled = true; }
         }
 
         private void BarButtonItemSettings_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
@@ -1374,6 +1414,7 @@ namespace WeightChecking
 
         public void ReadProfinet()
         {
+            bool weightPushFlag = false;
             while (true)
             {
                 #region Đọc các giá trị từ PLC conveyor s7-1200, profinet
@@ -1391,6 +1432,16 @@ namespace WeightChecking
                         _weightPusher = resultData.MangGiaTri[1];
                         _printPusher = resultData.MangGiaTri[2];
                         _metalPusher = resultData.MangGiaTri[6];
+
+                        //if (_weightPusher == 0 && weightPushFlag == false)
+                        //{
+                        //    weightPushFlag = true;
+                        //    GlobalVariables.MyEvent.WeightPusher = _weightPusher;
+                        //}
+                        //else if (_weightPusher == 0 && weightPushFlag == false)
+                        //{
+                        //    weightPushFlag = false;
+                        //}
 
                         //vùng nhớ chứa trạng thái của sensor là DB1[3], truoc vị trí metal scan, để tính thời gian quét QR code. 1-On;0-off
                         GlobalVariables.MyEvent.SensorBeforeMetalScan = resultData.MangGiaTri[3];
