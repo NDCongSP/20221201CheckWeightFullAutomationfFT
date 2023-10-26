@@ -39,6 +39,9 @@ namespace WeightChecking
             this.xtraTabPage4 = new DevExpress.XtraTab.XtraTabPage();
             this.grcReject = new DevExpress.XtraGrid.GridControl();
             this.grvReject = new DevExpress.XtraGrid.Views.Grid.GridView();
+            this.xtraTabPage2 = new DevExpress.XtraTab.XtraTabPage();
+            this._grcMetalScan = new DevExpress.XtraGrid.GridControl();
+            this._grvMetalScan = new DevExpress.XtraGrid.Views.Grid.GridView();
             ((System.ComponentModel.ISupportInitialize)(this.grcReports)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.grvReports)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.xtraTabControl1)).BeginInit();
@@ -50,6 +53,9 @@ namespace WeightChecking
             this.xtraTabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grcReject)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.grvReject)).BeginInit();
+            this.xtraTabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this._grcMetalScan)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this._grvMetalScan)).BeginInit();
             this.SuspendLayout();
             // 
             // grcReports
@@ -86,7 +92,8 @@ namespace WeightChecking
             this.xtraTabControl1.TabPages.AddRange(new DevExpress.XtraTab.XtraTabPage[] {
             this.xtraTabPage1,
             this.xtraTabPage3,
-            this.xtraTabPage4});
+            this.xtraTabPage4,
+            this.xtraTabPage2});
             // 
             // xtraTabPage1
             // 
@@ -156,6 +163,33 @@ namespace WeightChecking
             this.grvReject.OptionsBehavior.ReadOnly = true;
             this.grvReject.OptionsView.ColumnAutoWidth = false;
             // 
+            // xtraTabPage2
+            // 
+            this.xtraTabPage2.Appearance.Header.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold);
+            this.xtraTabPage2.Appearance.Header.Options.UseFont = true;
+            this.xtraTabPage2.Controls.Add(this._grcMetalScan);
+            this.xtraTabPage2.Name = "xtraTabPage2";
+            this.xtraTabPage2.Size = new System.Drawing.Size(1408, 754);
+            this.xtraTabPage2.Text = "Metal scan";
+            // 
+            // _grcMetalScan
+            // 
+            this._grcMetalScan.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._grcMetalScan.Location = new System.Drawing.Point(0, 0);
+            this._grcMetalScan.MainView = this._grvMetalScan;
+            this._grcMetalScan.Name = "_grcMetalScan";
+            this._grcMetalScan.Size = new System.Drawing.Size(1408, 754);
+            this._grcMetalScan.TabIndex = 0;
+            this._grcMetalScan.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
+            this._grvMetalScan});
+            // 
+            // _grvMetalScan
+            // 
+            this._grvMetalScan.GridControl = this._grcMetalScan;
+            this._grvMetalScan.Name = "_grvMetalScan";
+            this._grvMetalScan.OptionsBehavior.ReadOnly = true;
+            this._grvMetalScan.OptionsView.ColumnAutoWidth = false;
+            // 
             // frmReports
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -175,6 +209,9 @@ namespace WeightChecking
             this.xtraTabPage4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.grcReject)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.grvReject)).EndInit();
+            this.xtraTabPage2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this._grcMetalScan)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this._grvMetalScan)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -191,5 +228,8 @@ namespace WeightChecking
         private DevExpress.XtraTab.XtraTabPage xtraTabPage4;
         private DevExpress.XtraGrid.GridControl grcReject;
         private DevExpress.XtraGrid.Views.Grid.GridView grvReject;
+        private DevExpress.XtraTab.XtraTabPage xtraTabPage2;
+        private DevExpress.XtraGrid.GridControl _grcMetalScan;
+        private DevExpress.XtraGrid.Views.Grid.GridView _grvMetalScan;
     }
 }
