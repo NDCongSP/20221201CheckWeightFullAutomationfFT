@@ -387,7 +387,7 @@ namespace WeightChecking
         private void MyEvent_EventHandleStatusLightPLC(object sender, TagValueChangeEventArgs e)
         {
             _writeHoldingRegisterArr[1] = (byte)e.NewValue;
-        //Loop1:
+            //Loop1:
             GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
 
             if (!GlobalVariables.ModbusStatus)
@@ -845,7 +845,7 @@ namespace WeightChecking
 
                                 // format column BoxNo as string value
                                 ws[$"C6:C{resMetalScanResult.Count + 1}"].NumberFormat = "@";
-                         
+
                                 ws.Import(resMetalScanResult, 1, 0);
 
                                 //ws.Range[$"Q2:Y{res.Count}"].NumberFormat = "#,#0.00";
@@ -952,19 +952,35 @@ namespace WeightChecking
             {
                 t.Enabled = false;
 
-                this?.Invoke((MethodInvoker)delegate
+                if (this.InvokeRequired)
+                {
+                    this?.Invoke(new Action(() =>
+                    {
+                        barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")} " +
+                            $"| {GlobalVariables.UserLoginInfo.UserName}" +
+                            $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
+                            $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
+                            $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
+                            $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
+                            $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" +
+                            $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}. PrintResult: {GlobalVariables.PrintResult}--{GlobalVariables.PrintedResult}";
+
+                        barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
+                    }));
+                }
+                else
                 {
                     barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")} " +
-                        $"| {GlobalVariables.UserLoginInfo.UserName}" +
-                        $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
-                        $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
-                        $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
-                        $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
-                        $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" +
-                        $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}. PrintResult: {GlobalVariables.PrintResult}--{GlobalVariables.PrintedResult}";
+                            $"| {GlobalVariables.UserLoginInfo.UserName}" +
+                            $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
+                            $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
+                            $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
+                            $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
+                            $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" +
+                            $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}. PrintResult: {GlobalVariables.PrintResult}--{GlobalVariables.PrintedResult}";
 
                     barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
-                });
+                }
             }
             catch (Exception ex)
             {
