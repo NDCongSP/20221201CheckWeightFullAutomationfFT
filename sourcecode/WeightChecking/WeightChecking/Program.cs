@@ -50,6 +50,7 @@ namespace WeightChecking
             GlobalVariables.TimeCheckQrMetal = Properties.Settings.Default.TimeCheckQrMetal;
             GlobalVariables.TimeCheckQrScale = Properties.Settings.Default.TimeCheckQrScale;
             GlobalVariables.UpdatePath = Properties.Settings.Default.UpdatePath;
+            GlobalVariables.delayTriggerTest = Properties.Settings.Default.delayTriggerTest;
 
             if (Properties.Settings.Default.Station == 0)
             {

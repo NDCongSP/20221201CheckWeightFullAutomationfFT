@@ -89,7 +89,8 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\\\\10.40.10.9\\Public$\\05_IT\\01_Update\\21- IDCScaleSystem\\Update.xml")]
+        [global::System.Configuration.DefaultSettingValueAttribute("\\\\10.40.10.9\\Public$\\98_Public_Share\\99_Shared\\05_IT\\01_Update\\21- IDCScaleSystem" +
+            "\\Update.xml")]
         public string UpdatePath {
             get {
                 return ((string)(this["UpdatePath"]));
@@ -242,6 +243,18 @@ namespace WeightChecking.Properties {
             }
             set {
                 this["conStringTest"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5000")]
+        public int delayTriggerTest {
+            get {
+                return ((int)(this["delayTriggerTest"]));
+            }
+            set {
+                this["delayTriggerTest"] = value;
             }
         }
     }

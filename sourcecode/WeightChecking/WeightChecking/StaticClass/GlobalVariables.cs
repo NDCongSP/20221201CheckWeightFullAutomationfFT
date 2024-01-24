@@ -115,5 +115,7 @@ namespace WeightChecking
         public static bool PrintApprove { get; set; } = false;
         public static DateTime CreatedDate { get; set; }//dung de chua thoi gian tạo, để đồng bộ giữa in tem và log DB. dung trong Confirm in tem
         #endregion
+
+        public static int delayTriggerTest { get; set; } = 3000;
     }
 }

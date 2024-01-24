@@ -63,6 +63,9 @@ namespace WeightChecking
         private bool _firstLoad = true;
 
         private bool _approvePrint = false;// lệnh cho phép in hay không, chỉ khi nào pass cân thì active lên cho in.
+
+        private Task _scannerTask;
+
         public frmScale()
         {
             InitializeComponent();
@@ -72,6 +75,9 @@ namespace WeightChecking
 
         private void FrmScale_Load(object sender, EventArgs e)
         {
+            //20240124 Cong.nguyen update scanner matrix
+            txtQRScale.Focus();
+
             #region Test get LotNo Brooks
             //using (var connection = GlobalVariables.GetDbConnection())
             //{
@@ -155,7 +161,7 @@ namespace WeightChecking
             GlobalVariables.MyEvent.EventHandleScaleValue += (s, o) =>
             {
                 //Debug.WriteLine($"Event Scale value real time: {o.ScaleValue}");
-                _scaleValue = o.ScaleValue;
+                _scaleValue = _scaleValueStable = o.ScaleValue;
 
                 if (labScaleValue.InvokeRequired)
                 {
@@ -247,7 +253,7 @@ namespace WeightChecking
                 {
                     _scannerIsBussy[2] = false;
                 }
-                Debug.WriteLine($"Event Sensor after scale: {o.NewValue}|ScannerBussy{_scannerIsBussy[2]}");
+                Debug.WriteLine($"Event Sensor after print: {o.NewValue}|ScannerBussy{_scannerIsBussy[2]}");
             };
 
             GlobalVariables.MyEvent.EventHandleSensorMiddleMetal += (s, o) =>
@@ -349,6 +355,7 @@ namespace WeightChecking
             };
             #endregion
 
+            //comment lai phần scanner và máy in
             //khởi tạo scanner
             InitializeScaner();
 
@@ -362,1412 +369,67 @@ namespace WeightChecking
 
             GlobalVariables.AppStatus = "READY";
 
-            timer = new System.Windows.Forms.Timer();
-            timer.Interval = 500;
-            timer.Start();
-            timer.Tick += (timer, arg) =>
-            {
-                txtQRScale.Focus();
-            };
+            //timer = new System.Windows.Forms.Timer();
+            //timer.Interval = 500;
+            //timer.Start();
+            //timer.Tick += (timer, arg) =>
+            //{
+            //    txtQRScale.Focus();
+            //};
 
             txtQRScale.KeyDown += txtQrScale_KeyDown;
+            //txtQRScale.TextChanged += TxtQRScale_TextChanged;
+
+            txtQRScale.Focus();
 
             //_scaleValueStable = 8777;
             //BarcodeHandle(1, "A10704344,6812012208-2667-E057,45,4,P,6/13,1900082,2/3|2,248212.2023,,,");
             //GlobalVariables.MyEvent.MetalCheckResult = 0;
             //GlobalVariables.MyEvent.SensorAfterMetalScan = 1;
-            
+
+        }
+
+        private void TxtQRScale_TextChanged(object sender, EventArgs e)
+        {
+            txtQRScale.Focus();
+            Debug.WriteLine("Focus");
         }
 
         private void txtQrScale_KeyDown(object sender, KeyEventArgs e)
         {
             TextEdit te = sender as TextEdit;
-            if(e.KeyCode == Keys.Enter)
+            if (e.KeyCode == Keys.Enter)
             {
                 string barcodeString = te.Text;
-                //trạm cân
-                //reset model để lưu cho thùng mới
-                _scanDataWeight = null;
-                _scanDataWeight = new tblScanDataModel();
-                _approvePrint = false;
-                GlobalVariables.IdLabel = string.Empty;
 
-                if (labQrScale.InvokeRequired)
+                Debug.WriteLine(barcodeString);
+
+                if (!_scannerIsBussy[1])
                 {
-                    labQrScale.Invoke(new Action(() =>
-                    {
-                        labQrScale.Text = barcodeString;
-                    }));
-                }
-                else labQrScale.Text = barcodeString;
+                    //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                    _scannerIsBussy[1] = true;
 
-                #region Xử lý data ban đầu theo QR code
-                _scanDataWeight.CreatedBy = GlobalVariables.UserLoginInfo.Id;
-                _scanDataWeight.Station = GlobalVariables.Station;
+                    //bật biến báo đọc đc QR code từ label
+                    _readQrStatus[1] = true;
 
-                bool specialCase = false;//dùng có các trường hợp hàng PU, trên WL decpration là 0, nhưng QC phân ra printing 0-1. beforePrinting thì get theo
-                                         //printing=0; afterPrinting thì get theo printing=1. 6112012228
+                    //reset model;
+                    //_scanDataWeight = null;
+                    //_scanDataWeight = new tblScanDataModel();
 
-                //biến dùng để check xem thùng đó có trong bảng scanData hay chưa.
-                int statusLogData = 0;//0-chưa có;1-đã có dòng fail;2-đã có dòng pass;3-đã có cả fail và pass
-                bool isFail = false;
-                bool isPass = false;
+                    _scannerTask = new Task(() => BarcodeScanner2Handle(2, barcodeString));
+                    _scannerTask.Start();
 
-                double lowerToleranceOfBox = 0, upperToleranceOfBox = 0;
-                double nwPlus = 0;
-                double nwSub = 0;
+                    //BarcodeScanner2Handle(2, barcodeString);
 
-                double ratioFailWeight = 0;//biến chứa ratioFailWeight của lần fail trước
-
-                #region xử lý barcode lấy ra các giá trị theo code
-                _scanDataWeight.BarcodeString = barcodeString;
-                var ocFirstChar = barcodeString.Substring(0, 2);
-
-                if (_scanDataWeight.BarcodeString.Contains("|"))
-                {
-                    var s = barcodeString.Split('|');
-                    var s1 = s[0].Split(',');
-                    _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
-
-                    //Check xem  QR code quét vào có đúng định dạng hay ko
-
-                    var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstChar);
-
-                    if (resultCheckOc != null)
-                    {
-                        _scanDataWeight.OcNo = s1[0];
-                    }
-                    else
-                    {
-                        Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                        if (labErrInfoScale.InvokeRequired)
-                        {
-                            labErrInfoScale.Invoke(new Action(() =>
-                            {
-                                labErrInfoScale.Text = "OC không đúng định dạng.";
-                            }));
-                        }
-                        else labErrInfoScale.Text = "OC không đúng định dạng.";
-
-                        //ghi lệnh reject do ko quet đc tem
-                        GlobalVariables.MyEvent.WeightPusher = 1;
-
-                        //log vao bang reject
-                        using (var connection = GlobalVariables.GetDbConnection())
-                        {
-                            var para = new DynamicParameters();
-                            para.Add("_barcodeString", _scanDataWeight.BarcodeString);
-                            para.Add("_idLabel", _scanDataWeight.IdLabel);
-                            para.Add("_ocNo", _scanDataWeight.OcNo);
-                            para.Add("_boxId", _scanDataWeight.BoxNo);
-                            para.Add("_productNumber", _scanDataWeight.ProductNumber);
-                            para.Add("_productName", _scanDataWeight.ProductName);
-                            para.Add("_quantity", _scanDataWeight.Quantity);
-                            para.Add("_scannerStation", "Scale");
-                            para.Add("_reason", "OC không đúng định dạng");
-                            para.Add("_grossWeight", _scanDataWeight.GrossWeight);
-                            para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
-                            para.Add("@_deviationWeight", _scanDataWeight.Deviation);
-
-                            connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
-                        }
-
-                        return;
-                    }
-
-                    _scanDataWeight.ProductNumber = s1[1];
-
-                    _scanDataWeight.Quantity = Convert.ToInt32(s1[2]);
-                    _scanDataWeight.LinePosNo = s1[3];
-                    _scanDataWeight.BoxNo = s1[5];
-                    _scanDataWeight.CustomerNo = s1[6];
-                    _scanDataWeight.BoxPosNo = s1[7];
-
-                    if (s[1].Contains(","))
-                    {
-                        var s2 = s[1].Split(',');
-
-                        GlobalVariables.IdLabel = s2[1];
-                        _scanDataWeight.IdLabel = GlobalVariables.IdLabel;
-
-                        if (s2[0] == "1")
-                        {
-                            _scanDataWeight.Location = LocationEnum.fVN;
-                        }
-                        else if (s2[0] == "2")
-                        {
-                            _scanDataWeight.Location = LocationEnum.fFT;
-                        }
-                        else if (s2[0] == "3")
-                        {
-                            _scanDataWeight.Location = LocationEnum.fKV;
-                        }
-                    }
-                    else
-                    {
-                        if (s[1] == "1")
-                        {
-                            _scanDataWeight.Location = LocationEnum.fVN;
-                        }
-                        else if (s[1] == "2")
-                        {
-                            _scanDataWeight.Location = LocationEnum.fFT;
-                        }
-                        else if (s[1] == "3")
-                        {
-                            _scanDataWeight.Location = LocationEnum.fKV;
-                        }
-                    }
-                }
-                else
-                {
-                    var s1 = _scanDataWeight.BarcodeString.Split(',');
-                    _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
-
-                    //Check xem  QR code quét vào có đúng định dạng hay ko
-                    var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstChar);
-
-                    if (resultCheckOc != null)
-                    {
-                        _scanDataWeight.OcNo = s1[0];
-                    }
-                    else
-                    {
-                        Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        if (labErrInfoScale.InvokeRequired)
-                        {
-                            labErrInfoScale.Invoke(new Action(() =>
-                            {
-                                labErrInfoScale.Text = "OC không đúng định dạng.";
-                            }));
-                        }
-                        else labErrInfoScale.Text = "OC không đúng định dạng.";
-
-                        //ghi lệnh reject do ko quet đc tem
-                        GlobalVariables.MyEvent.WeightPusher = 1;
-
-
-                        //log vao bang reject
-                        using (var connection = GlobalVariables.GetDbConnection())
-                        {
-                            var para = new DynamicParameters();
-                            para.Add("_barcodeString", _scanDataWeight.BarcodeString);
-                            para.Add("_idLabel", _scanDataWeight.IdLabel);
-                            para.Add("_ocNo", _scanDataWeight.OcNo);
-                            para.Add("_boxId", _scanDataWeight.BoxNo);
-                            para.Add("_productNumber", _scanDataWeight.ProductNumber);
-                            para.Add("_productName", _scanDataWeight.ProductName);
-                            para.Add("_quantity", _scanDataWeight.Quantity);
-                            para.Add("_scannerStation", "Scale");
-                            para.Add("_reason", "OC không đúng định dạng");
-                            para.Add("_grossWeight", _scanDataWeight.GrossWeight);
-                            para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
-                            para.Add("@_deviationWeight", _scanDataWeight.Deviation);
-
-                            connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
-                        }
-                        return;
-                    }
-
-                    //_scanData.OcNo = s1[0];
-                    _scanDataWeight.ProductNumber = s1[1];
-
-                    _scanDataWeight.Quantity = Convert.ToInt32(s1[2]);
-                    _scanDataWeight.LinePosNo = s1[3];
-                    _scanDataWeight.BoxNo = s1[5];
+                    ////reset model;
+                    //_scanDataWeight = null;
+                    //_scanDataWeight = new tblScanDataModel();
                 }
 
-                #region check special case
-                foreach (var item in GlobalVariables.SpecialCaseList)
-                {
-                    if (_scanDataWeight.ProductNumber.Split('-')[0].Equals(item.MainItem))
-                    {
-                        specialCase = true;
+                te.Text = "";
 
-                        break;
-                    }
-                }
-                #endregion
+                te.Focus();
 
-                GlobalVariables.OcNo = _scanDataWeight.OcNo;
-                GlobalVariables.BoxNo = _scanDataWeight.BoxNo;
-                #endregion
-                #endregion
-
-                #region truy vấn data và xử lý
-                //lấy thông tin khối lượng cân sau khi cân đã báo stable
-                //Debug.WriteLine($"da vao can,dang doi stable {_stableScale}");
-                while (_stableScale == 0 && GlobalVariables.IsScale)
-                {
-                    Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
-                }
-                //Debug.WriteLine($"da can xong. stable {_stableScale}");
-
-                _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
-                //truy vấn thông tin 
-                using (var connection = GlobalVariables.GetDbConnection())
-                {
-                    var para = new DynamicParameters();
-
-                    #region Kiểm tra xem thùng này đã được log vào scanData chưa
-                    //para.Add("QRLabel", _scanData.BarcodeString);
-                    //var checkInfo = connection.Query<tblScanDataCheckModel>("sp_tblScanDataCheck", para, commandType: CommandType.StoredProcedure).ToList();
-
-                    para.Add("_QrCode", _scanDataWeight.BarcodeString);
-                    var checkInfo = connection.Query<tblScanDataModel>("sp_tblScanDataGetByQrCode", para, commandType: CommandType.StoredProcedure).ToList();
-                    foreach (var item in checkInfo)
-                    {
-                        if (
-                            (item.Pass == 1 && (item.Status == 2 || GlobalVariables.Station == StationEnum.IDC_1))
-                            //|| (item.Pass == 0 && item.ActualDeviationPairs == 0 && item.ApprovedBy != Guid.Empty)
-                            || (item.Pass == 0 && item.Status == 2 && item.ActualDeviationPairs == 0)
-                            )
-                        {
-                            isPass = true;
-                        }
-                        else if (
-                                    (item.Pass == 0 && item.Status == 0)// && item.ActualDeviationPairs != 0 && item.ApprovedBy != Guid.Empty)
-                                    || (item.Pass == 0 && item.Status == 2 && item.ActualDeviationPairs != 0)
-                                )
-                        {
-                            isFail = true;
-
-                            //tính tỷ lệ khối lượng số đôi lỗi/ StdGrossWeight
-                            ratioFailWeight = Math.Round((Math.Abs(item.DeviationPairs) * item.AveWeight1Prs) / item.StdGrossWeight, 3);
-                        }
-                    }
-
-                    if (!isPass && !isFail)
-                    {
-                        statusLogData = 0;
-                    }
-                    else if (!isPass && isFail)
-                    {
-                        statusLogData = 1;
-                    }
-                    else if (isPass && !isFail)
-                    {
-                        statusLogData = 2;
-                    }
-                    else if (isPass && isFail)
-                    {
-                        statusLogData = 3;
-                    }
-                    #endregion
-
-                    para = new DynamicParameters();
-                    para.Add("@ProductNumber", _scanDataWeight.ProductNumber);
-                    para.Add("@SpecialCase", specialCase);
-
-                    //đối với hàng sơn PU, thì trước sơn lấy các giá trị theo printing =0. Sau sơn thì lấy các giá trị theo printing =1
-                    var checkOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstChar && ocFirstChar != "PR");
-                    if (specialCase)
-                    {
-                        //after printing
-                        if (checkOc != null || (ocFirstChar == "PR" && GlobalVariables.AfterPrinting != 0))
-                        {
-                            para.Add("@Printing", 1);//sau son
-                        }
-                        else//before printing
-                        {
-                            para.Add("@Printing", 0);//truoc son, chi có ở trạm IDC1
-                        }
-                    }
-                    var res = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
-
-                    if (res != null)
-                    {
-                        _scanDataWeight.ProductName = res.ProductName;
-                        _scanDataWeight.Decoration = res.Decoration;
-                        _scanDataWeight.MetalScan = res.MetalScan;
-                        _scanDataWeight.Brand = res.Brand;
-                        _scanDataWeight.AveWeight1Prs = res.AveWeight1Prs;
-                        _scanDataWeight.ProductCategory = res.ProductCategory;
-
-                        if (_scanDataWeight.AveWeight1Prs != 0)
-                        {
-                            #region Fill data from coreData to scanData, tính toán ra NetWeight và GrossWeight
-                            //Xét điều kiện để lấy boxWeight. Nếu là hàng đi sơn thì dùng thùng nhựa
-                            if ((_scanDataWeight.Decoration == 0 || (_scanDataWeight.Decoration == 1 && checkOc != null)) && checkOc.OcFirstChar != "BF")
-                            {
-                                _scanDataWeight.Status = 2;//báo trạng thái hàng ko đi sơn, hoặc hàng sơn đã được sơn rồi
-
-                                //lấy tolerance theo thùng giấy
-                                lowerToleranceOfBox = res.LowerToleranceOfCartonBox;
-                                upperToleranceOfBox = res.UpperToleranceOfCartonBox;
-
-                                if (_scanDataWeight.Quantity <= res.BoxQtyBx4)
-                                {
-                                    _scanDataWeight.BoxWeight = res.BoxWeightBx4;
-
-                                    if (labBoxType.InvokeRequired)
-                                    {
-                                        labBoxType.Invoke(new Action(() =>
-                                        {
-                                            labBoxType.Text = "BX4";
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labBoxType.Text = "BX4";
-                                    }
-                                }
-                                else if (_scanDataWeight.Quantity > res.BoxQtyBx4 && _scanDataWeight.Quantity <= res.BoxQtyBx3)
-                                {
-                                    _scanDataWeight.BoxWeight = res.BoxWeightBx3;
-
-                                    if (labBoxType.InvokeRequired)
-                                    {
-                                        labBoxType.Invoke(new Action(() =>
-                                        {
-                                            labBoxType.Text = "BX3";
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labBoxType.Text = "BX3";
-                                    }
-                                }
-                                else if (_scanDataWeight.Quantity > res.BoxQtyBx3 && _scanDataWeight.Quantity <= res.BoxQtyBx2)
-                                {
-                                    _scanDataWeight.BoxWeight = res.BoxWeightBx2;
-
-                                    if (labBoxType.InvokeRequired)
-                                    {
-                                        labBoxType.Invoke(new Action(() =>
-                                        {
-                                            labBoxType.Text = "BX2";
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labBoxType.Text = "BX2";
-                                    }
-                                }
-                                else if (_scanDataWeight.Quantity > res.BoxQtyBx2 && _scanDataWeight.Quantity <= res.BoxQtyBx1)
-                                {
-                                    _scanDataWeight.BoxWeight = res.BoxWeightBx1;
-
-                                    if (labBoxType.InvokeRequired)
-                                    {
-                                        labBoxType.Invoke(new Action(() =>
-                                        {
-                                            labBoxType.Text = "BX1";
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labBoxType.Text = "BX1";
-                                    }
-                                }
-                                else if (_scanDataWeight.Quantity > res.BoxQtyBx1)
-                                {
-                                    Debug.WriteLine($"Số lượng vượt quá giới hạn thùng BX1 ({res.BoxQtyBx1})", "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-                                    //bật đèn đỏ
-                                    GlobalVariables.MyEvent.StatusLightPLC = 1;
-                                    //ghi giá trị xuống PLC cân reject
-                                    GlobalVariables.MyEvent.WeightPusher = 1;
-                                    ResetControl();
-
-                                    if (this.InvokeRequired)
-                                    {
-                                        this.Invoke(new Action(() =>
-                                        {
-                                            labResult.Text = "Fail";
-                                            labResult.BackColor = Color.Red;
-                                            labErrInfoScale.Text = "Quantity box error.";
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labResult.Text = "Fail";
-                                        labResult.BackColor = Color.Red;
-                                        labErrInfoScale.Text = "Quantity box error.";
-                                    }
-
-                                    para = null;
-                                    para = new DynamicParameters();
-                                    para.Add("ProductNumber", _scanDataWeight.ProductNumber);
-                                    para.Add("ProductName", _scanDataWeight.ProductName);
-                                    para.Add("OcNum", _scanDataWeight.OcNo);
-                                    para.Add("Note", $"Số lượng vượt quá giới hạn thùng BX1 ({res.BoxQtyBx1})");
-                                    para.Add("QrCode", _scanDataWeight.BarcodeString);
-
-                                    connection.Execute("sp_tblItemMissingInfoInsert", para, commandType: CommandType.StoredProcedure);
-
-                                    //log vao bang reject
-                                    para = null;
-                                    para = new DynamicParameters();
-                                    para.Add("_barcodeString", _scanDataWeight.BarcodeString);
-                                    para.Add("_idLabel", _scanDataWeight.IdLabel);
-                                    para.Add("_ocNo", _scanDataWeight.OcNo);
-                                    para.Add("_boxId", _scanDataWeight.BoxNo);
-                                    para.Add("_productNumber", _scanDataWeight.ProductNumber);
-                                    para.Add("_productName", _scanDataWeight.ProductName);
-                                    para.Add("_quantity", _scanDataWeight.Quantity);
-                                    para.Add("_scannerStation", "Scale");
-                                    para.Add("_reason", $"Số lượng vượt quá giới hạn thùng BX1 ({res.BoxQtyBx1})");
-                                    para.Add("_grossWeight", _scanDataWeight.GrossWeight);
-                                    para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
-                                    para.Add("@_deviationWeight", _scanDataWeight.Deviation);
-
-                                    connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
-
-                                    goto returnLoop;
-                                }
-
-                                if (_scanDataWeight.Decoration == 0)
-                                {
-                                    if (labDeviation.InvokeRequired)
-                                    {
-                                        labDeviation.Invoke(new Action(() =>
-                                        {
-                                            labDecoration.BackColor = Color.Gray;
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labDecoration.BackColor = Color.Gray;
-                                    }
-                                }
-                                else
-                                {
-                                    if (labDeviation.InvokeRequired)
-                                    {
-                                        labDeviation.Invoke(new Action(() =>
-                                        {
-                                            labDecoration.BackColor = Color.Green;
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labDecoration.BackColor = Color.Green;
-                                    }
-                                }
-                            }
-                            else //if (_scanDataWeight.Decoration == 1 && _scanDataWeight.OcNo.Contains("PR"))//hàng trước sơn. chỉ có trạm SSFG01 mới nhảy vào đây
-                            {
-                                //lấy tolerance theo thùng nhựa
-                                lowerToleranceOfBox = res.LowerToleranceOfPlasticBox;
-                                upperToleranceOfBox = res.UpperToleranceOfPlasticBox;
-
-                                if (GlobalVariables.AfterPrinting == 0 && _scanDataWeight.OcNo.Contains("PR"))
-                                {
-                                    _scanDataWeight.Status = 1;// báo trạng thái hàng sơn cần đưa đi sơn, trạm SSFG01
-                                }
-                                else
-                                {
-                                    _scanDataWeight.Status = 2;// báo trạng thái hàng sơn đã được sơn, trạm SSFG02 và SSFG03(Kerry)
-                                }
-
-                                _scanDataWeight.BoxWeight = res.PlasicBoxWeight;
-
-                                if (this.InvokeRequired)
-                                {
-                                    this.Invoke(new Action(() =>
-                                    {
-                                        labDecoration.BackColor = Color.Gold;
-                                        labBoxType.Text = "Plastic";
-                                    }));
-                                }
-                                else
-                                {
-                                    labDecoration.BackColor = Color.Gold;
-                                    labBoxType.Text = "Plastic";
-                                }
-                            }
-
-                            if (_scanDataWeight.MetalScan == 0)
-                            {
-                                _approveUpdateActMetalScan = false;
-
-                                if (labMetalScan.InvokeRequired)
-                                {
-                                    labMetalScan.Invoke(new Action(() =>
-                                    {
-                                        labMetalScan.BackColor = Color.Gray;
-                                    }));
-                                }
-                                else
-                                {
-                                    labMetalScan.BackColor = Color.Gray;
-                                }
-                            }
-                            else
-                            {
-                                GlobalVariables.RememberInfo.MetalScan += 1;
-
-                                _approveUpdateActMetalScan = true;
-
-                                if (labMetalScan.InvokeRequired)
-                                {
-                                    labMetalScan.Invoke(new Action(() =>
-                                    {
-                                        labMetalScan.BackColor = Color.Gold;
-                                    }));
-                                }
-                                else
-                                {
-                                    labMetalScan.BackColor = Color.Gold;
-                                }
-                            }
-
-                            _scanDataWeight.StdNetWeight = Math.Round(_scanDataWeight.Quantity * _scanDataWeight.AveWeight1Prs, 3);
-
-                            //_scanDataWeight.Tolerance = Math.Round(_scanDataWeight.StdNetWeight * (res.Tolerance / 100), 3);
-                            _scanDataWeight.LowerTolerance = Math.Round(_scanDataWeight.StdNetWeight * (lowerToleranceOfBox / 100), 3);
-                            _scanDataWeight.UpperTolerance = Math.Round(_scanDataWeight.StdNetWeight * (upperToleranceOfBox / 100), 3);
-
-                            //luu ý các Quantity partition-Plasic-WrapSheet trên DB nó là tính số Prs
-                            //sau khi đọc về phải lấy QtyPrs quét trên label / Quantity partition-Plasic-WrapSheet ==> qty * weight ==> Weight package weight
-                            double partitionWeight = 0;
-                            var p = res.PartitionQty != 0 ? ((double)_scanDataWeight.Quantity / (double)res.PartitionQty) : 0;
-                            if (_scanDataWeight.Quantity <= res.BoxQtyBx3 || p < 1)
-                            {
-                                partitionWeight = 0;
-                            }
-                            else if (p >= 1)
-                            {
-                                partitionWeight = Math.Floor(p) * res.PartitionWeight;
-                            }
-                            //partitionWeight = res.PartitionQty != 0 ? (_scanDataWeight.Quantity / res.PartitionQty) * res.PartitionWeight : 0;
-                            var plasicBag1Weight = res.PlasicBag1Qty != 0 ? Math.Ceiling(((double)_scanDataWeight.Quantity / (double)res.PlasicBag1Qty)) * res.PlasicBag1Weight : 0;
-                            var plasicBag2Weight = res.PlasicBag2Qty != 0 ? Math.Ceiling(((double)_scanDataWeight.Quantity / (double)res.PlasicBag2Qty)) * res.PlasicBag2Weight : 0;
-                            var wrapSheetWeight = res.WrapSheetQty != 0 ? Math.Ceiling(((double)_scanDataWeight.Quantity / (double)res.WrapSheetQty)) * res.WrapSheetWeight : 0;
-                            var foamSheetWeight = res.FoamSheetQty != 0 ? Math.Ceiling(((double)_scanDataWeight.Quantity / (double)res.FoamSheetQty)) * res.FoamSheetWeight : 0;
-
-                            _scanDataWeight.PackageWeight = Math.Round(partitionWeight + plasicBag1Weight + plasicBag2Weight + wrapSheetWeight + foamSheetWeight, 3);
-
-                            _scanDataWeight.StdGrossWeight = Math.Round(_scanDataWeight.StdNetWeight + _scanDataWeight.PackageWeight + _scanDataWeight.BoxWeight, 3);
-
-                            #region tinh toán standardWeight theo Pair/Left/Right. lưu ý để sau này có áp dụng thì làm
-                            //if (_plr == "P")
-                            //{
-                            //    _scanDataWeight.GrossdWeight = res.Weight * res.QtyPerbag + res.BagWeight;
-                            //}
-                            //else if (_plr == "L")
-                            //{
-                            //    if (res.LeftWeight == 0)
-                            //    {
-                            //        _scanDataWeight.StandardWeight = res.Weight * res.QtyPerbag + res.BagWeight;
-                            //    }
-                            //    else
-                            //    {
-                            //        _scanDataWeight.StandardWeight = res.LeftWeight * res.QtyPerbag + res.BagWeight;
-                            //    }
-                            //}
-                            //else if (_plr == "R")
-                            //{
-                            //    if (res.RightWeight == 0)
-                            //    {
-                            //        _scanDataWeight.StandardWeight = res.Weight * res.QtyPerbag + res.BagWeight;
-                            //    }
-                            //    else
-                            //    {
-                            //        _scanDataWeight.StandardWeight = res.RightWeight * res.QtyPerbag + res.BagWeight;
-                            //    }
-                            //}
-                            #endregion
-
-                            #endregion
-
-                            #region hiển thị thông tin
-                            if (this.InvokeRequired)
-                            {
-                                this.Invoke(new Action(() =>
-                                {
-                                    labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
-                                    labNetWeight.Text = _scanDataWeight.StdNetWeight.ToString();
-                                    labOcNo.Text = _scanDataWeight.OcNo;
-                                    labBoxId.Text = _scanDataWeight.BoxNo;
-                                    labProductCode.Text = _scanDataWeight.ProductNumber;
-                                    labProductName.Text = _scanDataWeight.ProductName;
-                                    labQuantity.Text = _scanDataWeight.Quantity.ToString();
-                                    labColor.Text = res.Color;
-                                    labSize.Text = res.SizeName;
-                                    labAveWeight.Text = _scanDataWeight.AveWeight1Prs.ToString();
-                                    labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
-                                    labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
-                                    labBoxWeight.Text = _scanDataWeight.BoxWeight.ToString();
-                                    labAccessoriesWeight.Text = _scanDataWeight.PackageWeight.ToString();
-                                    labGrossWeight.Text = _scanDataWeight.StdGrossWeight.ToString();
-                                }));
-                            }
-                            else
-                            {
-                                labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
-                                labNetWeight.Text = _scanDataWeight.StdNetWeight.ToString();
-                                labOcNo.Text = _scanDataWeight.OcNo;
-                                labBoxId.Text = _scanDataWeight.BoxNo;
-                                labProductCode.Text = _scanDataWeight.ProductNumber;
-                                labProductName.Text = _scanDataWeight.ProductName;
-                                labQuantity.Text = _scanDataWeight.Quantity.ToString();
-                                labColor.Text = res.Color;
-                                labSize.Text = res.SizeName;
-                                labAveWeight.Text = _scanDataWeight.AveWeight1Prs.ToString();
-                                labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
-                                labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
-                                labBoxWeight.Text = _scanDataWeight.BoxWeight.ToString();
-                                labAccessoriesWeight.Text = _scanDataWeight.PackageWeight.ToString();
-                                labGrossWeight.Text = _scanDataWeight.StdGrossWeight.ToString();
-                            }
-                            #endregion
-
-                            #region xử lý so sánh khối lượng cân thực tế với kế hoạch để xử lý
-                            _scanDataWeight.NetWeight = Math.Round(_scanDataWeight.GrossWeight - _scanDataWeight.BoxWeight - _scanDataWeight.PackageWeight, 3);
-                            _scanDataWeight.Deviation = Math.Round(_scanDataWeight.NetWeight - _scanDataWeight.StdNetWeight, 3);
-
-                            #region tính toán số pairs chênh lệch và hiển thị label
-                            //var nwPlus = _scanDataWeight.StdNetWeight + _scanDataWeight.Tolerance;
-                            //var nwSub = _scanDataWeight.StdNetWeight - _scanDataWeight.Tolerance;
-                            nwPlus = _scanDataWeight.StdNetWeight + _scanDataWeight.UpperTolerance;
-                            nwSub = _scanDataWeight.StdNetWeight - _scanDataWeight.LowerTolerance;
-
-                            if (((_scanDataWeight.NetWeight > nwPlus) && (_scanDataWeight.NetWeight - nwPlus < _scanDataWeight.AveWeight1Prs / 2))
-                            || ((_scanDataWeight.NetWeight < nwSub) && (nwSub - _scanDataWeight.NetWeight < _scanDataWeight.AveWeight1Prs / 2))
-                            )
-                            {
-                                _scanDataWeight.CalculatedPairs = _scanDataWeight.Quantity;
-                            }
-                            else if (_scanDataWeight.NetWeight > nwPlus)//roundDown
-                            {
-                                _scanDataWeight.CalculatedPairs = (int)(_scanDataWeight.Quantity + Math.Floor((_scanDataWeight.NetWeight - nwPlus) / _scanDataWeight.AveWeight1Prs));
-                            }
-                            else if (_scanDataWeight.NetWeight < nwSub)//RoundUp
-                            {
-                                _scanDataWeight.CalculatedPairs = (int)(_scanDataWeight.Quantity - Math.Ceiling((nwSub - _scanDataWeight.NetWeight) / _scanDataWeight.AveWeight1Prs));
-                            }
-                            else
-                            {
-                                _scanDataWeight.CalculatedPairs = _scanDataWeight.Quantity;
-                            }
-
-                            _scanDataWeight.DeviationPairs = _scanDataWeight.CalculatedPairs - _scanDataWeight.Quantity;
-                            #endregion
-
-                            #region xét nếu xem thùng hàng là outsole hay heelcounter để vào check khối lượng cân pass/fail. nếu là hàng outsole thì mới check khối lượng
-                            //ProductCategory = 11 nó là hàng heelcounter
-                            if (_scanDataWeight.ProductCategory != 11)
-                            {
-                                if (_scanDataWeight.DeviationPairs == 0)
-                                {
-                                    para = null;
-                                    para = new DynamicParameters();
-                                    para.Add("@Message", $"Hàng Outsole check weight OK.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
-                                    para.Add("Level", "Log");
-                                    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
-
-                                    _scanDataWeight.Pass = 1;//báo thùng pass
-                                    _scanDataWeight.CreatedDate = GlobalVariables.CreatedDate = DateTime.Now;//lấy thời gian để đồng bộ giữa in tem và log DB Printing
-                                                                                                             //bật tín hiệu để PLC on đèn xanh
-                                    GlobalVariables.MyEvent.StatusLightPLC = 2;
-
-                                    if (_scanDataWeight.Decoration == 0)
-                                    {
-                                        GlobalVariables.RememberInfo.GoodBoxPrinting += 1;
-                                    }
-                                    else
-                                    {
-                                        GlobalVariables.RememberInfo.GoodBoxNoPrinting += 1;
-                                    }
-
-                                    //kiểm tra xem data đã có trên hệ thống hay chưa
-                                    if (statusLogData == 0 || statusLogData == 1)
-                                    {
-                                        para = null;
-                                        para = new DynamicParameters();
-                                        para.Add("@Message", $"Hàng Outsole check weight OK vào in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
-                                        para.Add("Level", "Log");
-                                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
-
-                                        if (checkOc != null)//neu khong phai tem OC 'PRT' thì mới in tem
-                                        {
-                                            var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
-                                            var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
-
-                                            SendDynamicString($"{idLabel}  {passMetal}"
-                                                               , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
-                                                               , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
-                                                              );
-
-                                            para = null;
-                                            para = new DynamicParameters();
-                                            para.Add("@Message", $"Hàng Outsole check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
-                                            para.Add("Level", "Log");
-                                            connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
-                                        }
-                                        else
-                                        {
-                                            //nếu là hàng sơn thì chỉ in ra khối lượng
-                                            SendDynamicString($" "
-                                                              , $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")}"
-                                                              , " "
-                                                             );
-
-
-                                            para = null;
-                                            para = new DynamicParameters();
-                                            para.Add("@Message", $"Hàng Outsole trước sơn check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
-                                            para.Add("Level", "Log");
-                                            connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
-
-                                            //hien thi mau label
-                                            if (this.InvokeRequired)
-                                            {
-                                                this.Invoke(new Action(() =>
-                                                {
-                                                    labErrInfoScale.Text = "Khối lượng OK. Hàng trước sơn, chỉ in khối lượng.";
-                                                }));
-                                            }
-                                            else
-                                            {
-                                                labErrInfoScale.Text = "Khối lượng OK. Hàng trước sơn, chỉ in khối lượng.";
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        para = null;
-                                        para = new DynamicParameters();
-                                        para.Add("@Message", $"Hàng Outsole check weight OK nhưng đã ghi nhận dữ liệu - Cho qua mà không in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
-                                        para.Add("Level", "Log");
-                                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
-
-                                        Debug.WriteLine($"Thùng OC đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
-                                            $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                        //this?.Invoke((MethodInvoker)delegate { labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi."; });
-                                        //ghi giá trị xuống PLC cân reject
-                                        GlobalVariables.MyEvent.WeightPusher = 1;
-
-                                        //bat den đỏ 
-                                        GlobalVariables.MyEvent.StatusLightPLC = 1;
-                                        //hien thi mau label
-
-                                        if (this.InvokeRequired)
-                                        {
-                                            this.Invoke(new Action(() =>
-                                            {
-                                                labResult.Text = "Fail";
-                                                labResult.BackColor = Color.Red;
-                                                labResult.ForeColor = Color.White;
-                                                labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi.";
-                                            }));
-                                        }
-                                        else
-                                        {
-                                            labResult.Text = "Fail";
-                                            labResult.BackColor = Color.Red;
-                                            labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi.";
-                                        }
-
-                                        //ResetControl();
-                                        goto returnLoop;
-                                    }
-
-                                    //bat den xanh 
-                                    GlobalVariables.MyEvent.StatusLightPLC = 2;
-                                    //hien thi mau label
-                                    if (this.InvokeRequired)
-                                    {
-                                        this.Invoke(new Action(() =>
-                                        {
-                                            labResult.Text = "Pass";
-                                            labResult.BackColor = Color.Green;
-                                            labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Khối lượng OK. In tem.";
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labResult.Text = "Pass";
-                                        labResult.BackColor = Color.Green;
-                                        labResult.ForeColor = Color.White;
-                                        labErrInfoScale.Text = "Khối lượng OK. In tem.";
-                                    }
-
-                                    //GlobalVariables.RealWeight = _scanDataWeight.GrossWeight;
-                                    //GlobalVariables.PrintApprove = true;
-
-                                    //transfer from 965 to in comming
-                                    //nhớ kiểm tra trước khi transfer
-                                    /////kiểm tra xem có trong 965 ko? nếu có thì mới transfer. không có thì ko làm gì cả
-                                    //...
-                                }
-                                else//thung fail
-                                {
-                                    //bật đèn đỏ
-                                    GlobalVariables.MyEvent.StatusLightPLC = 1;
-                                    GlobalVariables.MyEvent.WeightPusher = 1;//ghi xuong PLC bao reject
-
-                                    _scanDataWeight.Pass = 0;
-                                    _scanDataWeight.Status = 0;
-                                    _scanDataWeight.CreatedDate = GlobalVariables.CreatedDate = DateTime.Now;//lấy thời gian để đồng bộ giữa in tem và log DB
-
-                                    GlobalVariables.PrintApprove = false;
-                                    if (_scanDataWeight.Decoration == 1)
-                                    {
-                                        GlobalVariables.RememberInfo.FailBoxPrinting += 1;
-                                    }
-                                    else
-                                    {
-                                        GlobalVariables.RememberInfo.FailBoxNoPrinting += 1;
-                                    }
-
-                                    if (statusLogData == 0)
-                                    {
-                                        //hien thi mau label
-                                        if (this.InvokeRequired)
-                                        {
-                                            this.Invoke(new Action(() =>
-                                            {
-                                                labResult.Text = "Fail";
-                                                labResult.BackColor = Color.Red;
-                                                labResult.ForeColor = Color.White;
-                                                labErrInfoScale.Text = "Khối lượng lỗi.";
-                                            }));
-                                        }
-                                        else
-                                        {
-                                            labResult.Text = "Fail";
-                                            labResult.BackColor = Color.Red;
-                                            labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Khối lượng lỗi.";
-
-                                        }
-
-                                        //log vao bang reject
-                                        para = null;
-                                        para = new DynamicParameters();
-                                        para.Add("_barcodeString", _scanDataWeight.BarcodeString);
-                                        para.Add("_idLabel", _scanDataWeight.IdLabel);
-                                        para.Add("_ocNo", _scanDataWeight.OcNo);
-                                        para.Add("_boxId", _scanDataWeight.BoxNo);
-                                        para.Add("_productNumber", _scanDataWeight.ProductNumber);
-                                        para.Add("_productName", _scanDataWeight.ProductName);
-                                        para.Add("_quantity", _scanDataWeight.Quantity);
-                                        para.Add("_scannerStation", "Scale");
-                                        para.Add("_reason", "Khối lượng lỗi.");
-                                        para.Add("_grossWeight", _scanDataWeight.GrossWeight);
-                                        para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
-                                        para.Add("@_deviationWeight", _scanDataWeight.Deviation);
-
-                                        connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
-
-                                        #region Log data
-                                        //mỗi thùng chỉ cho log vào tối da là 2 dòng trong scanData, 1 dòng pass và fail (nếu có)
-                                        //tính lại tỷ lệ khối lượng số đôi lỗi/ StdGrossWeight của lần scan này để log
-                                        //_scanDataWeight.RatioFailWeight = Math.Round((Math.Abs(_scanDataWeight.DeviationPairs) * _scanDataWeight.AveWeight1Prs) / _scanDataWeight.StdGrossWeight, 3);
-
-                                        para = null;
-                                        para = new DynamicParameters();
-                                        para.Add("@BarcodeString", _scanDataWeight.BarcodeString);
-                                        para.Add("@IdLabel", _scanDataWeight.IdLabel);
-                                        para.Add("@OcNo", _scanDataWeight.OcNo);
-                                        para.Add("@ProductNumber", _scanDataWeight.ProductNumber);
-                                        para.Add("@ProductName", _scanDataWeight.ProductName);
-                                        para.Add("@Quantity", _scanDataWeight.Quantity);
-                                        para.Add("@LinePosNo", _scanDataWeight.LinePosNo);
-                                        para.Add("@Unit", _scanDataWeight.Unit);
-                                        para.Add("@BoxNo", _scanDataWeight.BoxNo);
-                                        para.Add("@CustomerNo", _scanDataWeight.CustomerNo);
-                                        para.Add("@Location", _scanDataWeight.Location);
-                                        para.Add("@BoxPosNo", _scanDataWeight.BoxPosNo);
-                                        para.Add("@Note", _scanDataWeight.Note);
-                                        para.Add("@Brand", _scanDataWeight.Brand);
-                                        para.Add("@Decoration", _scanDataWeight.Decoration);
-                                        para.Add("@MetalScan", _scanDataWeight.MetalScan);
-                                        para.Add("@ActualMetalScan", _scanDataWeight.ActualMetalScan);
-                                        para.Add("@AveWeight1Prs", _scanDataWeight.AveWeight1Prs);
-                                        para.Add("@StdNetWeight", _scanDataWeight.StdNetWeight);
-                                        para.Add("@LowerTolerance", _scanDataWeight.LowerTolerance);
-                                        para.Add("@UpperTolerance", _scanDataWeight.UpperTolerance);
-                                        para.Add("@Boxweight", _scanDataWeight.BoxWeight);
-                                        para.Add("@PackageWeight", _scanDataWeight.PackageWeight);
-                                        para.Add("@StdGrossWeight", _scanDataWeight.StdGrossWeight);
-                                        para.Add("@GrossWeight", _scanDataWeight.GrossWeight);
-                                        para.Add("@NetWeight", _scanDataWeight.NetWeight);
-                                        para.Add("@Deviation", _scanDataWeight.Deviation);
-                                        para.Add("@Pass", _scanDataWeight.Pass);
-                                        para.Add("Status", _scanDataWeight.Status);
-                                        para.Add("CalculatedPairs", _scanDataWeight.CalculatedPairs);
-                                        para.Add("DeviationPairs", _scanDataWeight.DeviationPairs);
-                                        para.Add("CreatedBy", _scanDataWeight.CreatedBy);
-                                        para.Add("Station", _scanDataWeight.Station);
-                                        para.Add("CreatedDate", _scanDataWeight.CreatedDate);
-                                        para.Add("ApprovedBy", _scanDataWeight.ApprovedBy);
-                                        para.Add("ActualDeviationPairs", _scanDataWeight.ActualDeviationPairs);
-                                        para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
-                                        para.Add("ProductCategory", _scanDataWeight.ProductCategory);
-                                        para.Add("LotNo", _scanDataWeight.LotNo);
-                                        //para.Add("Id", ParameterDirection.Output, DbType.Guid);
-
-                                        var insertResult = connection.Execute("sp_tblScanDataInsert", para, commandType: CommandType.StoredProcedure);
-                                        #endregion
-                                        //transfer from WH in comming to 965
-                                        //đã tồn tại 965 thì ko transfer
-                                        //...
-                                    }
-                                    else if (statusLogData == 1)
-                                    {
-                                        Debug.WriteLine($"Thùng OC đã được quét ghi nhận khối lượng lỗi rồi, không được phép cân lại." +
-                                             $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information); ;
-
-                                        //hien thi mau label
-                                        if (this.InvokeRequired)
-                                        {
-                                            this.Invoke(new Action(() =>
-                                            {
-                                                labResult.Text = "Fail";
-                                                labResult.BackColor = Color.Red;
-                                                labResult.ForeColor = Color.White;
-                                                labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng lỗi rồi.";
-                                            }));
-                                        }
-                                        else
-                                        {
-                                            labResult.Text = "Fail";
-                                            labResult.BackColor = Color.Red;
-                                            labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng lỗi rồi.";
-                                        }
-
-                                        //log vao bang reject
-                                        para = null;
-                                        para = new DynamicParameters();
-                                        para.Add("_barcodeString", _scanDataWeight.BarcodeString);
-                                        para.Add("_idLabel", _scanDataWeight.IdLabel);
-                                        para.Add("_ocNo", _scanDataWeight.OcNo);
-                                        para.Add("_boxId", _scanDataWeight.BoxNo);
-                                        para.Add("_productNumber", _scanDataWeight.ProductNumber);
-                                        para.Add("_productName", _scanDataWeight.ProductName);
-                                        para.Add("_quantity", _scanDataWeight.Quantity);
-                                        para.Add("_scannerStation", "Scale");
-                                        para.Add("_reason", "Thùng này đã ghi nhận khối lượng lỗi rồi.");
-                                        para.Add("_grossWeight", _scanDataWeight.GrossWeight);
-                                        para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
-                                        para.Add("@_deviationWeight", _scanDataWeight.Deviation);
-
-                                        connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
-
-                                        //transfer from WH in comming to 965
-                                        //đã tồn tại 965 thì ko transfer
-                                        //...
-
-                                        //ResetControl();
-                                        goto returnLoop;
-                                    }
-                                    else// if (statusLogData == 2)
-                                    {
-                                        Debug.WriteLine($"Thùng OC đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
-                                            $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                                        //hien thi mau label
-                                        if (this.InvokeRequired)
-                                        {
-                                            this.Invoke(new Action(() =>
-                                            {
-                                                labResult.Text = "Fail";
-                                                labResult.BackColor = Color.Red;
-                                                labResult.ForeColor = Color.White;
-                                                labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng OK rồi.";
-                                            }));
-                                        }
-                                        else
-                                        {
-                                            labResult.Text = "Fail";
-                                            labResult.BackColor = Color.Red;
-                                            labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng OK rồi.";
-                                        }
-
-                                        //ResetControl();
-                                        goto returnLoop;
-                                    }
-                                }
-                            }
-                            //Hàng HC
-                            else//hàng heelcounter thì chỉ ghi nhận khối lượng cân và in ra tem ko có check weight
-                            {
-                                para = null;
-                                para = new DynamicParameters();
-                                para.Add("@Message", $"Hàng HeelCounter check weight OK.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
-                                para.Add("Level", "Log");
-                                connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
-
-                                _scanDataWeight.Pass = 1;//báo thùng pass
-                                _scanDataWeight.CreatedDate = GlobalVariables.CreatedDate = DateTime.Now;//lấy thời gian để đồng bộ giữa in tem và log DB Printing
-                                                                                                         //bật tín hiệu để PLC on đèn xanh
-                                                                                                         //GlobalVariables.MyEvent.StatusLightPLC = 2;
-                                if (_scanDataWeight.Decoration == 0)
-                                {
-                                    GlobalVariables.RememberInfo.GoodBoxPrinting += 1;
-                                }
-                                else
-                                {
-                                    GlobalVariables.RememberInfo.GoodBoxNoPrinting += 1;
-                                }
-
-                                //kiểm tra xem data đã có trên hệ thống hay chưa
-                                if (statusLogData == 0 || statusLogData == 1)
-                                {
-                                    para = null;
-                                    para = new DynamicParameters();
-                                    para.Add("@Message", $"Hàng HeelCounter check weight OK vào in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
-                                    para.Add("Level", "Log");
-                                    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
-
-                                    //gui lenh in
-                                    var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
-                                    var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
-
-                                    #region get LotNo Brooks, printing label
-                                    para = null;
-                                    para = new DynamicParameters();
-                                    para.Add("ocNo", _scanDataWeight.OcNo);
-                                    para.Add("boxNo", _scanDataWeight.BoxNo);
-
-                                    var reader = connection.ExecuteReader("sp_GetLotOfBrooksHC", param: para, commandType: CommandType.StoredProcedure);
-                                    DataTable tableResult = new DataTable();
-                                    tableResult.Load(reader);
-
-                                    if (tableResult.Rows.Count > 0)
-                                    {
-                                        _scanDataWeight.LotNo = tableResult.Rows[0]["LotNo"].ToString();
-                                    }
-                                    #endregion
-
-                                    SendDynamicString($"{idLabel}  {passMetal}"
-                                                        , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
-                                                        , $"{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")} {_scanDataWeight.LotNo}"
-                                                      );
-
-                                    para = null;
-                                    para = new DynamicParameters();
-                                    para.Add("@Message", $"Hàng HeelCounter check weight OK đã in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
-                                    para.Add("Level", "Log");
-                                    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
-                                }
-                                else
-                                {
-                                    para = null;
-                                    para = new DynamicParameters();
-                                    para.Add("@Message", $"Hàng HeelCounter check weight OK đã ghi nhận data - Không in tem.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
-                                    para.Add("Level", "Log");
-                                    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
-
-                                    Debug.WriteLine($"Thùng HC này đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
-                                        $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                                    //ghi giá trị xuống PLC cân reject
-                                    GlobalVariables.MyEvent.WeightPusher = 1;
-
-                                    GlobalVariables.MyEvent.StatusLightPLC = 1;
-                                    //hien thi mau label
-                                    if (labErrInfoScale.InvokeRequired)
-                                    {
-                                        labErrInfoScale.Invoke(new Action(() =>
-                                        {
-                                            labErrInfoScale.Text = "Thùng heel counter này đã ghi nhận OK rồi.";
-                                            labResult.Text = "HC_Fail";
-                                            labResult.BackColor = Color.Red;
-                                            labResult.ForeColor = Color.White;
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labErrInfoScale.Text = "Thùng heel counter này đã ghi nhận OK rồi.";
-                                        labResult.Text = "HC_Fail";
-                                        labResult.BackColor = Color.Red;
-                                        labResult.ForeColor = Color.White;
-                                    }
-
-                                    //ResetControl();
-                                    goto returnLoop;
-                                }
-
-                                GlobalVariables.MyEvent.StatusLightPLC = 2;
-                                //hien thi mau label
-                                if (this.InvokeRequired)
-                                {
-                                    this.Invoke(new Action(() =>
-                                    {
-                                        labResult.Text = "HC_Pass";
-                                        labResult.BackColor = Color.Green;
-                                        labResult.ForeColor = Color.White;
-                                        labErrInfoScale.Text = "Hàng heel counter OK. Không kiểm tra khối lượng.";
-                                    }));
-                                }
-                                else
-                                {
-                                    labResult.Text = "HC_Pass";
-                                    labResult.BackColor = Color.Green;
-                                    labResult.ForeColor = Color.White;
-                                    labErrInfoScale.Text = "Hàng heel counter OK. Không kiểm tra khối lượng.";
-                                }
-                            }
-                            #endregion
-
-                            #endregion
-
-                            #region Log data
-                            //mỗi thùng chỉ cho log vào tối da là 2 dòng trong scanData, 1 dòng pass và fail (nếu có)
-                            //tính lại tỷ lệ khối lượng số đôi lỗi/ StdGrossWeight của lần scan này để log
-                            //_scanDataWeight.RatioFailWeight = Math.Round((Math.Abs(_scanDataWeight.DeviationPairs) * _scanDataWeight.AveWeight1Prs) / _scanDataWeight.StdGrossWeight, 3);
-
-                            //para = null;
-                            //para = new DynamicParameters();
-                            //para.Add("@BarcodeString", _scanDataWeight.BarcodeString);
-                            //para.Add("@IdLabel", _scanDataWeight.IdLabel);
-                            //para.Add("@OcNo", _scanDataWeight.OcNo);
-                            //para.Add("@ProductNumber", _scanDataWeight.ProductNumber);
-                            //para.Add("@ProductName", _scanDataWeight.ProductName);
-                            //para.Add("@Quantity", _scanDataWeight.Quantity);
-                            //para.Add("@LinePosNo", _scanDataWeight.LinePosNo);
-                            //para.Add("@Unit", _scanDataWeight.Unit);
-                            //para.Add("@BoxNo", _scanDataWeight.BoxNo);
-                            //para.Add("@CustomerNo", _scanDataWeight.CustomerNo);
-                            //para.Add("@Location", _scanDataWeight.Location);
-                            //para.Add("@BoxPosNo", _scanDataWeight.BoxPosNo);
-                            //para.Add("@Note", _scanDataWeight.Note);
-                            //para.Add("@Brand", _scanDataWeight.Brand);
-                            //para.Add("@Decoration", _scanDataWeight.Decoration);
-                            //para.Add("@MetalScan", _scanDataWeight.MetalScan);
-                            //para.Add("@ActualMetalScan", _scanDataWeight.ActualMetalScan);
-                            //para.Add("@AveWeight1Prs", _scanDataWeight.AveWeight1Prs);
-                            //para.Add("@StdNetWeight", _scanDataWeight.StdNetWeight);
-                            //para.Add("@LowerTolerance", _scanDataWeight.LowerTolerance);
-                            //para.Add("@UpperTolerance", _scanDataWeight.UpperTolerance);
-                            //para.Add("@Boxweight", _scanDataWeight.BoxWeight);
-                            //para.Add("@PackageWeight", _scanDataWeight.PackageWeight);
-                            //para.Add("@StdGrossWeight", _scanDataWeight.StdGrossWeight);
-                            //para.Add("@GrossWeight", _scanDataWeight.GrossWeight);
-                            //para.Add("@NetWeight", _scanDataWeight.NetWeight);
-                            //para.Add("@Deviation", _scanDataWeight.Deviation);
-                            //para.Add("@Pass", _scanDataWeight.Pass);
-                            //para.Add("Status", _scanDataWeight.Status);
-                            //para.Add("CalculatedPairs", _scanDataWeight.CalculatedPairs);
-                            //para.Add("DeviationPairs", _scanDataWeight.DeviationPairs);
-                            //para.Add("CreatedBy", _scanDataWeight.CreatedBy);
-                            //para.Add("Station", _scanDataWeight.Station);
-                            //para.Add("CreatedDate", _scanDataWeight.CreatedDate);
-                            //para.Add("ApprovedBy", _scanDataWeight.ApprovedBy);
-                            //para.Add("ActualDeviationPairs", _scanDataWeight.ActualDeviationPairs);
-                            //para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
-                            //para.Add("ProductCategory", _scanDataWeight.ProductCategory);
-                            //para.Add("LotNo", _scanDataWeight.LotNo);
-                            ////para.Add("Id", ParameterDirection.Output, DbType.Guid);
-
-                            //var insertResult = connection.Execute("sp_tblScanDataInsert", para, commandType: CommandType.StoredProcedure);
-                            #endregion
-
-                            #region hiển thị thông tin
-                            if (this.InvokeRequired)
-                            {
-                                this.Invoke(new Action(() =>
-                                {
-                                    labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
-                                    labNetWeight.Text = _scanDataWeight.StdNetWeight.ToString();
-                                    labOcNo.Text = _scanDataWeight.OcNo;
-                                    labBoxId.Text = _scanDataWeight.BoxNo;
-                                    labProductCode.Text = _scanDataWeight.ProductNumber;
-                                    labProductName.Text = _scanDataWeight.ProductName;
-                                    labQuantity.Text = _scanDataWeight.Quantity.ToString();
-                                    labColor.Text = res.Color;
-                                    labSize.Text = res.SizeName;
-                                    labAveWeight.Text = _scanDataWeight.AveWeight1Prs.ToString();
-                                    labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
-                                    labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
-                                    //labLowerToleranceWeight.Text = nwSub.ToString("#.###");
-                                    //labUpperToleranceWeight.Text = nwPlus.ToString("#.###");
-                                    labBoxWeight.Text = _scanDataWeight.BoxWeight.ToString();
-                                    labAccessoriesWeight.Text = _scanDataWeight.PackageWeight.ToString();
-                                    labGrossWeight.Text = _scanDataWeight.StdGrossWeight.ToString();
-                                }));
-                            }
-                            else
-                            {
-                                labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
-                                labNetWeight.Text = _scanDataWeight.StdNetWeight.ToString();
-                                labOcNo.Text = _scanDataWeight.OcNo;
-                                labBoxId.Text = _scanDataWeight.BoxNo;
-                                labProductCode.Text = _scanDataWeight.ProductNumber;
-                                labProductName.Text = _scanDataWeight.ProductName;
-                                labQuantity.Text = _scanDataWeight.Quantity.ToString();
-                                labColor.Text = res.Color;
-                                labSize.Text = res.SizeName;
-                                labAveWeight.Text = _scanDataWeight.AveWeight1Prs.ToString();
-                                labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
-                                labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
-                                //labLowerToleranceWeight.Text = nwSub.ToString("#.###");
-                                //labUpperToleranceWeight.Text = nwPlus.ToString("#.###");
-                                labBoxWeight.Text = _scanDataWeight.BoxWeight.ToString();
-                                labAccessoriesWeight.Text = _scanDataWeight.PackageWeight.ToString();
-                                labGrossWeight.Text = _scanDataWeight.StdGrossWeight.ToString();
-                            }
-                            #endregion
-                        }
-                        else
-                        {
-                            Debug.WriteLine($"Item '{_scanDataWeight.ProductNumber}' không có khối lượng/1 đôi. Xin hãy kiểm tra lại thông tin."
-                                , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-                            //bật đèn đỏ
-                            GlobalVariables.MyEvent.StatusLightPLC = 1;
-                            //ghi giá trị xuống PLC cân reject
-                            GlobalVariables.MyEvent.WeightPusher = 1;
-
-                            ResetControl();
-
-                            if (this.InvokeRequired)
-                            {
-                                this.Invoke(new Action(() =>
-                                {
-                                    labResult.Text = "Fail";
-                                    labResult.BackColor = Color.Red;
-                                    labErrInfoScale.Text = "Không có khối lượng đôi. Weight/Prs.";
-                                }));
-                            }
-                            else
-                            {
-                                labResult.Text = "Fail";
-                                labResult.BackColor = Color.Red;
-                                labErrInfoScale.Text = "Không có khối lượng đôi. Weight/Prs.";
-                            }
-
-                            //log vao bang reject
-                            para = null;
-                            para = new DynamicParameters();
-                            para.Add("_barcodeString", _scanDataWeight.BarcodeString);
-                            para.Add("_idLabel", _scanDataWeight.IdLabel);
-                            para.Add("_ocNo", _scanDataWeight.OcNo);
-                            para.Add("_boxId", _scanDataWeight.BoxNo);
-                            para.Add("_productNumber", _scanDataWeight.ProductNumber);
-                            para.Add("_productName", _scanDataWeight.ProductName);
-                            para.Add("_quantity", _scanDataWeight.Quantity);
-                            para.Add("_scannerStation", "Scale");
-                            para.Add("_reason", "Không có khối lượng đôi. Average Weight/prs.");
-                            para.Add("_grossWeight", _scanDataWeight.GrossWeight);
-                            para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
-                            para.Add("@_deviationWeight", _scanDataWeight.Deviation);
-
-                            connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
-
-                            para = null;
-                            para = new DynamicParameters();
-                            para.Add("ProductNumber", _scanDataWeight.ProductNumber);
-                            para.Add("ProductName", _scanDataWeight.ProductName);
-                            para.Add("OcNum", _scanDataWeight.OcNo);
-                            para.Add("Note", "Chưa có data trong file QC.");
-                            para.Add("QrCode", _scanDataWeight.BarcodeString);
-
-                            connection.Execute("sp_tblItemMissingInfoInsert", para, commandType: CommandType.StoredProcedure);
-                        }
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"Product number {_scanDataWeight.ProductNumber} không có trong hệ thống. Báo cho quản lý để update data mới từ winline về."
-                            , "CẢNH BÁO.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-                        //bật đèn đỏ
-                        GlobalVariables.MyEvent.StatusLightPLC = 1;
-                        //ghi giá trị xuống PLC cân reject
-                        GlobalVariables.MyEvent.WeightPusher = 1;
-
-                        ResetControl();
-
-                        if (this.InvokeRequired)
-                        {
-                            this.Invoke(new Action(() =>
-                            {
-                                labResult.Text = "Fail";
-                                labResult.BackColor = Color.Red;
-                                labErrInfoScale.Text = "ProductItem không có trong hệ thống.";
-                            }));
-                        }
-                        else
-                        {
-                            labResult.Text = "Fail";
-                            labResult.BackColor = Color.Red;
-                            labErrInfoScale.Text = "ProductItem không có trong hệ thống.";
-                        }
-
-                        //log vao bang reject
-                        para = null;
-                        para = new DynamicParameters();
-                        para.Add("_barcodeString", _scanDataWeight.BarcodeString);
-                        para.Add("_idLabel", _scanDataWeight.IdLabel);
-                        para.Add("_ocNo", _scanDataWeight.OcNo);
-                        para.Add("_boxId", _scanDataWeight.BoxNo);
-                        para.Add("_productNumber", _scanDataWeight.ProductNumber);
-                        para.Add("_productName", _scanDataWeight.ProductName);
-                        para.Add("_quantity", _scanDataWeight.Quantity);
-                        para.Add("_scannerStation", "Scale");
-                        para.Add("_reason", "Product item chưa có trong hệ thống. Get data từ WL về lại.");
-                        para.Add("_grossWeight", _scanDataWeight.GrossWeight);
-                        para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
-                        para.Add("@_deviationWeight", _scanDataWeight.Deviation);
-
-                        connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
-
-                        para = null;
-                        para = new DynamicParameters();
-                        para.Add("ProductNumber", _scanDataWeight.ProductNumber);
-                        para.Add("ProductName", _scanDataWeight.ProductName);
-                        para.Add("OcNum", _scanDataWeight.OcNo);
-                        para.Add("Note", $"Product item '{_scanDataWeight.ProductNumber}' không có data hệ thống.");
-                        para.Add("QrCode", _scanDataWeight.BarcodeString);
-
-                        connection.Execute("sp_tblItemMissingInfoInsert", para, commandType: CommandType.StoredProcedure);
-                    }
-                }
-            #endregion
-            returnLoop:
-                #region hien thi cac thong so dem
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
-                        labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
-                        labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                        labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                        labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                        labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                        labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                        labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                        labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                        labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-                        labDeviation.Text = _scanDataWeight.Deviation.ToString();
-                        labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
-                        labLowerToleranceWeight.Text = nwSub.ToString("#.###");
-                        labUpperToleranceWeight.Text = nwPlus.ToString("#.###");
-                    }));
-                }
-                else
-                {
-                    labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
-                    labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
-                    labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                    labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                    labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                    labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                    labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                    labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                    labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                    labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-                    labDeviation.Text = _scanDataWeight.Deviation.ToString();
-                    labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
-                    labLowerToleranceWeight.Text = nwSub.ToString("#.###");
-                    labUpperToleranceWeight.Text = nwPlus.ToString("#.###");
-                }
-                #endregion
-
-                string json = JsonConvert.SerializeObject(GlobalVariables.RememberInfo);
-                File.WriteAllText(@"./RememberInfo.json", json);
-                //_readQrStatus[1] = false;//trả lại bit này để quét lần sau
             }
         }
 
@@ -4502,7 +3164,7 @@ namespace WeightChecking
                 _scanDataWeight = null;
                 _scanDataWeight = new tblScanDataModel();
                 _approvePrint = false;
-                GlobalVariables.IdLabel=string.Empty;
+                GlobalVariables.IdLabel = string.Empty;
 
                 if (labQrScale.InvokeRequired)
                 {
@@ -4709,12 +3371,15 @@ namespace WeightChecking
 
                 #region truy vấn data và xử lý
                 //lấy thông tin khối lượng cân sau khi cân đã báo stable
-                //Debug.WriteLine($"da vao can,dang doi stable {_stableScale}");
-                while (_stableScale == 0 && GlobalVariables.IsScale)
-                {
-                    Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
-                }
-                //Debug.WriteLine($"da can xong. stable {_stableScale}");
+                Debug.WriteLine($"da vao can,dang doi stable {_stableScale}");
+                //while (_stableScale == 0 && GlobalVariables.IsScale)
+                //{
+                //    Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
+                //}
+
+                Thread.Sleep(GlobalVariables.delayTriggerTest);
+
+                Debug.WriteLine($"da can xong. stable {_stableScale}");
 
                 _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
                 //truy vấn thông tin 
@@ -5175,7 +3840,7 @@ namespace WeightChecking
                                     _scanDataWeight.Pass = 1;//báo thùng pass
                                     _scanDataWeight.CreatedDate = GlobalVariables.CreatedDate = DateTime.Now;//lấy thời gian để đồng bộ giữa in tem và log DB Printing
                                                                                                              //bật tín hiệu để PLC on đèn xanh
-                                    //GlobalVariables.MyEvent.StatusLightPLC = 2;
+                                                                                                             //GlobalVariables.MyEvent.StatusLightPLC = 2;
 
                                     if (_scanDataWeight.Decoration == 0)
                                     {
@@ -5254,7 +3919,7 @@ namespace WeightChecking
                                     {
                                         Debug.WriteLine($"Thùng OC đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                             $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                        
+
                                         //ghi giá trị xuống PLC cân reject
                                         GlobalVariables.MyEvent.WeightPusher = 1;
 
@@ -6278,26 +4943,26 @@ namespace WeightChecking
             }
             else if (scannerId[0].InnerText == GlobalVariables.ScannerIdWeight.ToString())//vị trí check weight. ngay cân
             {
-                if (!_scannerIsBussy[1])
-                {
-                    //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
-                    _scannerIsBussy[1] = true;
+                //if (!_scannerIsBussy[1])
+                //{
+                //    //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                //    _scannerIsBussy[1] = true;
 
-                    //bật biến báo đọc đc QR code từ label
-                    _readQrStatus[1] = true;
+                //    //bật biến báo đọc đc QR code từ label
+                //    _readQrStatus[1] = true;
 
-                    _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+                //    _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
-                    //reset model;
-                    //_scanDataWeight = null;
-                    //_scanDataWeight = new tblScanDataModel();
+                //    //reset model;
+                //    //_scanDataWeight = null;
+                //    //_scanDataWeight = new tblScanDataModel();
 
-                    BarcodeScanner2Handle(2, _barcodeString2);
+                //    BarcodeScanner2Handle(2, _barcodeString2);
 
-                    ////reset model;
-                    //_scanDataWeight = null;
-                    //_scanDataWeight = new tblScanDataModel();
-                }
+                //    ////reset model;
+                //    //_scanDataWeight = null;
+                //    //_scanDataWeight = new tblScanDataModel();
+                //}
             }
             else if (scannerId[0].InnerText == GlobalVariables.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
             {
@@ -6396,7 +5061,7 @@ namespace WeightChecking
                 //0x31-49-->Fail
                 //0x30-48-->may in phan hoi in thanh cong
 
-               if (rcvArr[4] == 0x30)
+                if (rcvArr[4] == 0x30)
                 {
                     Console.WriteLine($"in thanh cong!!!");
                     GlobalVariables.PrintedResult = $"In thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
@@ -6409,7 +5074,7 @@ namespace WeightChecking
 
                         connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
                     }  //Printed event
-               
+
                     #region Log data
                     //mỗi thùng chỉ cho log vào tối da là 2 dòng trong scanData, 1 dòng pass và fail (nếu có)
                     //tính lại tỷ lệ khối lượng số đôi lỗi/ StdGrossWeight của lần scan này để log
@@ -6690,7 +5355,7 @@ namespace WeightChecking
             }
             finally
             {
-               
+
             }
         }
 
@@ -7082,7 +5747,7 @@ namespace WeightChecking
             {
                 SendDynamicString(" ", " ", " ");
 
-               // Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
+                // Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
 
                 if (this.InvokeRequired)
                 {
