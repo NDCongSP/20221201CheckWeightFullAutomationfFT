@@ -1610,7 +1610,7 @@ namespace WeightChecking
 
                                                 if (checkOc != null)//neu khong phai tem OC 'PRT' thì mới in tem
                                                 {
-                                                    var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
+                                                    var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed quality check" : " ";
                                                     var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
 
                                                     SendDynamicString($"{idLabel}  {passMetal}"
@@ -1946,7 +1946,7 @@ namespace WeightChecking
                                             connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
                                             //gui lenh in
-                                            var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
+                                            var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed quality check" : " ";
                                             var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
 
                                             #region get LotNo Brooks, printing label
@@ -3816,7 +3816,10 @@ namespace WeightChecking
 
                                         if (checkOc != null)//neu khong phai tem OC 'PRT' thì mới in tem
                                         {
-                                            var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
+                                            //var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed quality check" : " ";
+
+                                            //20240202 update cho in tất cả các thùng passes quality check
+                                            var passMetal = "Passed quality check";
                                             var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
 
                                             SendDynamicString($"{idLabel}  {passMetal}"
@@ -3833,10 +3836,12 @@ namespace WeightChecking
                                         else
                                         {
                                             //nếu là hàng sơn thì chỉ in ra khối lượng
-                                            SendDynamicString($" "
-                                                              , $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")}"
-                                                              , " "
-                                                             );
+                                            var passMetal = "Passed quality check";
+                                            var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
+                                            SendDynamicString($"{idLabel} {passMetal}"
+                                                          , $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")}"
+                                                          , " "
+                                                         );
 
 
                                             para = null;
@@ -4130,7 +4135,8 @@ namespace WeightChecking
                                     //connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
                                     //gui lenh in
-                                    var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed metal scan" : " ";
+                                    //var passMetal = _scanDataWeight.MetalScan == 1 && ocFirstChar != "PR" ? "Passed quality check" : " ";
+                                    var passMetal = "Passed quality check";
                                     var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
 
                                     #region get LotNo Brooks, printing label
