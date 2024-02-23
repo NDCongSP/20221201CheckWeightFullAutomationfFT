@@ -71,6 +71,7 @@ namespace WeightChecking
 
         private void FrmScale_Load(object sender, EventArgs e)
         {
+            BarcodeScanner1Handle(1, "PRT0869,6817012201-2546-D182,90,2,P,20/103,190000,13/13|2");
             #region Test get LotNo Brooks
             //using (var connection = GlobalVariables.GetDbConnection())
             //{
@@ -3838,7 +3839,7 @@ namespace WeightChecking
                                             //nếu là hàng sơn thì chỉ in ra khối lượng
                                             var passMetal = "Passed quality check";
                                             var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
-                                            SendDynamicString($"{idLabel} {passMetal}"
+                                            SendDynamicString(" "
                                                           , $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")}"
                                                           , " "
                                                          );
