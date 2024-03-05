@@ -18,7 +18,7 @@
       <Value Profile="(Default)">COM2</Value>
     </Setting>
     <Setting Name="UpdatePath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">\\10.40.10.9\Public$\98_Public_Share\99_Shared\05_IT\01_Update\21- IDCScaleSystem\Update.xml</Value>
+      <Value Profile="(Default)">\\10.40.10.9\Public$\98_Public_Share\99_Shared\05_IT\01_Update\21- IDCScaleSystem\update.xml</Value>
     </Setting>
     <Setting Name="IsScale" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>

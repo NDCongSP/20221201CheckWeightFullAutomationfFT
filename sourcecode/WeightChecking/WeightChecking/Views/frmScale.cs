@@ -71,7 +71,7 @@ namespace WeightChecking
 
         private void FrmScale_Load(object sender, EventArgs e)
         {
-            BarcodeScanner1Handle(1, "PRT0869,6817012201-2546-D182,90,2,P,20/103,190000,13/13|2");
+            //BarcodeScanner1Handle(1, "PRT0869,6817012201-2546-D182,90,2,P,20/103,190000,13/13|2");
             #region Test get LotNo Brooks
             //using (var connection = GlobalVariables.GetDbConnection())
             //{
