@@ -10,6 +10,7 @@ namespace WeightChecking
     {
         Operator,
         Admin,
-        Report
+        Report,
+        Admin1//quyen y nhu admin, nhung ko cho xoa box
     }
 }

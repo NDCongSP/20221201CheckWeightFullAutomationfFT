@@ -168,7 +168,7 @@ namespace WeightChecking
                 ribbonPageMasterData.Visible = false;
                 ribbonPageReports.Visible = false;
             }
-            else if (GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin)//Admin
+            else if (GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin|| GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin1)//Admin
             {
                 if (_masterData == null)
                 {
@@ -184,6 +184,11 @@ namespace WeightChecking
                 }
 
                 ribbonControl1.SelectedPage = ribbonPageMasterData;
+
+                if (GlobalVariables.UserLoginInfo.Role==RolesEnum.Admin1)
+                {
+                    _barButtonItemDeleteBox.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
+                }
             }
             else if (GlobalVariables.UserLoginInfo.Role == RolesEnum.Report)//report
             {
@@ -201,7 +206,9 @@ namespace WeightChecking
                 }
 
                 ribbonControl1.SelectedPage = ribbonPageReports;
+
                 ribbonPageMasterData.Visible = false;
+                _barButtonItemDeleteBox.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
             }
             #endregion
 
