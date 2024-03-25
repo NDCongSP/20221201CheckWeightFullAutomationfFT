@@ -72,6 +72,11 @@ namespace WeightChecking
         private void FrmScale_Load(object sender, EventArgs e)
         {
             //BarcodeScanner1Handle(1, "PRT0869,6817012201-2546-D182,90,2,P,20/103,190000,13/13|2");
+            //_scaleValueStable = 8777;
+            //BarcodeScanner2Handle(2, "A10704344,6812012208-2667-E057,45,4,P,6/13,1900082,2/3|2,248212.2023,,,");
+            //GlobalVariables.MyEvent.MetalCheckResult = 0;
+            //GlobalVariables.MyEvent.SensorAfterMetalScan = 1;
+
             #region Test get LotNo Brooks
             //using (var connection = GlobalVariables.GetDbConnection())
             //{
@@ -361,11 +366,6 @@ namespace WeightChecking
             }
 
             GlobalVariables.AppStatus = "READY";
-
-            //_scaleValueStable = 8777;
-            //BarcodeHandle(1, "A10704344,6812012208-2667-E057,45,4,P,6/13,1900082,2/3|2,248212.2023,,,");
-            //GlobalVariables.MyEvent.MetalCheckResult = 0;
-            //GlobalVariables.MyEvent.SensorAfterMetalScan = 1;
         }
 
         private void frmScale_FormClosing(object sender, FormClosingEventArgs e)
