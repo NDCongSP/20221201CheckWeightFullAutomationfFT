@@ -4710,7 +4710,7 @@ namespace WeightChecking
                             GlobalVariables.MyEvent.PrintPusher = 1;
 
                             // xử lý insert RackStorage cho hàng sơn (nếu là hàng đi sơn thì vào kho 10)
-                            string resTransfer = "";//AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString, 1185, 10, connection);
+                            string resTransfer = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString, 1185, 10, connection);
 
                             if (labQrPrint.InvokeRequired)
                             {
