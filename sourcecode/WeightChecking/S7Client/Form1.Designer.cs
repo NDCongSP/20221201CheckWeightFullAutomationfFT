@@ -55,6 +55,7 @@ namespace S7Client
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.button3 = new System.Windows.Forms.Button();
             this.labMetalSensor = new System.Windows.Forms.Label();
+            this._txbPort = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label3
@@ -71,9 +72,9 @@ namespace S7Client
             this.textBox5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox5.Location = new System.Drawing.Point(159, 40);
             this.textBox5.Name = "textBox5";
-            this.textBox5.Size = new System.Drawing.Size(306, 26);
+            this.textBox5.Size = new System.Drawing.Size(213, 26);
             this.textBox5.TabIndex = 46;
-            this.textBox5.Text = "192.168.80.3";
+            this.textBox5.Text = "192.168.80.201";
             // 
             // button2
             // 
@@ -288,11 +289,21 @@ namespace S7Client
             this.labMetalSensor.TabIndex = 48;
             this.labMetalSensor.Text = "Metal Sensor";
             // 
+            // _txbPort
+            // 
+            this._txbPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._txbPort.Location = new System.Drawing.Point(378, 40);
+            this._txbPort.Name = "_txbPort";
+            this._txbPort.Size = new System.Drawing.Size(86, 26);
+            this._txbPort.TabIndex = 49;
+            this._txbPort.Text = "102";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this._txbPort);
             this.Controls.Add(this.labMetalSensor);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.textBox5);
@@ -352,6 +363,7 @@ namespace S7Client
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Label labMetalSensor;
+        private System.Windows.Forms.TextBox _txbPort;
     }
 }
 

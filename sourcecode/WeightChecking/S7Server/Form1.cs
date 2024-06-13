@@ -36,7 +36,7 @@ namespace S7Server
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            trangthai = _plcPi.S7Ethernet.Server.Khoitao("");
+            trangthai = _plcPi.S7Ethernet.Server.Khoitao("192.168.80.201", 105);
 
             if (trangthai == "GOOD")
             {
@@ -153,7 +153,7 @@ namespace S7Server
                 }
             };
 
-            _timer.Interval = 100;
+            _timer.Interval = 1000;
             _timer.Tick += _timer_Tick;
             _timer.Enabled = true;
         }
