@@ -13,7 +13,7 @@ namespace WeightChecking.StaticClass
 {
     public class AutoPostingHelper
     {
-        public static string AutoTransfer(string productNumber,string barcodeString, int fromWH, int toWH, IDbConnection connection)
+        public static string AutoTransfer(string productNumber, string barcodeString, int fromWH, int toWH, IDbConnection connection)
         {
             // xử lý insert RackStorage 
 
@@ -57,7 +57,7 @@ namespace WeightChecking.StaticClass
                     return $"ProductNumber: {productNumber} đã cập nhật kho.";
                 }
                 else
-                {                   
+                {
                     Debug.WriteLine($"ProductNumber: {productNumber} cập nhật kho thất bại.");
                     return $"ProductNumber: {productNumber} cập nhật kho thất bại.";
                 }
@@ -185,6 +185,36 @@ namespace WeightChecking.StaticClass
                 return $"Thông tin không hợp lệ: {Message}";
 
             }
+        }
+
+        /// <summary>
+        /// Kiểm tra xem hàng có trong kho hay không.
+        /// Accept > 0 -> hàng có trong kho.
+        /// </summary>
+        /// <param name="productNumber"></param>
+        /// <param name="barcodeString"></param>
+        /// <param name="toWH"></param>
+        /// <param name="connection"></param>
+        /// <returns>(int,String)</returns>
+        public static (int, string) CheckIn(string productNumber, string barcodeString, int toWH, IDbConnection connection)
+        {
+            // xử lý insert RackStorage 
+
+            // check nếu QRCode hiện tại có nằm trong kho
+            DynamicParameters para = new DynamicParameters();
+            para.Add("@qr", barcodeString);
+            para.Add("@userId", "idc_autoposting"); //user sử dụng cho việc auto posting
+            para.Add("@mode", "ADD");
+            // hàng đến từ kho (FFT)
+            para.Add("@whFrom", "");
+            // sẽ vào kho (FFT)
+            para.Add("@whTo", toWH);
+            para.Add("@lock", 0);
+            para.Add("@inputQuantity", null);
+
+            (int Accept, string Message) = connection.Query<(int Accept, string Message)>("DOGE_WH.dbo.sp_lmpScannerClient_ScanningLabel_CheckLabel", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
+            // thùng hàng có trong kho -> có thể transfer
+            return (Accept, Message);
         }
     }
 }

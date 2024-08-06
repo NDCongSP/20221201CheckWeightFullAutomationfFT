@@ -71,7 +71,10 @@ namespace WeightChecking
 
         private void FrmScale_Load(object sender, EventArgs e)
         {
-            //BarcodeScanner1Handle(1, "PRT0869,6817012201-2546-D182,90,2,P,20/103,190000,13/13|2");
+            //layoutControlGroup3.Visibility = DevExpress.XtraLayout.Utils.LayoutVisibility.Never;
+
+            //BarcodeScanner3Handle(3, "PRT1115,6812322201-ND93-E016,30,2,P,10/137,190000,1/4|2,345134.2024,,,");
+
             //_scaleValueStable = 8777;
             //BarcodeScanner2Handle(2, "A10704344,6812012208-2667-E057,45,4,P,6/13,1900082,2/3|2,248212.2023,,,");
             //GlobalVariables.MyEvent.MetalCheckResult = 0;
@@ -2807,29 +2810,28 @@ namespace WeightChecking
                     pr.Add("@ProductNumber", _scanDataMetal.ProductNumber);
                     pr.Add("@SpecialCase", specialCaseMetal);
 
-                    var resGetProductItemInfo = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", pr, commandType: CommandType.StoredProcedure).FirstOrDefault();
-                    if (resGetProductItemInfo != null)
-                    {
-                        //Hàng đi sơn về đã đc QC kiểm tra và in lại tem OPR hoặc hàng đi sơn nhưng có đầu đơn khác PRT thì stock in lại vào kho 3                                
-                        if (ocFirstCharMetal != "PR")
-                        {
-                            if (resGetProductItemInfo.Decoration == 1)// hàng sơn -> stock in kho 3
-                            {
-                                string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 3, connection);
-                                //this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+                    #region Auto Stock In to 1223 if Box come to QC
+                    //kiểm tra thùng hàng ko có trong kho production hand ove WH (1185) là cho stock in vao kho QC hand over WH (1223)
+                    (int Accept, string Message) = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, 1185, connection);
 
-                            }
-                            else  // hàng ko sơn -> stock in kho 2
-                            {
-                                // ko phải HeelCounter thì auto posting kho 2
-                                if (resGetProductItemInfo.ProductCategory != 11)
-                                {
-                                    string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 2, connection);
-                                    //this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
-                                }
-                            }
-                        }
+                    if (Accept <= 0)
+                    {
+                        string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 1223, connection);
                     }
+                    #endregion
+                    //var resGetProductItemInfo = connection.Query<ProductInfoModel>("sp_vProductItemInfoGet", pr, commandType: CommandType.StoredProcedure).FirstOrDefault();
+                    //if (resGetProductItemInfo != null)
+                    //{
+                    //    //Hàng đi sơn về đã đc QC kiểm tra và in lại tem OPR hoặc hàng đi sơn nhưng có đầu đơn khác PRT thì stock in lại vào kho 3                                
+                    //    if (ocFirstCharMetal != "PR")
+                    //    {
+                    //        if (resGetProductItemInfo.Decoration == 1 && resGetProductItemInfo.ProductCategory != 11)// hàng sơn -> stock in kho 3
+                    //        {
+                    //            string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 3, connection);
+                    //            //this?.Invoke((MethodInvoker)delegate { labErrInfoMetal.Text = resStockIn; });
+                    //        }
+                    //    }
+                    //}
 
                     #region Kiểm tra xem thùng này đã được log vào scanData chưa
                     //para.Add("QRLabel", _scanData.BarcodeString);
@@ -3099,7 +3101,7 @@ namespace WeightChecking
                 _scanDataWeight = null;
                 _scanDataWeight = new tblScanDataModel();
                 _approvePrint = false;
-                GlobalVariables.IdLabel=string.Empty;
+                GlobalVariables.IdLabel = string.Empty;
 
                 if (labQrScale.InvokeRequired)
                 {
@@ -3772,7 +3774,7 @@ namespace WeightChecking
                                     _scanDataWeight.Pass = 1;//báo thùng pass
                                     _scanDataWeight.CreatedDate = GlobalVariables.CreatedDate = DateTime.Now;//lấy thời gian để đồng bộ giữa in tem và log DB Printing
                                                                                                              //bật tín hiệu để PLC on đèn xanh
-                                    //GlobalVariables.MyEvent.StatusLightPLC = 2;
+                                                                                                             //GlobalVariables.MyEvent.StatusLightPLC = 2;
 
                                     if (_scanDataWeight.Decoration == 0)
                                     {
@@ -3856,7 +3858,7 @@ namespace WeightChecking
                                     {
                                         Debug.WriteLine($"Thùng OC đã được quét ghi nhận khối lượng OK rồi, không được phép cân lại." +
                                             $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                        
+
                                         //ghi giá trị xuống PLC cân reject
                                         GlobalVariables.MyEvent.WeightPusher = 1;
 
@@ -4999,7 +5001,7 @@ namespace WeightChecking
                 //0x31-49-->Fail
                 //0x30-48-->may in phan hoi in thanh cong
 
-               if (rcvArr[4] == 0x30)
+                if (rcvArr[4] == 0x30)
                 {
                     Console.WriteLine($"in thanh cong!!!");
                     GlobalVariables.PrintedResult = $"In thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
@@ -5012,7 +5014,7 @@ namespace WeightChecking
 
                         connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
                     }  //Printed event
-               
+
                     #region Log data
                     //mỗi thùng chỉ cho log vào tối da là 2 dòng trong scanData, 1 dòng pass và fail (nếu có)
                     //tính lại tỷ lệ khối lượng số đôi lỗi/ StdGrossWeight của lần scan này để log
@@ -5293,7 +5295,7 @@ namespace WeightChecking
             }
             finally
             {
-               
+
             }
         }
 
@@ -5685,7 +5687,7 @@ namespace WeightChecking
             {
                 SendDynamicString(" ", " ", " ");
 
-               // Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
+                // Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
 
                 if (this.InvokeRequired)
                 {
