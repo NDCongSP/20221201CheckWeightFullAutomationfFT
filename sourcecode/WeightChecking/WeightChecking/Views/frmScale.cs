@@ -73,7 +73,8 @@ namespace WeightChecking
         {
             //layoutControlGroup3.Visibility = DevExpress.XtraLayout.Utils.LayoutVisibility.Never;
 
-            //BarcodeScanner3Handle(3, "PRT1115,6812322201-ND93-E016,30,2,P,10/137,190000,1/4|2,345134.2024,,,");
+            //BarcodeScanner1Handle(1, "A121599,6817012201-2949-D168,113,1,P,1/5,1900022,1/1|2,401806.2024,,,");
+            //BarcodeScanner1Handle(1, "A110642,6818442301-ON01-3001,5,6,P,6/6,1900070,1/1|2,352410.2023,,,");
 
             //_scaleValueStable = 8777;
             //BarcodeScanner2Handle(2, "A10704344,6812012208-2667-E057,45,4,P,6/13,1900082,2/3|2,248212.2023,,,");
@@ -98,65 +99,36 @@ namespace WeightChecking
             //}
             #endregion
 
-
-            #region hien thi cac thong so dem
-            if (this.InvokeRequired)
-            {
-                this.Invoke(new Action(() =>
-                {
-                    labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                    labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                    labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                    labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                    labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                    labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                    labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                    labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-                }));
-            }
-            else
-            {
-                labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-            }
-            #endregion
-
             #region đăng ký sự kiện từ cac PLC
             GlobalVariables.MyEvent.EventHandlerRefreshMasterData += (s, o) =>
             {
-                #region hien thi cac thong so dem
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                        labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                        labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                        labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                        labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                        labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                        labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                        labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-                    }));
-                }
-                else
-                {
-                    labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                    labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                    labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                    labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                    labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                    labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                    labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                    labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-                }
-                #endregion
+                //#region hien thi cac thong so dem
+                //if (this.InvokeRequired)
+                //{
+                //    this.Invoke(new Action(() =>
+                //    {
+                //        labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
+                //        labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
+                //        labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
+                //        labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
+                //        labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
+                //        labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
+                //        labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
+                //        labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
+                //    }));
+                //}
+                //else
+                //{
+                //    labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
+                //    labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
+                //    labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
+                //    labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
+                //    labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
+                //    labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
+                //    labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
+                //    labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
+                //}
+                //#endregion
             };
 
             //sự kiện lấy số cân hiện tại cảu đầu cân (real time)
@@ -2262,14 +2234,6 @@ namespace WeightChecking
                             {
                                 labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
                                 labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
-                                labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                                labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                                labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                                labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                                labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                                labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                                labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                                labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
                                 labDeviation.Text = _scanDataWeight.Deviation.ToString();
                                 labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
                                 labLowerToleranceWeight.Text = nwSub.ToString("#.###");
@@ -2280,14 +2244,6 @@ namespace WeightChecking
                         {
                             labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
                             labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
-                            labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                            labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                            labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                            labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                            labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                            labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                            labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                            labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
                             labDeviation.Text = _scanDataWeight.Deviation.ToString();
                             labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
                             labLowerToleranceWeight.Text = nwSub.ToString("#.###");
@@ -2812,9 +2768,9 @@ namespace WeightChecking
 
                     #region Auto Stock In to 1223 if Box come to QC
                     //kiểm tra thùng hàng ko có trong kho production hand ove WH (1185) là cho stock in vao kho QC hand over WH (1223)
-                    (int Accept, string Message) = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, 1185, connection);
+                   var accept = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, 1185, connection);
 
-                    if (Accept <= 0)
+                    if (accept <= 0)
                     {
                         string resStockIn = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 1223, connection);
                     }
@@ -4432,14 +4388,6 @@ namespace WeightChecking
                     {
                         labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
                         labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
-                        labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                        labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                        labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                        labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                        labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                        labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                        labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                        labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
                         labDeviation.Text = _scanDataWeight.Deviation.ToString();
                         labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
                         labLowerToleranceWeight.Text = nwSub.ToString("#.###");
@@ -4450,14 +4398,6 @@ namespace WeightChecking
                 {
                     labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
                     labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
-                    labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                    labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                    labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                    labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                    labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                    labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                    labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                    labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
                     labDeviation.Text = _scanDataWeight.Deviation.ToString();
                     labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
                     labLowerToleranceWeight.Text = nwSub.ToString("#.###");

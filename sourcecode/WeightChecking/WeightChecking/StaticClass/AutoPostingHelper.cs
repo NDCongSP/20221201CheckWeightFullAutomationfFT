@@ -196,25 +196,22 @@ namespace WeightChecking.StaticClass
         /// <param name="toWH"></param>
         /// <param name="connection"></param>
         /// <returns>(int,String)</returns>
-        public static (int, string) CheckIn(string productNumber, string barcodeString, int toWH, IDbConnection connection)
+        public static int CheckIn(string productNumber, string barcodeString, int WH, IDbConnection connection)
         {
             // xử lý insert RackStorage 
+            var arr = barcodeString.Split('|');
+            var arr1 = arr[0].Split(',');
 
             // check nếu QRCode hiện tại có nằm trong kho
             DynamicParameters para = new DynamicParameters();
-            para.Add("@qr", barcodeString);
-            para.Add("@userId", "idc_autoposting"); //user sử dụng cho việc auto posting
-            para.Add("@mode", "ADD");
-            // hàng đến từ kho (FFT)
-            para.Add("@whFrom", "");
-            // sẽ vào kho (FFT)
-            para.Add("@whTo", toWH);
-            para.Add("@lock", 0);
-            para.Add("@inputQuantity", null);
+            para.Add("@oc", arr1[0]);
+            para.Add("@boxId", arr1[5]);
+            para.Add("@unit", arr1[4]);
+            para.Add("@wh", WH);
 
-            (int Accept, string Message) = connection.Query<(int Accept, string Message)>("DOGE_WH.dbo.sp_lmpScannerClient_ScanningLabel_CheckLabel", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
+            var res = connection.ExecuteScalar<int>("DOGE_WH.dbo.sp_lmpScannerClient_ScanningLabel_CheckIn", para, commandType: CommandType.StoredProcedure);
             // thùng hàng có trong kho -> có thể transfer
-            return (Accept, Message);
+            return res;
         }
     }
 }
