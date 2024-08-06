@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnserU2_cSharp", "..\AnserU
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PLCPi", "..\..\..\OtherSourceCode\2014PLCPiProject\PLCPiForPC\PLCPi\PLCPi\PLCPi.csproj", "{15DD2F14-1735-4D96-BA90-B57E90BEB545}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScannerCam", "ScannerCam\ScannerCam.csproj", "{75ECC053-5269-4F64-93A4-D98A56D55EC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75ECC053-5269-4F64-93A4-D98A56D55EC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75ECC053-5269-4F64-93A4-D98A56D55EC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75ECC053-5269-4F64-93A4-D98A56D55EC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75ECC053-5269-4F64-93A4-D98A56D55EC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

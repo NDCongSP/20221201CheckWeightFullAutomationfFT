@@ -72,7 +72,7 @@ namespace WeightChecking
             {
                 XtraMessageBox.Show("Lỗi Get Data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
+        }        
 
         private void DeleteBox(object sender, EventArgs e)
         {
@@ -187,6 +187,22 @@ namespace WeightChecking
                         grvReject.Columns["IdLabel"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
                         grvReject.Columns["OcNo"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
                         grvReject.Columns["BoxId"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
+                    });
+                    #endregion
+
+                    #region Metal scan
+                    var resMetalScan = connection.Query<MetalScanResultModel>("sp_tblMetalScanResultSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
+
+                    this?.Invoke((MethodInvoker)delegate
+                    {
+                        _grcMetalScan.DataSource = resMetalScan;
+                     
+                        _grvMetalScan.Columns["CreatedDate"].DisplayFormat.FormatString = "YYYY-MM-dd HH:mm:ss";
+
+                        _grvMetalScan.Columns["BarcodeString"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
+                        _grvMetalScan.Columns["IdLabel"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
+                        _grvMetalScan.Columns["Oc"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
+                        _grvMetalScan.Columns["BoxNo"].Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left;
                     });
                     #endregion
                 }

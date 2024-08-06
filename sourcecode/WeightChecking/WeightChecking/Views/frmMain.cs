@@ -37,7 +37,7 @@ namespace WeightChecking
         string _masterData = null;
         string _report = null;
 
-        Timer _timer = new Timer() { Interval = 500 };
+        Timer _timer = new Timer() { Interval = 1000 };
 
         byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] _writeHoldingRegisterArr = { 0, 1 };
@@ -168,7 +168,7 @@ namespace WeightChecking
                 ribbonPageMasterData.Visible = false;
                 ribbonPageReports.Visible = false;
             }
-            else if (GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin)//Admin
+            else if (GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin|| GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin1)//Admin
             {
                 if (_masterData == null)
                 {
@@ -184,6 +184,11 @@ namespace WeightChecking
                 }
 
                 ribbonControl1.SelectedPage = ribbonPageMasterData;
+
+                if (GlobalVariables.UserLoginInfo.Role==RolesEnum.Admin1)
+                {
+                    _barButtonItemDeleteBox.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
+                }
             }
             else if (GlobalVariables.UserLoginInfo.Role == RolesEnum.Report)//report
             {
@@ -201,7 +206,9 @@ namespace WeightChecking
                 }
 
                 ribbonControl1.SelectedPage = ribbonPageReports;
+
                 ribbonPageMasterData.Visible = false;
+                _barButtonItemDeleteBox.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
             }
             #endregion
 
@@ -571,6 +578,7 @@ namespace WeightChecking
 
                             var resScanDataRejectReport = new List<ScanDataRejectReportModel>();
                             var resScanDataReject = connection.Query<ScanDataRejectModel>("sp_tblScanDataRejectSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
+                            var resMetalScanResult = connection.Query<MetalScanResultModel>("sp_tblMetalScanResultSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
 
                             using (Workbook wb = new Workbook())
                             {
@@ -579,6 +587,7 @@ namespace WeightChecking
                                 //wb.Worksheets.Add("ApprovedPrintLable");
                                 wb.Worksheets.Add("DataScanReject");
                                 wb.Worksheets.Add("MissProItems");
+                                wb.Worksheets.Add("MetalScanResult");
 
                                 #region Data scan
                                 Worksheet ws = wb.Worksheets["DataScan"];
@@ -819,6 +828,44 @@ namespace WeightChecking
                                 ws.Columns.AutoFit(0, 5);
                                 #endregion
 
+                                #region Metal scan result
+                                // sửa lại thứ tự cột cho đúng..
+                                ws = wb.Worksheets["MetalScanResult"];
+                                ws.Cells[0, 0].Value = "Id";
+                                ws.Cells[0, 1].Value = "QR Label";
+                                ws.Cells[0, 2].Value = "ID Label";
+                                ws.Cells[0, 3].Value = "OC";
+                                ws.Cells[0, 4].Value = "Box No";
+                                ws.Cells[0, 5].Value = "Quantity (Prs)";
+                                ws.Cells[0, 6].Value = "Metal check result";
+                                ws.Cells[0, 7].Value = "Product item code";
+
+                                ws.Cells[0, 8].Value = "Created Date";
+                                ws.Cells[0, 9].Value = "Created machine";
+                                ws.Cells[0, 10].Value = "Is actived";
+
+                                rHeader = ws.Range.FromLTRB(0, 0, 10, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
+                                rHeader.FillColor = Color.Orange;
+                                rHeader.Alignment.Horizontal = SpreadsheetHorizontalAlignment.Center;
+                                rHeader.Alignment.Vertical = SpreadsheetVerticalAlignment.Center;
+                                rHeader.Font.Bold = true;
+
+                                // format column BoxNo as string value
+                                ws[$"C6:C{resMetalScanResult.Count + 1}"].NumberFormat = "@";
+                         
+                                ws.Import(resMetalScanResult, 1, 0);
+
+                                //ws.Range[$"Q2:Y{res.Count}"].NumberFormat = "#,#0.00";
+                                //ws.Range[$"H2:K{res.Count}"].NumberFormat = "#,#0";
+                                //ws.Range[$"L2:L{res.Count}"].NumberFormat = "yyyy/MM/dd HH:mm:ss";
+
+                                ws.Range.FromLTRB(0, 0, 9, resScanDataRejectReport.Count).Borders.SetAllBorders(Color.Black, BorderLineStyle.Thin);
+                                //ws.FreezeRows(0);
+                                //ws.FreezeColumns(3);
+                                ws.FreezePanes(0, 3);
+                                ws.Columns.AutoFit(0, 9);
+                                #endregion
+
                                 wb.Worksheets.ActiveWorksheet = wb.Worksheets["DataScan"];
 
                                 wb.SaveDocument(sfd.FileName);
@@ -912,19 +959,36 @@ namespace WeightChecking
             {
                 t.Enabled = false;
 
-                this?.Invoke((MethodInvoker)delegate
+                if (this.InvokeRequired)
                 {
-                    barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")} " +
-                        $"| {GlobalVariables.UserLoginInfo.UserName}" +
-                        $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
-                        $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
-                        $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
-                        $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
-                        $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" +
-                        $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}. PrintResult: {GlobalVariables.PrintResult}--{GlobalVariables.PrintedResult}";
+                    this?.Invoke(new Action(()=> {
+                        barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm")} " +
+                           $"| {GlobalVariables.UserLoginInfo.UserName}" +
+                           $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
+                           $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
+                           $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
+                           $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
+                           $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" 
+                           + $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}";
 
-                    barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
-                });
+                        barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
+                    }));
+                }
+                else
+                {
+                    this?.Invoke(new Action(() => {
+                        barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm")} " +
+                           $"| {GlobalVariables.UserLoginInfo.UserName}" +
+                           $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
+                           $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
+                           $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
+                           $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
+                           $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" +
+                           $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}.";// PrintResult: {GlobalVariables.PrintResult}";//--{GlobalVariables.PrintedResult}
+
+                        barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
+                    }));
+                }
             }
             catch (Exception ex)
             {

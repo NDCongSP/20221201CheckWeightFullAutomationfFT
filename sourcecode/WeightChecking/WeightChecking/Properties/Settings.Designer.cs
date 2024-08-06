@@ -89,7 +89,8 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\\\\10.40.10.9\\Public$\\05_IT\\01_Update\\21- IDCScaleSystem\\Update.xml")]
+        [global::System.Configuration.DefaultSettingValueAttribute("\\\\10.40.10.9\\Public$\\98_Public_Share\\99_Shared\\05_IT\\01_Update\\21- IDCScaleSystem" +
+            "\\update.xml")]
         public string UpdatePath {
             get {
                 return ((string)(this["UpdatePath"]));
@@ -101,7 +102,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool IsScale {
             get {
                 return ((bool)(this["IsScale"]));
@@ -113,7 +114,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool IsCounter {
             get {
                 return ((bool)(this["IsCounter"]));

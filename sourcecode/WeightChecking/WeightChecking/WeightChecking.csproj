@@ -256,6 +256,7 @@
     <Compile Include="Enums\RolesEnum.cs" />
     <Compile Include="Enums\StationEnum.cs" />
     <Compile Include="Events\CustomEvents.cs" />
+    <Compile Include="Models\MetalScanResultModel.cs" />
     <Compile Include="Views\frmDeleteBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -448,7 +449,8 @@
   -->
   <PropertyGroup>
     <Dir>$(OutputPath)\..\Update</Dir>
-    <DeployDir>\\10.40.10.9\Public$\05_IT\01_Update\21- IDCScaleSystem\Update.zip</DeployDir>
+    <!--98_Public_Share\99_Shared\05_IT\01_Update\21- IDCScaleSystem-->
+    <DeployDir>\\10.40.10.9\Public$\98_Public_Share\99_Shared\05_IT\01_Update\21- IDCScaleSystem\Update.zip</DeployDir>
     <!--<FVNDeployContent Include="%(LineFVN.Text)" />
     <FFTDeployContent Include="%(LineFFT.Text)" />-->
   </PropertyGroup>

@@ -42,7 +42,14 @@ namespace S7Client
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if (myPLC.S7Ethernet.Client.KetNoi(textBox5.Text) == "GOOD")
+            Sharp7.S7Client.ISOTCP = int.Parse(_txbPort.Text);
+            Sharp7.S7Client s7Client = new Sharp7.S7Client();
+            var result = s7Client.ConnectTo(textBox5.Text, 0, 1);
+            var text = s7Client.ErrorText(result);
+
+            //s7Client.ConnectTo()
+
+            if (myPLC.S7Ethernet.Client.KetNoi(textBox5.Text, 102) == "GOOD")
             {
                 label20.BackColor = Color.Green;
             }
