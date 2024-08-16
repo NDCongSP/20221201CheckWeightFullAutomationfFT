@@ -196,7 +196,7 @@ namespace WeightChecking.StaticClass
         /// <param name="toWH"></param>
         /// <param name="connection"></param>
         /// <returns>(int,String)</returns>
-        public static int CheckIn(string productNumber, string barcodeString, int WH, IDbConnection connection)
+        public static List<FT050Model> CheckIn(string productNumber, string barcodeString, IDbConnection connection)
         {
             // xử lý insert RackStorage 
             var arr = barcodeString.Split('|');
@@ -207,9 +207,8 @@ namespace WeightChecking.StaticClass
             para.Add("@oc", arr1[0]);
             para.Add("@boxId", arr1[5]);
             para.Add("@unit", arr1[4]);
-            para.Add("@wh", WH);
 
-            var res = connection.ExecuteScalar<int>("DOGE_WH.dbo.sp_lmpScannerClient_ScanningLabel_CheckIn", para, commandType: CommandType.StoredProcedure);
+            var res = connection.Query<FT050Model>("DOGE_WH.dbo.sp_lmpScannerClient_ScanningLabel_CheckIn", para, commandType: CommandType.StoredProcedure).ToList();
             // thùng hàng có trong kho -> có thể transfer
             return res;
         }
