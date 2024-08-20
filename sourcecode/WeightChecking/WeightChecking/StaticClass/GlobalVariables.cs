@@ -13,6 +13,12 @@ namespace WeightChecking
 {
     public static class GlobalVariables
     {
+        public static void InvokeIfRequired(Control control,Action action)
+        {
+            if (control.InvokeRequired) control.BeginInvoke(action);
+            else action();  
+        }
+
         public static string ConnectionString { get; set; }
         public static string ConStringWinline { get; set; }
 
@@ -58,6 +64,9 @@ namespace WeightChecking
 
         public static string ConveyorStatus { get; set; } = "Bad";
         public static string PrintConnectionStatus { get; set; } = "Bad";
+        public static string AutoPostingStatus1 { get; set; }
+        public static string AutoPostingStatus2 { get; set; }
+        public static string AutoPostingStatus3 { get; set; }
         public static byte[] DataWriteDb1 { get; set; } = new byte[] { 0, 0, 0, 0 };//biến dùng để chứa các giá trị ghi xuống PLC để điều khiển pusher
         //byte[0]-Metal; byte[1]-Scale; byte[2]-print
 

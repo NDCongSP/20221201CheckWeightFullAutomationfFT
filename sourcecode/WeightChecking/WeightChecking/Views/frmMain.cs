@@ -959,36 +959,18 @@ namespace WeightChecking
             {
                 t.Enabled = false;
 
-                if (this.InvokeRequired)
-                {
-                    this?.Invoke(new Action(()=> {
-                        barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm")} " +
-                           $"| {GlobalVariables.UserLoginInfo.UserName}" +
-                           $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
-                           $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
-                           $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
-                           $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
-                           $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" 
-                           + $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}";
+                GlobalVariables.InvokeIfRequired(this, () => {
+                    barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm")} " +
+                              $"| {GlobalVariables.UserLoginInfo.UserName}" +
+                              $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
+                              $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
+                              $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
+                              $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
+                              $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}"
+                              + $" | PrintStatus: {GlobalVariables.PrintConnectionStatus} | AP1: {GlobalVariables.AutoPostingStatus1}|APM:{GlobalVariables.AutoPostingStatus2} | APW: {GlobalVariables.AutoPostingStatus3}";
 
-                        barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
-                    }));
-                }
-                else
-                {
-                    this?.Invoke(new Action(() => {
-                        barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm")} " +
-                           $"| {GlobalVariables.UserLoginInfo.UserName}" +
-                           $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
-                           $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
-                           $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
-                           $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
-                           $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}" +
-                           $" | PrintStatus: {GlobalVariables.PrintConnectionStatus}.";// PrintResult: {GlobalVariables.PrintResult}";//--{GlobalVariables.PrintedResult}
-
-                        barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
-                    }));
-                }
+                    barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
+                });
             }
             catch (Exception ex)
             {

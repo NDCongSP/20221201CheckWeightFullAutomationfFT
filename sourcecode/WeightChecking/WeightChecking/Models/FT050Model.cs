@@ -69,6 +69,9 @@ namespace WeightChecking
 
         public int C020 { get; set; }
 
+        /// <summary>
+        /// Last WH.
+        /// </summary>
         public string C021 { get; set; }
 
         public int mesoyear { get; set; }

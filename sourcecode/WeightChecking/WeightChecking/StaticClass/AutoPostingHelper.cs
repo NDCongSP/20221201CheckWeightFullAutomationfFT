@@ -54,19 +54,19 @@ namespace WeightChecking.StaticClass
                 if (resInsertTransferRackStorage > 0)
                 {
                     Debug.WriteLine($"ProductNumber: {productNumber} đã cập nhật kho.");
-                    return $"ProductNumber: {productNumber} đã cập nhật kho.";
+                    return $"OK. Transfer from {fromWH} to {toWH}";
                 }
                 else
                 {
                     Debug.WriteLine($"ProductNumber: {productNumber} cập nhật kho thất bại.");
-                    return $"ProductNumber: {productNumber} cập nhật kho thất bại.";
+                    return $"Fail. Transfer from {fromWH} to {toWH}";
                 }
 
             }
             else
             {
                 Debug.WriteLine($"Thông tin không hợp lệ: {Message}");
-                return $"Thông tin không hợp lệ: {Message}";
+                return $"Fail. Transfer from {fromWH} to {toWH} - {Message}";
 
             }
         }
@@ -111,20 +111,20 @@ namespace WeightChecking.StaticClass
                 var resInsertTransferRackStorage = connection.Execute("DOGE_WH.dbo.sp_lmpScannerClient_ScannedLabel_Insert", para, commandType: CommandType.StoredProcedure);
                 if (resInsertTransferRackStorage > 0)
                 {
-                    Debug.WriteLine($"ProductNumber: {productNumber} đã nhập kho.");
-                    return $"ProductNumber: {productNumber} đã nhập kho.";
+                    Debug.WriteLine($"ProductNumber: {productNumber} đã cập nhật kho.");
+                    return $"OK. Stock in to {toWH}.";
                 }
                 else
                 {
-                    Debug.WriteLine($"ProductNumber: {productNumber} nhập kho thất bại.");
-                    return $"ProductNumber: {productNumber} nhập kho thất bại.";
+                    Debug.WriteLine($"ProductNumber: {productNumber} cập nhật kho thất bại.");
+                    return $"Fail. Stock in to {toWH}";
                 }
 
             }
             else
             {
                 Debug.WriteLine($"Thông tin không hợp lệ: {Message}");
-                return $"Thông tin không hợp lệ: {Message}";
+                return $"Fail. Stock in to {toWH} - {Message}";
 
             }
         }
