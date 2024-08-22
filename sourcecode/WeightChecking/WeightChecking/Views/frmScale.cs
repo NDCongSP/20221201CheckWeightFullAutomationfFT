@@ -77,13 +77,13 @@ namespace WeightChecking
             //layoutControlGroup3.Visibility = DevExpress.XtraLayout.Utils.LayoutVisibility.Never;
 
             //BarcodeScanner1Handle(1, "A122644,6812012310-3400-2951,80,8,P,13/14,1900040,1/2|2,417930.2024,,,");
-            //BarcodeScanner1Handle(1, "A120078,6814322206-NBA2-E068,24,4,P,11/12,1900050,3/3|2,418004.2024,0,0,14");
+            //BarcodeScanner1Handle(1, "A123609,6817012201-2626-D228,95,3,P,3/5,1900022,1/1|2,436866.2024,1,0,99");
 
-            using (var con=GlobalVariables.GetDbConnection())
-            {
-                AutoPostingHelper.AutoTransfer("", "A123631,6817012201-3265-D228,100,3,P,6/11,1900022,1/4|2,435752.2024,1,0,99", 1185, 2,con);
-            }
-            
+            //using (var con=GlobalVariables.GetDbConnection())
+            //{
+            //    AutoPostingHelper.AutoTransfer("", "A123631,6817012201-3265-D228,100,3,P,6/11,1900022,1/4|2,435752.2024,1,0,99", 1185, 2,con);
+            //}
+
 
             //_scaleValueStable = 8777;
             //BarcodeScanner2Handle(2, "A10704344,6812012208-2667-E057,45,4,P,6/13,1900082,2/3|2,248212.2023,,,");
@@ -653,10 +653,16 @@ namespace WeightChecking
                     var res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, connection);
                     var accept = res1.FirstOrDefault();
 
+                    var para1 = new DynamicParameters();
+                    para1.Add("@Message", $"Before|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}.");
+                    para1.Add("@MessageTemplate", $"{barcodeString}");
+                    para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
+                    connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
+
                     if (accept == null)
                     {
-                        var para1 = new DynamicParameters();
-                        para1.Add("@Message", $"Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1223.");
+                        para1 = new DynamicParameters();
+                        para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1223.");
                         para1.Add("@MessageTemplate", $"{barcodeString}");
                         para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                         connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
@@ -673,8 +679,8 @@ namespace WeightChecking
                     //nếu tem nằm trong kho sản xuất, tức là công nhân quên transfer qua kho 1185, vào transfer tự động qua kho 1185
                     else if (accept != null && accept.C004 == "4")
                     {
-                        var para1 = new DynamicParameters();
-                        para1.Add("@Message", $"Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1185.");
+                        para1 = new DynamicParameters();
+                        para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1185.");
                         para1.Add("@MessageTemplate", $"{barcodeString}");
                         para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                         connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
@@ -723,8 +729,8 @@ namespace WeightChecking
                                 res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, connection);
                                 accept = res1.FirstOrDefault();
 
-                                var para1 = new DynamicParameters();
-                                para1.Add("@Message", $"Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 2 .");
+                                para1 = new DynamicParameters();
+                                para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 2 .");
                                 para1.Add("@MessageTemplate", $"{barcodeString}");
                                 para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                                 connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
