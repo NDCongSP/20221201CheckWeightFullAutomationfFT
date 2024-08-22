@@ -81,7 +81,7 @@ namespace WeightChecking
 
             using (var con=GlobalVariables.GetDbConnection())
             {
-                AutoPostingHelper.AutoTransfer("", "A122569,6817012201-3232-D213,28,2,P,3/5,1900022,2/2|2,435738.2024,1,0,99", 1185, 2,con);
+                AutoPostingHelper.AutoTransfer("", "A123631,6817012201-3265-D228,100,3,P,6/11,1900022,1/4|2,435752.2024,1,0,99", 1185, 2,con);
             }
             
 
@@ -312,7 +312,7 @@ namespace WeightChecking
                             var accept = res1.FirstOrDefault();
 
                             var para1 = new DynamicParameters();
-                            para1.Add("@Message", $"Transfer {res1.Count}.");
+                            para1.Add("@Message", $"Metal sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}.");
                             para1.Add("@MessageTemplate", $"{_scanDataMetal.BarcodeString}");
                             para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                             connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
@@ -346,7 +346,7 @@ namespace WeightChecking
                             var accept = res1.FirstOrDefault(x => x.C004 == "964");
 
                             var para1 = new DynamicParameters();
-                            para1.Add("@Message", $"Transfer {res1.Count}.");
+                            para1.Add("@Message", $"Metal sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}.");
                             para1.Add("@MessageTemplate", $"{_scanDataMetal.BarcodeString}");
                             para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                             connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
@@ -653,14 +653,14 @@ namespace WeightChecking
                     var res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, connection);
                     var accept = res1.FirstOrDefault();
 
-                    var para1 = new DynamicParameters();
-                    para1.Add("@Message", $"Stock in to {res1.Count}.");
-                    para1.Add("@MessageTemplate", $"{barcodeString}");
-                    para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
-                    connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
-
                     if (accept == null)
                     {
+                        var para1 = new DynamicParameters();
+                        para1.Add("@Message", $"Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1223.");
+                        para1.Add("@MessageTemplate", $"{barcodeString}");
+                        para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
+                        connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
+
                         //nếu tem ko có trong kho nào, hoặc đã có trong kho mà khác kho 4(production) thì stockIn vào kho 1223
                         GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 1223, connection);
                         Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
@@ -673,6 +673,12 @@ namespace WeightChecking
                     //nếu tem nằm trong kho sản xuất, tức là công nhân quên transfer qua kho 1185, vào transfer tự động qua kho 1185
                     else if (accept != null && accept.C004 == "4")
                     {
+                        var para1 = new DynamicParameters();
+                        para1.Add("@Message", $"Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1185.");
+                        para1.Add("@MessageTemplate", $"{barcodeString}");
+                        para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
+                        connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
+
                         GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString, Convert.ToInt16(accept.C004), 1185, connection);
                         Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
 
@@ -712,6 +718,33 @@ namespace WeightChecking
                                 || (box.Pass == 0 && box.Status == 2 && box.ActualDeviationPairs == 0)
                                 )
                             {
+                                #region Auto Stock In to 1223 if Box come to QC, update 20240819
+                                //kiểm tra thùng hàng ko có trong kho production hand ove WH (1185) là cho stock in vao kho QC hand over WH (1223)
+                                res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, connection);
+                                accept = res1.FirstOrDefault();
+
+                                var para1 = new DynamicParameters();
+                                para1.Add("@Message", $"Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 2 .");
+                                para1.Add("@MessageTemplate", $"{barcodeString}");
+                                para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
+                                connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
+
+                                if (accept != null)
+                                {
+                                    var whTo = 2;
+                                    if (_scanDataMetal.OcNo.Substring(0, 2) == "PR") whTo = 10;
+
+                                    //nếu tem ko có trong kho nào, hoặc đã có trong kho mà khác kho 4(production) thì stockIn vào kho 1223
+                                    GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString, Convert.ToInt16(accept.C004), whTo, connection);
+                                    Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
+
+                                    GlobalVariables.InvokeIfRequired(this, () =>
+                                    {
+                                        labErrInfoMetal.Text = GlobalVariables.AutoPostingStatus1;
+                                    });
+                                }
+                                #endregion
+
                                 Debug.WriteLine($"ProductNumber: {box.ProductNumber} đã kiểm tra OK, không được.");
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
@@ -738,33 +771,6 @@ namespace WeightChecking
                                 para.Add("@_deviationWeight", _scanDataMetal.Deviation);
 
                                 connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
-
-                                #region Auto Stock In to 1223 if Box come to QC, update 20240819
-                                //kiểm tra thùng hàng ko có trong kho production hand ove WH (1185) là cho stock in vao kho QC hand over WH (1223)
-                                 res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, connection);
-                                 accept = res1.FirstOrDefault();
-
-                                para1 = new DynamicParameters();
-                                para1.Add("@Message", $"Transfer {res1.Count}.");
-                                para1.Add("@MessageTemplate", $"{barcodeString}");
-                                para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
-                                connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
-
-                                if (accept != null && accept.C004 != "2" && accept.C004 != "10")
-                                {
-                                    var whTo = 2;
-                                    if (_scanDataMetal.OcNo.Substring(0, 2) == "PR") whTo = 10;
-
-                                    //nếu tem ko có trong kho nào, hoặc đã có trong kho mà khác kho 4(production) thì stockIn vào kho 1223
-                                    GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString, Convert.ToInt16(accept.C004), whTo, connection);
-                                    Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
-
-                                    GlobalVariables.InvokeIfRequired(this, () =>
-                                    {
-                                        labErrInfoMetal.Text = GlobalVariables.AutoPostingStatus1;
-                                    });
-                                }
-                                #endregion
 
                                 return;
                             }
@@ -981,7 +987,7 @@ namespace WeightChecking
                     DynamicParameters para = new DynamicParameters();
                     para.Add("@Message", $"Lỗi check label.Scanner: 1 (Identification)|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                     para.Add("Level", "LogError");
-                    para.Add("Exception", ex.Message);
+                    para.Add("Exception", ex.ToString());
                     connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
                     //if (station == 2)
@@ -996,7 +1002,7 @@ namespace WeightChecking
                         para.Add("_productName", _scanDataWeight.ProductName);
                         para.Add("_quantity", _scanDataWeight.Quantity);
                         para.Add("_scannerStation", $"Identification");
-                        para.Add("_reason", $"System fail. Ex:{ex.Message}.");
+                        para.Add("_reason", $"System fail. Ex:{ex.ToString()}.");
                         para.Add("_grossWeight", _scanDataWeight.GrossWeight);
                         para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
                         para.Add("@_deviationWeight", _scanDataWeight.Deviation);
@@ -1005,7 +1011,7 @@ namespace WeightChecking
                     }
                 }
 
-                Log.Error(ex.Message, "Lỗi scale form tại trạm scanner 1 Identification.");
+                Log.Error(ex.ToString(), "Lỗi scale form tại trạm scanner 1 Identification.");
             }
             finally
             {
@@ -1687,7 +1693,7 @@ namespace WeightChecking
                                         var accept = res1.FirstOrDefault();
 
                                         var para1 = new DynamicParameters();
-                                        para1.Add("@Message", $"Tranfer {res1.Count}.");
+                                        para1.Add("@Message", $"Check Weight sp_lmpScannerClient_ScanningLabel_CheckIn =  {res1.Count}.");
                                         para1.Add("@MessageTemplate", $"{barcodeString}");
                                         para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                                         connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
@@ -1696,7 +1702,7 @@ namespace WeightChecking
                                         {
                                             var whTo = 2;
 
-                                            if (_scanDataMetal.OcNo.Substring(0, 2) == "PR") whTo = 10;
+                                            if (_scanDataWeight.OcNo.Substring(0, 2) == "PR") whTo = 10;
 
                                             GlobalVariables.AutoPostingStatus3 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
                                                 , Convert.ToInt16(accept.C004), whTo, connection);
@@ -1812,7 +1818,7 @@ namespace WeightChecking
                                     var accept = res1.FirstOrDefault();
 
                                     var para1 = new DynamicParameters();
-                                    para1.Add("@Message", $"Transfer {res1.Count}.");
+                                    para1.Add("@Message", $"Check Weight sp_lmpScannerClient_ScanningLabel_CheckIn =  {res1.Count}.");
                                     para1.Add("@MessageTemplate", $"{barcodeString}");
                                     para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                                     connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
@@ -2303,7 +2309,7 @@ namespace WeightChecking
                     DynamicParameters para = new DynamicParameters();
                     para.Add("@Message", $"Lỗi check label.Scanner: 2 (Scale)|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                     para.Add("Level", "LogError");
-                    para.Add("Exception", ex.Message);
+                    para.Add("Exception", ex.ToString());
                     connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
                     para = null;
@@ -2316,14 +2322,14 @@ namespace WeightChecking
                     para.Add("_productName", _scanDataWeight.ProductName);
                     para.Add("_quantity", _scanDataWeight.Quantity);
                     para.Add("_scannerStation", $"Scale");
-                    para.Add("_reason", $"System fail. Ex:{ex.Message}.");
+                    para.Add("_reason", $"System fail. Ex:{ex.ToString()}.");
                     para.Add("_grossWeight", _scanDataWeight.GrossWeight);
                     para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
                     para.Add("@_deviationWeight", _scanDataWeight.Deviation);
 
                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                 }
-                Log.Error(ex.Message, "Lỗi scale form tại trạm scanner 2 scale.");
+                Log.Error(ex.ToString(), "Lỗi scale form tại trạm scanner 2 scale.");
             }
             finally
             {
@@ -2519,7 +2525,7 @@ namespace WeightChecking
                     DynamicParameters para = new DynamicParameters();
                     para.Add("@Message", $"Lỗi check label.Scanner: 3 (print)|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}");
                     para.Add("Level", "LogError");
-                    para.Add("Exception", ex.Message);
+                    para.Add("Exception", ex.ToString());
                     connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
                     para = null;
@@ -2532,14 +2538,14 @@ namespace WeightChecking
                     para.Add("_productName", _scanDataWeight.ProductName);
                     para.Add("_quantity", _scanDataWeight.Quantity);
                     para.Add("_scannerStation", $"Print");
-                    para.Add("_reason", $"System fail. Ex:{ex.Message}.");
+                    para.Add("_reason", $"System fail. Ex:{ex.ToString()}.");
                     para.Add("_grossWeight", _scanDataWeight.GrossWeight);
                     para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
                     para.Add("@_deviationWeight", _scanDataWeight.Deviation);
 
                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                 }
-                Log.Error(ex.Message, "Lỗi scale form tại trạm scanner 3 print.");
+                Log.Error(ex.ToString(), "Lỗi scale form tại trạm scanner 3 print.");
             }
             finally
             {
@@ -2858,7 +2864,7 @@ namespace WeightChecking
                                         labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
                                     }
 
-                                    Log.Error(ex, $"Lỗi không insert vào DB được.{ex.Message}");
+                                    Log.Error(ex, $"Lỗi không insert vào DB được.{ex.ToString()}");
                                 }
                                 finally
                                 {
@@ -3018,8 +3024,8 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Printing data received error: {ex.Message}");
-                GlobalVariables.PrintResult = $"Printing data received error: {ex.Message}";
+                Log.Error(ex, $"Printing data received error: {ex.ToString()}");
+                GlobalVariables.PrintResult = $"Printing data received error: {ex.ToString()}";
 
                 //ghi giá trị xuống PLC cân reject
                 GlobalVariables.MyEvent.WeightPusher = 1;
@@ -3079,7 +3085,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Start print error: {ex.Message}");
+                Log.Error(ex, $"Start print error: {ex.ToString()}");
 
                 Thread.Sleep(10000);
 
@@ -3103,7 +3109,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Stop print error: {ex.Message}");
+                Log.Error(ex, $"Stop print error: {ex.ToString()}");
             }
             finally
             {
@@ -3202,9 +3208,9 @@ namespace WeightChecking
                 using (var connection = GlobalVariables.GetDbConnection())
                 {
                     DynamicParameters para = new DynamicParameters();
-                    para.Add("@Message", $"Lỗi khi đang truyền dữ liệu xuống máy in:|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}. Exception:{ex.Message}");
+                    para.Add("@Message", $"Lỗi khi đang truyền dữ liệu xuống máy in:|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}. Exception:{ex.ToString()}");
                     para.Add("Level", "LogError");
-                    para.Add("Exception", ex.Message);
+                    para.Add("Exception", ex.ToString());
                     connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
                     para = null;
@@ -3217,7 +3223,7 @@ namespace WeightChecking
                     para.Add("_productName", _scanDataWeight.ProductName);
                     para.Add("_quantity", _scanDataWeight.Quantity);
                     para.Add("_scannerStation", "Scale");
-                    para.Add("_reason", $"System fail. Lỗi khi đang truyền dữ liệu xuống máy in. Ex:{ex.Message}.");
+                    para.Add("_reason", $"System fail. Lỗi khi đang truyền dữ liệu xuống máy in. Ex:{ex.ToString()}.");
                     para.Add("_grossWeight", _scanDataWeight.GrossWeight);
                     para.Add("@_deviationPairs", _scanDataWeight.DeviationPairs);
                     para.Add("@_deviationWeight", _scanDataWeight.Deviation);
@@ -3225,7 +3231,7 @@ namespace WeightChecking
                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                 }
 
-                Log.Error(ex, $"System fail. Lỗi khi đang truyền dữ liệu xuống máy in. Ex:{ex.Message}.");
+                Log.Error(ex, $"System fail. Lỗi khi đang truyền dữ liệu xuống máy in. Ex:{ex.ToString()}.");
             }
         }
 
@@ -3264,7 +3270,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Printing set speed error: {ex.Message}");
+                Log.Error(ex, $"Printing set speed error: {ex.ToString()}");
             }
             finally
             {
@@ -3281,7 +3287,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Printing get speed error: {ex.Message}");
+                Log.Error(ex, $"Printing get speed error: {ex.ToString()}");
             }
             finally
             {
@@ -3299,7 +3305,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Printing get delay error: {ex.Message}");
+                Log.Error(ex, $"Printing get delay error: {ex.ToString()}");
             }
             finally
             {
@@ -3339,7 +3345,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Printing set delay error: {ex.Message}");
+                Log.Error(ex, $"Printing set delay error: {ex.ToString()}");
             }
             finally
             {
