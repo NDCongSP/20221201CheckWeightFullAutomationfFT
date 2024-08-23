@@ -1021,7 +1021,7 @@ namespace WeightChecking
             }
             finally
             {
-
+                _scannerIsBussy[0] = false;
             }
         }
 
@@ -2626,69 +2626,122 @@ namespace WeightChecking
             //Get ra ID của scanner
             var scannerId = xmlDoc.GetElementsByTagName("scannerID");
 
-            if (scannerId[0].InnerText == GlobalVariables.ScannerIdMetal.ToString())//vị trí check metal. đầu chuyền
+            using (var connection = GlobalVariables.GetDbConnection())
             {
-                if (!_scannerIsBussy[0])
+                DynamicParameters para = new DynamicParameters();
+                para.Add("@Message", $"Before|Barcode Id {scannerId[0].InnerText}");
+                para.Add("Level", "Scanner trigger.");
+                //para.Add("Exception", ex.ToString());
+                connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+
+
+                if (scannerId[0].InnerText == GlobalVariables.ScannerIdMetal.ToString())//vị trí check metal. đầu chuyền
                 {
-                    //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
-                    _scannerIsBussy[0] = true;
+                    para = new DynamicParameters();
+                    para.Add("@Message", $"After1|Barcode Id {scannerId[0].InnerText}|{_scannerIsBussy[0]}|{_barcodeString1}");
+                    para.Add("Level", "Scanner trigger.");
+                    //para.Add("Exception", ex.ToString());
+                    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                    //bật biến báo đọc đc QR code từ label
-                    _readQrStatus[0] = true;
+                    if (!_scannerIsBussy[0])
+                    {
+                        //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                        _scannerIsBussy[0] = true;
 
-                    //this?.Invoke((MethodInvoker)delegate { txtDataAscii1.Text = xmlDoc.GetElementsByTagName("datalabel")[0].InnerText; });
-                    _barcodeString1 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+                        //bật biến báo đọc đc QR code từ label
+                        _readQrStatus[0] = true;
 
-                    //reset model;
-                    _scanDataMetal = null;
-                    _scanDataMetal = new tblScanDataModel();
+                        //this?.Invoke((MethodInvoker)delegate { txtDataAscii1.Text = xmlDoc.GetElementsByTagName("datalabel")[0].InnerText; });
+                        _barcodeString1 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
-                    BarcodeScanner1Handle(1, _barcodeString1);
+                        para = new DynamicParameters();
+                        para.Add("@Message", $"After1 1|Barcode Id {scannerId[0].InnerText}|{_scannerIsBussy[0]}|{_barcodeString1}");
+                        para.Add("Level", "Scanner trigger.");
+                        //para.Add("Exception", ex.ToString());
+                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+
+                        //reset model;
+                        _scanDataMetal = null;
+                        _scanDataMetal = new tblScanDataModel();
+
+                        BarcodeScanner1Handle(1, _barcodeString1);
+
+                        para = new DynamicParameters();
+                        para.Add("@Message", $"After1 2|Barcode Id {scannerId[0].InnerText}|{_scannerIsBussy[0]}|{_barcodeString1}");
+                        para.Add("Level", "Scanner trigger.");
+                        //para.Add("Exception", ex.ToString());
+                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                    }
                 }
-            }
-            else if (scannerId[0].InnerText == GlobalVariables.ScannerIdWeight.ToString())//vị trí check weight. ngay cân
-            {
-                if (!_scannerIsBussy[1])
+                else if (scannerId[0].InnerText == GlobalVariables.ScannerIdWeight.ToString())//vị trí check weight. ngay cân
                 {
-                    //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
-                    _scannerIsBussy[1] = true;
+                    if (!_scannerIsBussy[1])
+                    {
+                        //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                        _scannerIsBussy[1] = true;
 
-                    //bật biến báo đọc đc QR code từ label
-                    _readQrStatus[1] = true;
+                        //bật biến báo đọc đc QR code từ label
+                        _readQrStatus[1] = true;
 
-                    _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+                        _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
-                    //reset model;
-                    //_scanDataWeight = null;
-                    //_scanDataWeight = new tblScanDataModel();
+                        para = new DynamicParameters();
+                        para.Add("@Message", $"After2|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
+                        para.Add("Level", "Scanner trigger.");
+                        //para.Add("Exception", ex.ToString());
+                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                    BarcodeScanner2Handle(2, _barcodeString2);
+                        //reset model;
+                        //_scanDataWeight = null;
+                        //_scanDataWeight = new tblScanDataModel();
 
-                    ////reset model;
-                    //_scanDataWeight = null;
-                    //_scanDataWeight = new tblScanDataModel();
+                        BarcodeScanner2Handle(2, _barcodeString2);
+
+                        para = new DynamicParameters();
+                        para.Add("@Message", $"After2 1|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
+                        para.Add("Level", "Scanner trigger.");
+                        //para.Add("Exception", ex.ToString());
+                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+
+                        ////reset model;
+                        //_scanDataWeight = null;
+                        //_scanDataWeight = new tblScanDataModel();
+                    }
                 }
-            }
-            else if (scannerId[0].InnerText == GlobalVariables.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
-            {
-                if (!_scannerIsBussy[2])
+                else if (scannerId[0].InnerText == GlobalVariables.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
                 {
-                    //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
-                    _scannerIsBussy[2] = true;
+                    if (!_scannerIsBussy[2])
+                    {
+                        //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                        _scannerIsBussy[2] = true;
 
-                    //bật biến báo đọc đc QR code từ label
-                    _readQrStatus[2] = true;
+                        //bật biến báo đọc đc QR code từ label
+                        _readQrStatus[2] = true;
 
-                    _barcodeString3 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
-                    //reset model;
-                    _scanDataPrint = null;
-                    _scanDataPrint = new tblScanDataModel();
+                        _barcodeString3 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
-                    BarcodeScanner3Handle(3, _barcodeString3);
+                        para = new DynamicParameters();
+                        para.Add("@Message", $"After3|Barcode Id {scannerId[0].InnerText}|{_barcodeString3}");
+                        para.Add("Level", "Scanner trigger.");
+                        //para.Add("Exception", ex.ToString());
+                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                    //reset model;
-                    _scanDataPrint = null;
-                    _scanDataPrint = new tblScanDataModel();
+                        //reset model;
+                        _scanDataPrint = null;
+                        _scanDataPrint = new tblScanDataModel();
+
+                        BarcodeScanner3Handle(3, _barcodeString3);
+
+                        para = new DynamicParameters();
+                        para.Add("@Message", $"After3 1|Barcode Id {scannerId[0].InnerText}|{_barcodeString3}");
+                        para.Add("Level", "Scanner trigger.");
+                        //para.Add("Exception", ex.ToString());
+                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+
+                        //reset model;
+                        _scanDataPrint = null;
+                        _scanDataPrint = new tblScanDataModel();
+                    }
                 }
             }
         }
