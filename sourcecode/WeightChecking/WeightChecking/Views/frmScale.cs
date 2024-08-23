@@ -2637,6 +2637,8 @@ namespace WeightChecking
 
                 if (scannerId[0].InnerText == GlobalVariables.ScannerIdMetal.ToString())//vị trí check metal. đầu chuyền
                 {
+                    _barcodeString1 = string.Empty;
+
                     para = new DynamicParameters();
                     para.Add("@Message", $"After1|Barcode Id {scannerId[0].InnerText}|{_scannerIsBussy[0]}|{_barcodeString1}");
                     para.Add("Level", "Scanner trigger.");
@@ -2677,6 +2679,8 @@ namespace WeightChecking
                 {
                     if (!_scannerIsBussy[1])
                     {
+                        GlobalVariables.AutoPostingStatus3 = string.Empty;
+
                         //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
                         _scannerIsBussy[1] = true;
 
