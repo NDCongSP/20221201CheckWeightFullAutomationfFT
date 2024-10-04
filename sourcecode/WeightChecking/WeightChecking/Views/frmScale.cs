@@ -325,7 +325,7 @@ namespace WeightChecking
                                 connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
                                 GlobalVariables.AutoPostingStatus2 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString
-                                    , Convert.ToInt16(accept.C004), 964, connection);
+                                    , Convert.ToInt16(accept.C004), 964, connection, DateTime.Now);
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
@@ -360,7 +360,7 @@ namespace WeightChecking
                                 connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
                                 GlobalVariables.AutoPostingStatus2 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString
-                                    , Convert.ToInt16(accept.C004), Convert.ToInt16(accept.C021), connection);
+                                    , Convert.ToInt16(accept.C004), Convert.ToInt16(accept.C021), connection, DateTime.Now);
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
@@ -662,13 +662,13 @@ namespace WeightChecking
                     if (accept == null)
                     {
                         para1 = new DynamicParameters();
-                        para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1223.");
+                        para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1808.");
                         para1.Add("@MessageTemplate", $"{barcodeString}");
                         para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                         connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
 
                         //nếu tem ko có trong kho nào, hoặc đã có trong kho mà khác kho 4(production) thì stockIn vào kho 1223
-                        GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 1223, connection);
+                        GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 1808, connection);
                         Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
 
                         GlobalVariables.InvokeIfRequired(this, () =>
@@ -686,7 +686,7 @@ namespace WeightChecking
                         connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
 
                         GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
-                            , Convert.ToInt16(accept.C004), 1185, connection);
+                            , Convert.ToInt16(accept.C004), 1185, connection, DateTime.Now);
                         Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
 
                         GlobalVariables.InvokeIfRequired(this, () =>
@@ -743,7 +743,7 @@ namespace WeightChecking
 
                                     //nếu tem ko có trong kho nào, hoặc đã có trong kho mà khác kho 4(production) thì stockIn vào kho 1223
                                     GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
-                                        , Convert.ToInt16(accept.C004), whTo, connection);
+                                        , Convert.ToInt16(accept.C004), whTo, connection, DateTime.Now);
                                     Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
 
                                     GlobalVariables.InvokeIfRequired(this, () =>
@@ -1717,7 +1717,7 @@ namespace WeightChecking
                                             if (accept.C004 == "964" || accept.C004 == "965")
                                             {
                                                 GlobalVariables.AutoPostingStatus3 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
-                                               , Convert.ToInt16(accept.C004), Convert.ToInt16(accept.C021), connection);
+                                               , Convert.ToInt16(accept.C004), Convert.ToInt16(accept.C021), connection, DateTime.Now);
 
                                                 //lấy lại code kho đi
                                                 whFrom = Convert.ToInt16(accept.C021);
@@ -1725,7 +1725,7 @@ namespace WeightChecking
                                             #endregion
 
                                             GlobalVariables.AutoPostingStatus3 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
-                                               , whFrom, whTo, connection);
+                                               , whFrom, whTo, connection, DateTime.Now.AddSeconds(5));
 
                                             GlobalVariables.InvokeIfRequired(this, () =>
                                             {
@@ -1845,7 +1845,7 @@ namespace WeightChecking
                                     if (accept != null)
                                     {
                                         GlobalVariables.AutoPostingStatus3 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
-                                            , Convert.ToInt16(accept.C004), 965, connection);
+                                            , Convert.ToInt16(accept.C004), 965, connection, DateTime.Now);
 
                                         GlobalVariables.InvokeIfRequired(this, () =>
                                         {

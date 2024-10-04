@@ -13,7 +13,7 @@ namespace WeightChecking.StaticClass
 {
     public class AutoPostingHelper
     {
-        public static string AutoTransfer(string productNumber, string barcodeString, int fromWH, int toWH, IDbConnection connection)
+        public static string AutoTransfer(string productNumber, string barcodeString, int fromWH, int toWH, IDbConnection connection, DateTime scantime)
         {
             try
             {
@@ -31,7 +31,7 @@ namespace WeightChecking.StaticClass
                 para.Add("@lock", 0);
                 para.Add("@inputQuantity", null);
 
-               var para1 = new DynamicParameters();
+                var para1 = new DynamicParameters();
                 para1.Add("@Message", $"Transfer from {fromWH} to {toWH}.");
                 para1.Add("@MessageTemplate", $"{barcodeString}");
                 para1.Add("Level", "Auto transfer|Before|sp_lmpScannerClient_ScanningLabel_CheckLabel");
@@ -61,7 +61,7 @@ namespace WeightChecking.StaticClass
                     // sẽ vào kho (FFT)
                     para.Add("@whTo", toWH);
                     para.Add("@deviceId", machineName);
-                    para.Add("@scanTime", DateTime.Now);
+                    para.Add("@scanTime", scantime);
                     para.Add("@ipAdd", "");
                     para.Add("@postingText", "");
                     para.Add("@inputQuantity", null);
@@ -102,9 +102,10 @@ namespace WeightChecking.StaticClass
 
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
 
-             var   para = new DynamicParameters();
+                var para = new DynamicParameters();
                 para.Add("@Message", $"Transfer from {fromWH} to {toWH}.");
                 para.Add("@MessageTemplate", $"{barcodeString}");
                 para.Add("Level", "Auto transfer|ERROR|sp_lmpScannerClient_ScannedLabel_Insert");
@@ -132,7 +133,7 @@ namespace WeightChecking.StaticClass
                 para.Add("@lock", 0);
                 para.Add("@inputQuantity", null);
 
-               var  para1 = new DynamicParameters();
+                var para1 = new DynamicParameters();
                 para1.Add("@Message", $"Stock in to {toWH}.");
                 para1.Add("@MessageTemplate", $"{barcodeString}");
                 para1.Add("Level", "Auto stock in|Before|sp_lmpScannerClient_ScanningLabel_CheckLabel");
@@ -206,7 +207,7 @@ namespace WeightChecking.StaticClass
             catch (Exception ex)
             {
 
-            var    para = new DynamicParameters();
+                var para = new DynamicParameters();
                 para.Add("@Message", $"Stock in to {toWH}.");
                 para.Add("@MessageTemplate", $"{barcodeString}");
                 para.Add("Level", "Auto stock in|ERROR|sp_lmpScannerClient_ScannedLabel_Insert");
