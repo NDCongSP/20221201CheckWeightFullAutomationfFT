@@ -75,7 +75,7 @@ namespace WeightChecking
         {
             //layoutControlGroup3.Visibility = DevExpress.XtraLayout.Utils.LayoutVisibility.Never;
 
-            //BarcodeScanner1Handle(1, "A122644,6812012310-3400-2951,80,8,P,13/14,1900040,1/2|2,417930.2024,,,");
+            //BarcodeScanner1Handle(1, "A129059,6818442301-ON01-2651,10,6,P,6/8,1900070,1/1|2,683388.2024,0,0,18");
             //BarcodeScanner1Handle(1, "A123609,6817012201-2626-D228,95,3,P,3/5,1900022,1/1|2,436866.2024,1,0,99");
 
             //using (var con=GlobalVariables.GetDbConnection())
@@ -662,12 +662,50 @@ namespace WeightChecking
                     if (accept == null)
                     {
                         para1 = new DynamicParameters();
+                        para1.Add("itemCode", _scanDataMetal.ProductNumber);
+                        var checkDecoration = connection.Query<WinlineDataModel>("sp_IdcScanScaleGetCoreDataByItemCode",param:para1,commandType:CommandType.StoredProcedure).FirstOrDefault();
+
+                        if (checkDecoration != null)
+                        {
+                            if (checkDecoration.Decoration == 0)
+                            {
+                                GlobalVariables.InvokeIfRequired(this, () =>
+                                {
+                                    labErrInfoMetal.Text = "Hàng từ sản xuất nhưng chưa nhập bất kỳ kho nào.";
+                                });
+
+                                _metalScannerStatus = 1;//bao reject cho PLC
+
+                                //log vao bang reject
+                                para = null;
+                                para = new DynamicParameters();
+                                para.Add("_barcodeString", _scanDataMetal.BarcodeString);
+                                para.Add("_idLabel", _scanDataMetal.IdLabel);
+                                para.Add("_ocNo", _scanDataMetal.OcNo);
+                                para.Add("_boxId", _scanDataMetal.BoxNo);
+                                para.Add("_productNumber", _scanDataMetal.ProductNumber);
+                                para.Add("_productName", _scanDataMetal.ProductName);
+                                para.Add("_quantity", _scanDataMetal.Quantity);
+                                para.Add("_scannerStation", "Identification");
+                                para.Add("_reason", "Hàng từ sản xuất nhưng chưa nhập bất kỳ kho nào.");
+                                para.Add("_grossWeight", _scanDataMetal.GrossWeight);
+                                para.Add("@_deviationPairs", _scanDataMetal.DeviationPairs);
+                                para.Add("@_deviationWeight", _scanDataMetal.Deviation);
+
+                                connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
+
+                                return;
+                            }
+                        }
+                        else if (checkDecoration == null) { _metalScannerStatus = 1; return; }
+
+                        para1 = new DynamicParameters();
                         para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1808.");
                         para1.Add("@MessageTemplate", $"{barcodeString}");
                         para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                         connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
 
-                        //nếu tem ko có trong kho nào, hoặc đã có trong kho mà khác kho 4(production) thì stockIn vào kho 1223
+                        //nếu tem ko có trong kho nào, và item hàng sơn thì stockIn vào kho 1808 kho repacking hàng đi sơn về.
                         GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 1808, connection);
                         Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
 
