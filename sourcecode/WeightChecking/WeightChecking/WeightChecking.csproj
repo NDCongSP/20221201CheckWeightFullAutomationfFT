@@ -256,6 +256,7 @@
     <Compile Include="Enums\RolesEnum.cs" />
     <Compile Include="Enums\StationEnum.cs" />
     <Compile Include="Events\CustomEvents.cs" />
+    <Compile Include="Models\FT050Model.cs" />
     <Compile Include="Models\MetalScanResultModel.cs" />
     <Compile Include="Views\frmDeleteBox.cs">
       <SubType>Form</SubType>
