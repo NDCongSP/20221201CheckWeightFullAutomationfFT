@@ -1772,6 +1772,7 @@ namespace WeightChecking
                                         }
 
                                         _approvePrint = true;//cho phép in
+                                        LogDataScan();
 
                                         //bat den xanh 
                                         GlobalVariables.MyEvent.StatusLightPLC = 2;
@@ -2114,6 +2115,7 @@ namespace WeightChecking
                                     #endregion
 
                                     _approvePrint = true;
+                                    LogDataScan();
 
                                     SendDynamicString($"{idLabel}  {passMetal}"
                                                         , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
@@ -2895,107 +2897,107 @@ namespace WeightChecking
                     //tính lại tỷ lệ khối lượng số đôi lỗi/ StdGrossWeight của lần scan này để log
                     //_scanDataWeight.RatioFailWeight = Math.Round((Math.Abs(_scanDataWeight.DeviationPairs) * _scanDataWeight.AveWeight1Prs) / _scanDataWeight.StdGrossWeight, 3);
 
-                    if (_approvePrint)
-                    {
-                        _approvePrint = false;
-                        using (var connection = GlobalVariables.GetDbConnection())
-                        {
-                            connection.Open();
+                    //if (_approvePrint)
+                    //{
+                    //    _approvePrint = false;
+                    //    using (var connection = GlobalVariables.GetDbConnection())
+                    //    {
+                    //        connection.Open();
 
-                            using (var transaction = connection.BeginTransaction())
-                            {
-                                try
-                                {
-                                    var para = new DynamicParameters();
-                                    para.Add("@BarcodeString", _scanDataWeight.BarcodeString);
-                                    para.Add("@IdLabel", _scanDataWeight.IdLabel);
-                                    para.Add("@OcNo", _scanDataWeight.OcNo);
-                                    para.Add("@ProductNumber", _scanDataWeight.ProductNumber);
-                                    para.Add("@ProductName", _scanDataWeight.ProductName);
-                                    para.Add("@Quantity", _scanDataWeight.Quantity);
-                                    para.Add("@LinePosNo", _scanDataWeight.LinePosNo);
-                                    para.Add("@Unit", _scanDataWeight.Unit);
-                                    para.Add("@BoxNo", _scanDataWeight.BoxNo);
-                                    para.Add("@CustomerNo", _scanDataWeight.CustomerNo);
-                                    para.Add("@Location", _scanDataWeight.Location);
-                                    para.Add("@BoxPosNo", _scanDataWeight.BoxPosNo);
-                                    para.Add("@Note", _scanDataWeight.Note);
-                                    para.Add("@Brand", _scanDataWeight.Brand);
-                                    para.Add("@Decoration", _scanDataWeight.Decoration);
-                                    para.Add("@MetalScan", _scanDataWeight.MetalScan);
-                                    para.Add("@ActualMetalScan", _scanDataWeight.ActualMetalScan);
-                                    para.Add("@AveWeight1Prs", _scanDataWeight.AveWeight1Prs);
-                                    para.Add("@StdNetWeight", _scanDataWeight.StdNetWeight);
-                                    para.Add("@LowerTolerance", _scanDataWeight.LowerTolerance);
-                                    para.Add("@UpperTolerance", _scanDataWeight.UpperTolerance);
-                                    para.Add("@Boxweight", _scanDataWeight.BoxWeight);
-                                    para.Add("@PackageWeight", _scanDataWeight.PackageWeight);
-                                    para.Add("@StdGrossWeight", _scanDataWeight.StdGrossWeight);
-                                    para.Add("@GrossWeight", _scanDataWeight.GrossWeight);
-                                    para.Add("@NetWeight", _scanDataWeight.NetWeight);
-                                    para.Add("@Deviation", _scanDataWeight.Deviation);
-                                    para.Add("@Pass", _scanDataWeight.Pass);
-                                    para.Add("Status", _scanDataWeight.Status);
-                                    para.Add("CalculatedPairs", _scanDataWeight.CalculatedPairs);
-                                    para.Add("DeviationPairs", _scanDataWeight.DeviationPairs);
-                                    para.Add("CreatedBy", _scanDataWeight.CreatedBy);
-                                    para.Add("Station", _scanDataWeight.Station);
-                                    para.Add("CreatedDate", _scanDataWeight.CreatedDate);
-                                    para.Add("ApprovedBy", _scanDataWeight.ApprovedBy);
-                                    para.Add("ActualDeviationPairs", _scanDataWeight.ActualDeviationPairs);
-                                    para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
-                                    para.Add("ProductCategory", _scanDataWeight.ProductCategory);
-                                    para.Add("LotNo", _scanDataWeight.LotNo);
-                                    //para.Add("Id", ParameterDirection.Output, DbType.Guid);
+                    //        using (var transaction = connection.BeginTransaction())
+                    //        {
+                    //            try
+                    //            {
+                    //                var para = new DynamicParameters();
+                    //                para.Add("@BarcodeString", _scanDataWeight.BarcodeString);
+                    //                para.Add("@IdLabel", _scanDataWeight.IdLabel);
+                    //                para.Add("@OcNo", _scanDataWeight.OcNo);
+                    //                para.Add("@ProductNumber", _scanDataWeight.ProductNumber);
+                    //                para.Add("@ProductName", _scanDataWeight.ProductName);
+                    //                para.Add("@Quantity", _scanDataWeight.Quantity);
+                    //                para.Add("@LinePosNo", _scanDataWeight.LinePosNo);
+                    //                para.Add("@Unit", _scanDataWeight.Unit);
+                    //                para.Add("@BoxNo", _scanDataWeight.BoxNo);
+                    //                para.Add("@CustomerNo", _scanDataWeight.CustomerNo);
+                    //                para.Add("@Location", _scanDataWeight.Location);
+                    //                para.Add("@BoxPosNo", _scanDataWeight.BoxPosNo);
+                    //                para.Add("@Note", _scanDataWeight.Note);
+                    //                para.Add("@Brand", _scanDataWeight.Brand);
+                    //                para.Add("@Decoration", _scanDataWeight.Decoration);
+                    //                para.Add("@MetalScan", _scanDataWeight.MetalScan);
+                    //                para.Add("@ActualMetalScan", _scanDataWeight.ActualMetalScan);
+                    //                para.Add("@AveWeight1Prs", _scanDataWeight.AveWeight1Prs);
+                    //                para.Add("@StdNetWeight", _scanDataWeight.StdNetWeight);
+                    //                para.Add("@LowerTolerance", _scanDataWeight.LowerTolerance);
+                    //                para.Add("@UpperTolerance", _scanDataWeight.UpperTolerance);
+                    //                para.Add("@Boxweight", _scanDataWeight.BoxWeight);
+                    //                para.Add("@PackageWeight", _scanDataWeight.PackageWeight);
+                    //                para.Add("@StdGrossWeight", _scanDataWeight.StdGrossWeight);
+                    //                para.Add("@GrossWeight", _scanDataWeight.GrossWeight);
+                    //                para.Add("@NetWeight", _scanDataWeight.NetWeight);
+                    //                para.Add("@Deviation", _scanDataWeight.Deviation);
+                    //                para.Add("@Pass", _scanDataWeight.Pass);
+                    //                para.Add("Status", _scanDataWeight.Status);
+                    //                para.Add("CalculatedPairs", _scanDataWeight.CalculatedPairs);
+                    //                para.Add("DeviationPairs", _scanDataWeight.DeviationPairs);
+                    //                para.Add("CreatedBy", _scanDataWeight.CreatedBy);
+                    //                para.Add("Station", _scanDataWeight.Station);
+                    //                para.Add("CreatedDate", _scanDataWeight.CreatedDate);
+                    //                para.Add("ApprovedBy", _scanDataWeight.ApprovedBy);
+                    //                para.Add("ActualDeviationPairs", _scanDataWeight.ActualDeviationPairs);
+                    //                para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
+                    //                para.Add("ProductCategory", _scanDataWeight.ProductCategory);
+                    //                para.Add("LotNo", _scanDataWeight.LotNo);
+                    //                //para.Add("Id", ParameterDirection.Output, DbType.Guid);
 
-                                    connection.Execute("sp_tblScanDataInsert", para, commandType: CommandType.StoredProcedure, transaction: transaction);
+                    //                connection.Execute("sp_tblScanDataInsert", para, commandType: CommandType.StoredProcedure, transaction: transaction);
 
-                                    transaction.Commit();
-                                }
-                                catch (Exception ex)
-                                {
-                                    transaction.Rollback();
+                    //                transaction.Commit();
+                    //            }
+                    //            catch (Exception ex)
+                    //            {
+                    //                transaction.Rollback();
 
-                                    //ghi giá trị xuống PLC cân reject
-                                    GlobalVariables.MyEvent.WeightPusher = 1;
+                    //                //ghi giá trị xuống PLC cân reject
+                    //                GlobalVariables.MyEvent.WeightPusher = 1;
 
-                                    //bat den đỏ 
-                                    GlobalVariables.MyEvent.StatusLightPLC = 1;
+                    //                //bat den đỏ 
+                    //                GlobalVariables.MyEvent.StatusLightPLC = 1;
 
-                                    if (this.InvokeRequired)
-                                    {
-                                        this.Invoke(new Action(() =>
-                                        {
-                                            labResult.Text = "Fail Printing";
-                                            labResult.BackColor = Color.Red;
-                                            labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labResult.Text = "Fail Printing";
-                                        labResult.BackColor = Color.Red;
-                                        labResult.ForeColor = Color.White;
-                                        labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
-                                    }
+                    //                if (this.InvokeRequired)
+                    //                {
+                    //                    this.Invoke(new Action(() =>
+                    //                    {
+                    //                        labResult.Text = "Fail Printing";
+                    //                        labResult.BackColor = Color.Red;
+                    //                        labResult.ForeColor = Color.White;
+                    //                        labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
+                    //                    }));
+                    //                }
+                    //                else
+                    //                {
+                    //                    labResult.Text = "Fail Printing";
+                    //                    labResult.BackColor = Color.Red;
+                    //                    labResult.ForeColor = Color.White;
+                    //                    labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
+                    //                }
 
-                                    Log.Error(ex, $"Lỗi không insert vào DB được.{ex.ToString()}");
-                                }
-                                finally
-                                {
-                                    _scanDataWeight = null;
-                                    _scanDataWeight = new tblScanDataModel();
-                                }
-                            }
+                    //                Log.Error(ex, $"Lỗi không insert vào DB được.{ex.ToString()}");
+                    //            }
+                    //            finally
+                    //            {
+                    //                _scanDataWeight = null;
+                    //                _scanDataWeight = new tblScanDataModel();
+                    //            }
+                    //        }
 
-                        }
-                    }
+                    //    }
+                    //}
                     #endregion
 
                     //reset model;
-                    //_scanDataWeight = null;
-                    //_scanDataWeight = new tblScanDataModel();
+                    _scanDataWeight = null;
+                    _scanDataWeight = new tblScanDataModel();
                     //xoa string
                     //SendDynamicString(" ", " ", " ");
                 }
@@ -3616,5 +3618,105 @@ namespace WeightChecking
             _readQrStatus[1] = false;//xóa biến này cho lần đọc kế tiếp
         }
         #endregion
+
+        void LogDataScan()
+        {
+            if (_approvePrint)
+            {
+                _approvePrint = false;
+                using (var connection = GlobalVariables.GetDbConnection())
+                {
+                    connection.Open();
+
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            var para = new DynamicParameters();
+                            para.Add("@BarcodeString", _scanDataWeight.BarcodeString);
+                            para.Add("@IdLabel", _scanDataWeight.IdLabel);
+                            para.Add("@OcNo", _scanDataWeight.OcNo);
+                            para.Add("@ProductNumber", _scanDataWeight.ProductNumber);
+                            para.Add("@ProductName", _scanDataWeight.ProductName);
+                            para.Add("@Quantity", _scanDataWeight.Quantity);
+                            para.Add("@LinePosNo", _scanDataWeight.LinePosNo);
+                            para.Add("@Unit", _scanDataWeight.Unit);
+                            para.Add("@BoxNo", _scanDataWeight.BoxNo);
+                            para.Add("@CustomerNo", _scanDataWeight.CustomerNo);
+                            para.Add("@Location", _scanDataWeight.Location);
+                            para.Add("@BoxPosNo", _scanDataWeight.BoxPosNo);
+                            para.Add("@Note", _scanDataWeight.Note);
+                            para.Add("@Brand", _scanDataWeight.Brand);
+                            para.Add("@Decoration", _scanDataWeight.Decoration);
+                            para.Add("@MetalScan", _scanDataWeight.MetalScan);
+                            para.Add("@ActualMetalScan", _scanDataWeight.ActualMetalScan);
+                            para.Add("@AveWeight1Prs", _scanDataWeight.AveWeight1Prs);
+                            para.Add("@StdNetWeight", _scanDataWeight.StdNetWeight);
+                            para.Add("@LowerTolerance", _scanDataWeight.LowerTolerance);
+                            para.Add("@UpperTolerance", _scanDataWeight.UpperTolerance);
+                            para.Add("@Boxweight", _scanDataWeight.BoxWeight);
+                            para.Add("@PackageWeight", _scanDataWeight.PackageWeight);
+                            para.Add("@StdGrossWeight", _scanDataWeight.StdGrossWeight);
+                            para.Add("@GrossWeight", _scanDataWeight.GrossWeight);
+                            para.Add("@NetWeight", _scanDataWeight.NetWeight);
+                            para.Add("@Deviation", _scanDataWeight.Deviation);
+                            para.Add("@Pass", _scanDataWeight.Pass);
+                            para.Add("Status", _scanDataWeight.Status);
+                            para.Add("CalculatedPairs", _scanDataWeight.CalculatedPairs);
+                            para.Add("DeviationPairs", _scanDataWeight.DeviationPairs);
+                            para.Add("CreatedBy", _scanDataWeight.CreatedBy);
+                            para.Add("Station", _scanDataWeight.Station);
+                            para.Add("CreatedDate", _scanDataWeight.CreatedDate);
+                            para.Add("ApprovedBy", _scanDataWeight.ApprovedBy);
+                            para.Add("ActualDeviationPairs", _scanDataWeight.ActualDeviationPairs);
+                            para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
+                            para.Add("ProductCategory", _scanDataWeight.ProductCategory);
+                            para.Add("LotNo", _scanDataWeight.LotNo);
+                            //para.Add("Id", ParameterDirection.Output, DbType.Guid);
+
+                            connection.Execute("sp_tblScanDataInsert", para, commandType: CommandType.StoredProcedure, transaction: transaction);
+
+                            transaction.Commit();
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+
+                            //ghi giá trị xuống PLC cân reject
+                            GlobalVariables.MyEvent.WeightPusher = 1;
+
+                            //bat den đỏ 
+                            GlobalVariables.MyEvent.StatusLightPLC = 1;
+
+                            if (this.InvokeRequired)
+                            {
+                                this.Invoke(new Action(() =>
+                                {
+                                    labResult.Text = "Fail Printing";
+                                    labResult.BackColor = Color.Red;
+                                    labResult.ForeColor = Color.White;
+                                    labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
+                                }));
+                            }
+                            else
+                            {
+                                labResult.Text = "Fail Printing";
+                                labResult.BackColor = Color.Red;
+                                labResult.ForeColor = Color.White;
+                                labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
+                            }
+
+                            Log.Error(ex, $"Lỗi không insert vào DB được.{ex.ToString()}");
+                        }
+                        finally
+                        {
+                            //_scanDataWeight = null;
+                            //_scanDataWeight = new tblScanDataModel();
+                        }
+                    }
+
+                }
+            }
+        }
     }
 }
