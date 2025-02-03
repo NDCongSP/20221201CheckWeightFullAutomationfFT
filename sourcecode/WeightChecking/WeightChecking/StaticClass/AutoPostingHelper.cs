@@ -13,8 +13,10 @@ namespace WeightChecking.StaticClass
 {
     public class AutoPostingHelper
     {
-        public static string AutoTransfer(string productNumber, string barcodeString, int fromWH, int toWH, IDbConnection connection, DateTime scantime)
+        public static string AutoTransfer(bool isEnable, string productNumber, string barcodeString, int fromWH, int toWH, IDbConnection connection, DateTime scantime)
         {
+            if (!isEnable) return null;
+            
             try
             {
                 // xử lý insert RackStorage 
@@ -115,8 +117,10 @@ namespace WeightChecking.StaticClass
             }
         }
 
-        public static string AutoStockIn(string productNumber, string barcodeString, int toWH, IDbConnection connection)
+        public static string AutoStockIn(bool isEnable, string productNumber, string barcodeString, int toWH, IDbConnection connection)
         {
+            if (!isEnable) return null;
+
             try
             {
                 // xử lý insert RackStorage 
@@ -217,8 +221,10 @@ namespace WeightChecking.StaticClass
             }
         }
 
-        public static string AutoStockOut(string productNumber, string barcodeString, int fromWH, IDbConnection connection)
+        public static string AutoStockOut(bool isEnable, string productNumber, string barcodeString, int fromWH, IDbConnection connection)
         {
+            if (!isEnable) return null;
+
             // xử lý insert RackStorage 
 
             // check nếu QRCode hiện tại có nằm trong kho
@@ -284,8 +290,10 @@ namespace WeightChecking.StaticClass
         /// <param name="toWH"></param>
         /// <param name="connection"></param>
         /// <returns>(int,String)</returns>
-        public static List<FT050Model> CheckIn(string productNumber, string barcodeString, IDbConnection connection)
+        public static List<FT050Model> CheckIn(bool isEnable, string productNumber, string barcodeString, IDbConnection connection)
         {
+            if (!isEnable) return null;
+
             // xử lý insert RackStorage 
             var arr = barcodeString.Split('|');
             var arr1 = arr[0].Split(',');
