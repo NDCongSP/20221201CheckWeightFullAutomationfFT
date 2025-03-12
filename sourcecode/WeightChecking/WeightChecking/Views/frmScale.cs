@@ -307,11 +307,11 @@ namespace WeightChecking
                             #region Auto Stock In to 1223 if Box come to QC
                             //kiểm tra thùng hàng ko có trong kho production hand ove WH (1185) là cho stock in vao kho QC hand over WH (1223)
 
-                            var res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString, connection);
-                            var accept = res1.FirstOrDefault();
+                            var res1 = AutoPostingHelper.CheckIn(false, _scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString, connection);
+                            var accept = res1?.FirstOrDefault();
 
                             var para1 = new DynamicParameters();
-                            para1.Add("@Message", $"Metal sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}.");
+                            para1.Add("@Message", $"Metal sp_lmpScannerClient_ScanningLabel_CheckIn = {res1?.Count}.");
                             para1.Add("@MessageTemplate", $"{_scanDataMetal.BarcodeString}");
                             para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                             connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
@@ -324,7 +324,7 @@ namespace WeightChecking
                                 para.Add("Exception", null);
                                 connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                                GlobalVariables.AutoPostingStatus2 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString
+                                GlobalVariables.AutoPostingStatus2 = AutoPostingHelper.AutoTransfer(false, _scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString
                                     , Convert.ToInt16(accept.C004), 964, connection, DateTime.Now);
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
@@ -342,11 +342,11 @@ namespace WeightChecking
                             /////kiểm tra xem có trong 964 ko? nếu có thì mới transfer. không có thì ko làm gì cả
                             #region Auto Stock In to 1223 if Box come to QC
                             //kiểm tra thùng hàng ko có trong kho production hand ove WH (1185) là cho stock in vao kho QC hand over WH (1223)
-                            var res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString, connection);
-                            var accept = res1.FirstOrDefault(x => x.C004 == "964");
+                            var res1 = AutoPostingHelper.CheckIn(false, _scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString, connection);
+                            var accept = res1?.FirstOrDefault(x => x.C004 == "964");
 
                             var para1 = new DynamicParameters();
-                            para1.Add("@Message", $"Metal sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}.");
+                            para1.Add("@Message", $"Metal sp_lmpScannerClient_ScanningLabel_CheckIn = {res1?.Count}.");
                             para1.Add("@MessageTemplate", $"{_scanDataMetal.BarcodeString}");
                             para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                             connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
@@ -359,7 +359,7 @@ namespace WeightChecking
                                 para.Add("Exception", null);
                                 connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                                GlobalVariables.AutoPostingStatus2 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString
+                                GlobalVariables.AutoPostingStatus2 = AutoPostingHelper.AutoTransfer(false, _scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString
                                     , Convert.ToInt16(accept.C004), Convert.ToInt16(accept.C021), connection, DateTime.Now);
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
@@ -650,80 +650,81 @@ namespace WeightChecking
 
                     #region Auto Stock In to 1223 if Box come to QC, update 20240819
                     //kiểm tra thùng hàng ko có trong kho production hand ove WH (1185) là cho stock in vao kho QC hand over WH (1223)
-                    var res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, connection);
-                    var accept = res1.FirstOrDefault();
+                    var res1 = AutoPostingHelper.CheckIn(false, _scanDataMetal.ProductNumber, barcodeString, connection);
+                    var accept = res1?.FirstOrDefault();
 
                     var para1 = new DynamicParameters();
-                    para1.Add("@Message", $"Before|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}.");
+                    para1.Add("@Message", $"Before|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1?.Count}.");
                     para1.Add("@MessageTemplate", $"{barcodeString}");
                     para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                     connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
 
+                    //khi nào mở lại tính năng auto posting thì mở đoạn comment dưới ra lại
                     if (accept == null)
                     {
-                        para1 = new DynamicParameters();
-                        para1.Add("itemCode", _scanDataMetal.ProductNumber);
-                        var checkDecoration = connection.Query<WinlineDataModel>("sp_IdcScanScaleGetCoreDataByItemCode",param:para1,commandType:CommandType.StoredProcedure).FirstOrDefault();
+                        //para1 = new DynamicParameters();
+                        //para1.Add("itemCode", _scanDataMetal.ProductNumber);
+                        //var checkDecoration = connection.Query<WinlineDataModel>("sp_IdcScanScaleGetCoreDataByItemCode", param: para1, commandType: CommandType.StoredProcedure).FirstOrDefault();
 
-                        if (checkDecoration != null)
-                        {
-                            if (checkDecoration.Decoration == 0)
-                            {
-                                GlobalVariables.InvokeIfRequired(this, () =>
-                                {
-                                    labErrInfoMetal.Text = "Hàng từ sản xuất nhưng chưa nhập bất kỳ kho nào.";
-                                });
+                        //if (checkDecoration != null)
+                        //{
+                        //    if (checkDecoration.Decoration == 0)
+                        //    {
+                        //        GlobalVariables.InvokeIfRequired(this, () =>
+                        //        {
+                        //            labErrInfoMetal.Text = "Hàng từ sản xuất nhưng chưa nhập bất kỳ kho nào.";
+                        //        });
 
-                                _metalScannerStatus = 1;//bao reject cho PLC
+                        //        _metalScannerStatus = 1;//bao reject cho PLC
 
-                                //log vao bang reject
-                                para = null;
-                                para = new DynamicParameters();
-                                para.Add("_barcodeString", _scanDataMetal.BarcodeString);
-                                para.Add("_idLabel", _scanDataMetal.IdLabel);
-                                para.Add("_ocNo", _scanDataMetal.OcNo);
-                                para.Add("_boxId", _scanDataMetal.BoxNo);
-                                para.Add("_productNumber", _scanDataMetal.ProductNumber);
-                                para.Add("_productName", _scanDataMetal.ProductName);
-                                para.Add("_quantity", _scanDataMetal.Quantity);
-                                para.Add("_scannerStation", "Identification");
-                                para.Add("_reason", "Hàng từ sản xuất nhưng chưa nhập bất kỳ kho nào.");
-                                para.Add("_grossWeight", _scanDataMetal.GrossWeight);
-                                para.Add("@_deviationPairs", _scanDataMetal.DeviationPairs);
-                                para.Add("@_deviationWeight", _scanDataMetal.Deviation);
+                        //        //log vao bang reject
+                        //        para = null;
+                        //        para = new DynamicParameters();
+                        //        para.Add("_barcodeString", _scanDataMetal.BarcodeString);
+                        //        para.Add("_idLabel", _scanDataMetal.IdLabel);
+                        //        para.Add("_ocNo", _scanDataMetal.OcNo);
+                        //        para.Add("_boxId", _scanDataMetal.BoxNo);
+                        //        para.Add("_productNumber", _scanDataMetal.ProductNumber);
+                        //        para.Add("_productName", _scanDataMetal.ProductName);
+                        //        para.Add("_quantity", _scanDataMetal.Quantity);
+                        //        para.Add("_scannerStation", "Identification");
+                        //        para.Add("_reason", "Hàng từ sản xuất nhưng chưa nhập bất kỳ kho nào.");
+                        //        para.Add("_grossWeight", _scanDataMetal.GrossWeight);
+                        //        para.Add("@_deviationPairs", _scanDataMetal.DeviationPairs);
+                        //        para.Add("@_deviationWeight", _scanDataMetal.Deviation);
 
-                                connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
+                        //        connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
 
-                                return;
-                            }
-                        }
-                        else if (checkDecoration == null) { _metalScannerStatus = 1; return; }
+                        //        return;
+                        //    }
+                        //}
+                        //else if (checkDecoration == null) { _metalScannerStatus = 1; return; }
 
-                        para1 = new DynamicParameters();
-                        para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1808.");
-                        para1.Add("@MessageTemplate", $"{barcodeString}");
-                        para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
-                        connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
+                        //para1 = new DynamicParameters();
+                        //para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1?.Count}. to 1808.");
+                        //para1.Add("@MessageTemplate", $"{barcodeString}");
+                        //para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
+                        //connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
 
-                        //nếu tem ko có trong kho nào, và item hàng sơn thì stockIn vào kho 1808 kho repacking hàng đi sơn về.
-                        GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoStockIn(_scanDataMetal.ProductNumber, barcodeString, 1808, connection);
-                        Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
+                        ////nếu tem ko có trong kho nào, và item hàng sơn thì stockIn vào kho 1808 kho repacking hàng đi sơn về.
+                        //GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoStockIn(false, _scanDataMetal.ProductNumber, barcodeString, 1808, connection);
+                        //Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
 
-                        GlobalVariables.InvokeIfRequired(this, () =>
-                        {
-                            labErrInfoMetal.Text = GlobalVariables.AutoPostingStatus1;
-                        });
+                        //GlobalVariables.InvokeIfRequired(this, () =>
+                        //{
+                        //    labErrInfoMetal.Text = GlobalVariables.AutoPostingStatus1;
+                        //});
                     }
                     //nếu tem nằm trong kho sản xuất, tức là công nhân quên transfer qua kho 1185, vào transfer tự động qua kho 1185
                     else if (accept != null && accept.C004 == "4")
                     {
                         para1 = new DynamicParameters();
-                        para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 1185.");
+                        para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1?.Count}. to 1185.");
                         para1.Add("@MessageTemplate", $"{barcodeString}");
                         para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                         connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
 
-                        GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
+                        GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoTransfer(false, _scanDataMetal.ProductNumber, barcodeString
                             , Convert.ToInt16(accept.C004), 1185, connection, DateTime.Now);
                         Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
 
@@ -765,11 +766,11 @@ namespace WeightChecking
                             {
                                 #region Auto Stock In to 1223 if Box come to QC, update 20240819
                                 //kiểm tra thùng hàng ko có trong kho production hand ove WH (1185) là cho stock in vao kho QC hand over WH (1223)
-                                res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, connection);
-                                accept = res1.FirstOrDefault();
+                                res1 = AutoPostingHelper.CheckIn(false, _scanDataMetal.ProductNumber, barcodeString, connection);
+                                accept = res1?.FirstOrDefault();
 
                                 para1 = new DynamicParameters();
-                                para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1.Count}. to 2 .");
+                                para1.Add("@Message", $"After|Scanner 1 sp_lmpScannerClient_ScanningLabel_CheckIn = {res1?.Count}. to 2 .");
                                 para1.Add("@MessageTemplate", $"{barcodeString}");
                                 para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                                 connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
@@ -780,7 +781,7 @@ namespace WeightChecking
                                     if (_scanDataMetal.OcNo.Substring(0, 2) == "PR") whTo = 10;
 
                                     //nếu tem ko có trong kho nào, hoặc đã có trong kho mà khác kho 4(production) thì stockIn vào kho 1223
-                                    GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
+                                    GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoTransfer(false, _scanDataMetal.ProductNumber, barcodeString
                                         , Convert.ToInt16(accept.C004), whTo, connection, DateTime.Now);
                                     Log.Information($"Auto post Scanner 1 | {GlobalVariables.AutoPostingStatus1}");
 
@@ -1734,44 +1735,8 @@ namespace WeightChecking
                                     //kiểm tra xem data đã có trên hệ thống hay chưa
                                     if (statusLogData == 0 || statusLogData == 1)
                                     {
-                                        //Auto transfer tem về kho 2 hoặc 10 ( hàng đi sơn)
-                                        var res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, connection);
-                                        var accept = res1.FirstOrDefault();
-
-                                        var para1 = new DynamicParameters();
-                                        para1.Add("@Message", $"Check Weight sp_lmpScannerClient_ScanningLabel_CheckIn =  {res1.Count}.");
-                                        para1.Add("@MessageTemplate", $"{barcodeString}");
-                                        para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
-                                        connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
-
-                                        if (accept != null)
-                                        {
-                                            var whFrom = Convert.ToInt16(accept.C004);
-                                            var whTo = 2;
-
-                                            if (_scanDataWeight.OcNo.Substring(0, 2) == "PR") whTo = 10;
-
-                                            #region Kiểm tra xem tem có nằm ở kho lỗi trước đó thì chuyển về 1185/1223 rồi mới chuyển vào kho 2/10
-                                            if (accept.C004 == "964" || accept.C004 == "965")
-                                            {
-                                                GlobalVariables.AutoPostingStatus3 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
-                                               , Convert.ToInt16(accept.C004), Convert.ToInt16(accept.C021), connection, DateTime.Now);
-
-                                                //lấy lại code kho đi
-                                                whFrom = Convert.ToInt16(accept.C021);
-                                            }
-                                            #endregion
-
-                                            GlobalVariables.AutoPostingStatus3 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
-                                               , whFrom, whTo, connection, DateTime.Now.AddSeconds(5));
-
-                                            GlobalVariables.InvokeIfRequired(this, () =>
-                                            {
-                                                labErrInfoScale.Text = GlobalVariables.AutoPostingStatus3;
-                                            });
-                                        }
-
                                         _approvePrint = true;//cho phép in
+                                        LogDataScan();
 
                                         //bat den xanh 
                                         GlobalVariables.MyEvent.StatusLightPLC = 2;
@@ -1826,6 +1791,43 @@ namespace WeightChecking
                                             //para.Add("Level", "Log");
                                             //connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
                                         }
+
+                                        //Auto transfer tem về kho 2 hoặc 10 ( hàng đi sơn)
+                                        var res1 = AutoPostingHelper.CheckIn(false, _scanDataMetal.ProductNumber, barcodeString, connection);
+                                        var accept = res1?.FirstOrDefault();
+
+                                        var para1 = new DynamicParameters();
+                                        para1.Add("@Message", $"Check Weight sp_lmpScannerClient_ScanningLabel_CheckIn =  {res1?.Count}.");
+                                        para1.Add("@MessageTemplate", $"{barcodeString}");
+                                        para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
+                                        connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
+
+                                        if (accept != null)
+                                        {
+                                            var whFrom = Convert.ToInt16(accept.C004);
+                                            var whTo = 2;
+
+                                            if (_scanDataWeight.OcNo.Substring(0, 2) == "PR") whTo = 10;
+
+                                            #region Kiểm tra xem tem có nằm ở kho lỗi trước đó thì chuyển về 1185/1223 rồi mới chuyển vào kho 2/10
+                                            if (accept.C004 == "964" || accept.C004 == "965")
+                                            {
+                                                GlobalVariables.AutoPostingStatus3 = AutoPostingHelper.AutoTransfer(false, _scanDataMetal.ProductNumber, barcodeString
+                                               , Convert.ToInt16(accept.C004), Convert.ToInt16(accept.C021), connection, DateTime.Now);
+
+                                                //lấy lại code kho đi
+                                                whFrom = Convert.ToInt16(accept.C021);
+                                            }
+                                            #endregion
+
+                                            GlobalVariables.AutoPostingStatus3 = AutoPostingHelper.AutoTransfer(false, _scanDataMetal.ProductNumber, barcodeString
+                                               , whFrom, whTo, connection, DateTime.Now.AddSeconds(5));
+
+                                            GlobalVariables.InvokeIfRequired(this, () =>
+                                            {
+                                                labErrInfoScale.Text = GlobalVariables.AutoPostingStatus3;
+                                            });
+                                        }
                                     }
                                     else
                                     {
@@ -1872,17 +1874,17 @@ namespace WeightChecking
                                     //transfer from WH in comming to 965
                                     //đến đây thì chắc chắn nó đang nằm ở 1185 hoặc 1223
                                     #region Auto transfer 
-                                    var res1 = AutoPostingHelper.CheckIn(_scanDataMetal.ProductNumber, barcodeString, connection);
-                                    var accept = res1.FirstOrDefault();
+                                    var res1 = AutoPostingHelper.CheckIn(false, _scanDataMetal.ProductNumber, barcodeString, connection);
+                                    var accept = res1?.FirstOrDefault();
 
                                     var para1 = new DynamicParameters();
-                                    para1.Add("@Message", $"Check Weight sp_lmpScannerClient_ScanningLabel_CheckIn =  {res1.Count}.");
+                                    para1.Add("@Message", $"Check Weight sp_lmpScannerClient_ScanningLabel_CheckIn =  {res1?.Count}.");
                                     para1.Add("@MessageTemplate", $"{barcodeString}");
                                     para1.Add("Level", "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn");
                                     connection.Execute("sp_tblLog_Insert", param: para1, commandType: CommandType.StoredProcedure);
                                     if (accept != null)
                                     {
-                                        GlobalVariables.AutoPostingStatus3 = AutoPostingHelper.AutoTransfer(_scanDataMetal.ProductNumber, barcodeString
+                                        GlobalVariables.AutoPostingStatus3 = AutoPostingHelper.AutoTransfer(false, _scanDataMetal.ProductNumber, barcodeString
                                             , Convert.ToInt16(accept.C004), 965, connection, DateTime.Now);
 
                                         GlobalVariables.InvokeIfRequired(this, () =>
@@ -2114,6 +2116,7 @@ namespace WeightChecking
                                     #endregion
 
                                     _approvePrint = true;
+                                    LogDataScan();
 
                                     SendDynamicString($"{idLabel}  {passMetal}"
                                                         , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
@@ -2895,107 +2898,107 @@ namespace WeightChecking
                     //tính lại tỷ lệ khối lượng số đôi lỗi/ StdGrossWeight của lần scan này để log
                     //_scanDataWeight.RatioFailWeight = Math.Round((Math.Abs(_scanDataWeight.DeviationPairs) * _scanDataWeight.AveWeight1Prs) / _scanDataWeight.StdGrossWeight, 3);
 
-                    if (_approvePrint)
-                    {
-                        _approvePrint = false;
-                        using (var connection = GlobalVariables.GetDbConnection())
-                        {
-                            connection.Open();
+                    //if (_approvePrint)
+                    //{
+                    //    _approvePrint = false;
+                    //    using (var connection = GlobalVariables.GetDbConnection())
+                    //    {
+                    //        connection.Open();
 
-                            using (var transaction = connection.BeginTransaction())
-                            {
-                                try
-                                {
-                                    var para = new DynamicParameters();
-                                    para.Add("@BarcodeString", _scanDataWeight.BarcodeString);
-                                    para.Add("@IdLabel", _scanDataWeight.IdLabel);
-                                    para.Add("@OcNo", _scanDataWeight.OcNo);
-                                    para.Add("@ProductNumber", _scanDataWeight.ProductNumber);
-                                    para.Add("@ProductName", _scanDataWeight.ProductName);
-                                    para.Add("@Quantity", _scanDataWeight.Quantity);
-                                    para.Add("@LinePosNo", _scanDataWeight.LinePosNo);
-                                    para.Add("@Unit", _scanDataWeight.Unit);
-                                    para.Add("@BoxNo", _scanDataWeight.BoxNo);
-                                    para.Add("@CustomerNo", _scanDataWeight.CustomerNo);
-                                    para.Add("@Location", _scanDataWeight.Location);
-                                    para.Add("@BoxPosNo", _scanDataWeight.BoxPosNo);
-                                    para.Add("@Note", _scanDataWeight.Note);
-                                    para.Add("@Brand", _scanDataWeight.Brand);
-                                    para.Add("@Decoration", _scanDataWeight.Decoration);
-                                    para.Add("@MetalScan", _scanDataWeight.MetalScan);
-                                    para.Add("@ActualMetalScan", _scanDataWeight.ActualMetalScan);
-                                    para.Add("@AveWeight1Prs", _scanDataWeight.AveWeight1Prs);
-                                    para.Add("@StdNetWeight", _scanDataWeight.StdNetWeight);
-                                    para.Add("@LowerTolerance", _scanDataWeight.LowerTolerance);
-                                    para.Add("@UpperTolerance", _scanDataWeight.UpperTolerance);
-                                    para.Add("@Boxweight", _scanDataWeight.BoxWeight);
-                                    para.Add("@PackageWeight", _scanDataWeight.PackageWeight);
-                                    para.Add("@StdGrossWeight", _scanDataWeight.StdGrossWeight);
-                                    para.Add("@GrossWeight", _scanDataWeight.GrossWeight);
-                                    para.Add("@NetWeight", _scanDataWeight.NetWeight);
-                                    para.Add("@Deviation", _scanDataWeight.Deviation);
-                                    para.Add("@Pass", _scanDataWeight.Pass);
-                                    para.Add("Status", _scanDataWeight.Status);
-                                    para.Add("CalculatedPairs", _scanDataWeight.CalculatedPairs);
-                                    para.Add("DeviationPairs", _scanDataWeight.DeviationPairs);
-                                    para.Add("CreatedBy", _scanDataWeight.CreatedBy);
-                                    para.Add("Station", _scanDataWeight.Station);
-                                    para.Add("CreatedDate", _scanDataWeight.CreatedDate);
-                                    para.Add("ApprovedBy", _scanDataWeight.ApprovedBy);
-                                    para.Add("ActualDeviationPairs", _scanDataWeight.ActualDeviationPairs);
-                                    para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
-                                    para.Add("ProductCategory", _scanDataWeight.ProductCategory);
-                                    para.Add("LotNo", _scanDataWeight.LotNo);
-                                    //para.Add("Id", ParameterDirection.Output, DbType.Guid);
+                    //        using (var transaction = connection.BeginTransaction())
+                    //        {
+                    //            try
+                    //            {
+                    //                var para = new DynamicParameters();
+                    //                para.Add("@BarcodeString", _scanDataWeight.BarcodeString);
+                    //                para.Add("@IdLabel", _scanDataWeight.IdLabel);
+                    //                para.Add("@OcNo", _scanDataWeight.OcNo);
+                    //                para.Add("@ProductNumber", _scanDataWeight.ProductNumber);
+                    //                para.Add("@ProductName", _scanDataWeight.ProductName);
+                    //                para.Add("@Quantity", _scanDataWeight.Quantity);
+                    //                para.Add("@LinePosNo", _scanDataWeight.LinePosNo);
+                    //                para.Add("@Unit", _scanDataWeight.Unit);
+                    //                para.Add("@BoxNo", _scanDataWeight.BoxNo);
+                    //                para.Add("@CustomerNo", _scanDataWeight.CustomerNo);
+                    //                para.Add("@Location", _scanDataWeight.Location);
+                    //                para.Add("@BoxPosNo", _scanDataWeight.BoxPosNo);
+                    //                para.Add("@Note", _scanDataWeight.Note);
+                    //                para.Add("@Brand", _scanDataWeight.Brand);
+                    //                para.Add("@Decoration", _scanDataWeight.Decoration);
+                    //                para.Add("@MetalScan", _scanDataWeight.MetalScan);
+                    //                para.Add("@ActualMetalScan", _scanDataWeight.ActualMetalScan);
+                    //                para.Add("@AveWeight1Prs", _scanDataWeight.AveWeight1Prs);
+                    //                para.Add("@StdNetWeight", _scanDataWeight.StdNetWeight);
+                    //                para.Add("@LowerTolerance", _scanDataWeight.LowerTolerance);
+                    //                para.Add("@UpperTolerance", _scanDataWeight.UpperTolerance);
+                    //                para.Add("@Boxweight", _scanDataWeight.BoxWeight);
+                    //                para.Add("@PackageWeight", _scanDataWeight.PackageWeight);
+                    //                para.Add("@StdGrossWeight", _scanDataWeight.StdGrossWeight);
+                    //                para.Add("@GrossWeight", _scanDataWeight.GrossWeight);
+                    //                para.Add("@NetWeight", _scanDataWeight.NetWeight);
+                    //                para.Add("@Deviation", _scanDataWeight.Deviation);
+                    //                para.Add("@Pass", _scanDataWeight.Pass);
+                    //                para.Add("Status", _scanDataWeight.Status);
+                    //                para.Add("CalculatedPairs", _scanDataWeight.CalculatedPairs);
+                    //                para.Add("DeviationPairs", _scanDataWeight.DeviationPairs);
+                    //                para.Add("CreatedBy", _scanDataWeight.CreatedBy);
+                    //                para.Add("Station", _scanDataWeight.Station);
+                    //                para.Add("CreatedDate", _scanDataWeight.CreatedDate);
+                    //                para.Add("ApprovedBy", _scanDataWeight.ApprovedBy);
+                    //                para.Add("ActualDeviationPairs", _scanDataWeight.ActualDeviationPairs);
+                    //                para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
+                    //                para.Add("ProductCategory", _scanDataWeight.ProductCategory);
+                    //                para.Add("LotNo", _scanDataWeight.LotNo);
+                    //                //para.Add("Id", ParameterDirection.Output, DbType.Guid);
 
-                                    connection.Execute("sp_tblScanDataInsert", para, commandType: CommandType.StoredProcedure, transaction: transaction);
+                    //                connection.Execute("sp_tblScanDataInsert", para, commandType: CommandType.StoredProcedure, transaction: transaction);
 
-                                    transaction.Commit();
-                                }
-                                catch (Exception ex)
-                                {
-                                    transaction.Rollback();
+                    //                transaction.Commit();
+                    //            }
+                    //            catch (Exception ex)
+                    //            {
+                    //                transaction.Rollback();
 
-                                    //ghi giá trị xuống PLC cân reject
-                                    GlobalVariables.MyEvent.WeightPusher = 1;
+                    //                //ghi giá trị xuống PLC cân reject
+                    //                GlobalVariables.MyEvent.WeightPusher = 1;
 
-                                    //bat den đỏ 
-                                    GlobalVariables.MyEvent.StatusLightPLC = 1;
+                    //                //bat den đỏ 
+                    //                GlobalVariables.MyEvent.StatusLightPLC = 1;
 
-                                    if (this.InvokeRequired)
-                                    {
-                                        this.Invoke(new Action(() =>
-                                        {
-                                            labResult.Text = "Fail Printing";
-                                            labResult.BackColor = Color.Red;
-                                            labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labResult.Text = "Fail Printing";
-                                        labResult.BackColor = Color.Red;
-                                        labResult.ForeColor = Color.White;
-                                        labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
-                                    }
+                    //                if (this.InvokeRequired)
+                    //                {
+                    //                    this.Invoke(new Action(() =>
+                    //                    {
+                    //                        labResult.Text = "Fail Printing";
+                    //                        labResult.BackColor = Color.Red;
+                    //                        labResult.ForeColor = Color.White;
+                    //                        labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
+                    //                    }));
+                    //                }
+                    //                else
+                    //                {
+                    //                    labResult.Text = "Fail Printing";
+                    //                    labResult.BackColor = Color.Red;
+                    //                    labResult.ForeColor = Color.White;
+                    //                    labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
+                    //                }
 
-                                    Log.Error(ex, $"Lỗi không insert vào DB được.{ex.ToString()}");
-                                }
-                                finally
-                                {
-                                    _scanDataWeight = null;
-                                    _scanDataWeight = new tblScanDataModel();
-                                }
-                            }
+                    //                Log.Error(ex, $"Lỗi không insert vào DB được.{ex.ToString()}");
+                    //            }
+                    //            finally
+                    //            {
+                    //                _scanDataWeight = null;
+                    //                _scanDataWeight = new tblScanDataModel();
+                    //            }
+                    //        }
 
-                        }
-                    }
+                    //    }
+                    //}
                     #endregion
 
                     //reset model;
-                    //_scanDataWeight = null;
-                    //_scanDataWeight = new tblScanDataModel();
+                    _scanDataWeight = null;
+                    _scanDataWeight = new tblScanDataModel();
                     //xoa string
                     //SendDynamicString(" ", " ", " ");
                 }
@@ -3616,5 +3619,105 @@ namespace WeightChecking
             _readQrStatus[1] = false;//xóa biến này cho lần đọc kế tiếp
         }
         #endregion
+
+        void LogDataScan()
+        {
+            if (_approvePrint)
+            {
+                _approvePrint = false;
+                using (var connection = GlobalVariables.GetDbConnection())
+                {
+                    connection.Open();
+
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            var para = new DynamicParameters();
+                            para.Add("@BarcodeString", _scanDataWeight.BarcodeString);
+                            para.Add("@IdLabel", _scanDataWeight.IdLabel);
+                            para.Add("@OcNo", _scanDataWeight.OcNo);
+                            para.Add("@ProductNumber", _scanDataWeight.ProductNumber);
+                            para.Add("@ProductName", _scanDataWeight.ProductName);
+                            para.Add("@Quantity", _scanDataWeight.Quantity);
+                            para.Add("@LinePosNo", _scanDataWeight.LinePosNo);
+                            para.Add("@Unit", _scanDataWeight.Unit);
+                            para.Add("@BoxNo", _scanDataWeight.BoxNo);
+                            para.Add("@CustomerNo", _scanDataWeight.CustomerNo);
+                            para.Add("@Location", _scanDataWeight.Location);
+                            para.Add("@BoxPosNo", _scanDataWeight.BoxPosNo);
+                            para.Add("@Note", _scanDataWeight.Note);
+                            para.Add("@Brand", _scanDataWeight.Brand);
+                            para.Add("@Decoration", _scanDataWeight.Decoration);
+                            para.Add("@MetalScan", _scanDataWeight.MetalScan);
+                            para.Add("@ActualMetalScan", _scanDataWeight.ActualMetalScan);
+                            para.Add("@AveWeight1Prs", _scanDataWeight.AveWeight1Prs);
+                            para.Add("@StdNetWeight", _scanDataWeight.StdNetWeight);
+                            para.Add("@LowerTolerance", _scanDataWeight.LowerTolerance);
+                            para.Add("@UpperTolerance", _scanDataWeight.UpperTolerance);
+                            para.Add("@Boxweight", _scanDataWeight.BoxWeight);
+                            para.Add("@PackageWeight", _scanDataWeight.PackageWeight);
+                            para.Add("@StdGrossWeight", _scanDataWeight.StdGrossWeight);
+                            para.Add("@GrossWeight", _scanDataWeight.GrossWeight);
+                            para.Add("@NetWeight", _scanDataWeight.NetWeight);
+                            para.Add("@Deviation", _scanDataWeight.Deviation);
+                            para.Add("@Pass", _scanDataWeight.Pass);
+                            para.Add("Status", _scanDataWeight.Status);
+                            para.Add("CalculatedPairs", _scanDataWeight.CalculatedPairs);
+                            para.Add("DeviationPairs", _scanDataWeight.DeviationPairs);
+                            para.Add("CreatedBy", _scanDataWeight.CreatedBy);
+                            para.Add("Station", _scanDataWeight.Station);
+                            para.Add("CreatedDate", _scanDataWeight.CreatedDate);
+                            para.Add("ApprovedBy", _scanDataWeight.ApprovedBy);
+                            para.Add("ActualDeviationPairs", _scanDataWeight.ActualDeviationPairs);
+                            para.Add("RatioFailWeight", _scanDataWeight.RatioFailWeight);
+                            para.Add("ProductCategory", _scanDataWeight.ProductCategory);
+                            para.Add("LotNo", _scanDataWeight.LotNo);
+                            //para.Add("Id", ParameterDirection.Output, DbType.Guid);
+
+                            connection.Execute("sp_tblScanDataInsert", para, commandType: CommandType.StoredProcedure, transaction: transaction);
+
+                            transaction.Commit();
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+
+                            //ghi giá trị xuống PLC cân reject
+                            GlobalVariables.MyEvent.WeightPusher = 1;
+
+                            //bat den đỏ 
+                            GlobalVariables.MyEvent.StatusLightPLC = 1;
+
+                            if (this.InvokeRequired)
+                            {
+                                this.Invoke(new Action(() =>
+                                {
+                                    labResult.Text = "Fail Printing";
+                                    labResult.BackColor = Color.Red;
+                                    labResult.ForeColor = Color.White;
+                                    labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
+                                }));
+                            }
+                            else
+                            {
+                                labResult.Text = "Fail Printing";
+                                labResult.BackColor = Color.Red;
+                                labResult.ForeColor = Color.White;
+                                labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
+                            }
+
+                            Log.Error(ex, $"Lỗi không insert vào DB được.{ex.ToString()}");
+                        }
+                        finally
+                        {
+                            //_scanDataWeight = null;
+                            //_scanDataWeight = new tblScanDataModel();
+                        }
+                    }
+
+                }
+            }
+        }
     }
 }
