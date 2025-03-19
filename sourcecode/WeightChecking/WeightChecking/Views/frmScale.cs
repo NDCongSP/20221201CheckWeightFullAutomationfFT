@@ -64,6 +64,8 @@ namespace WeightChecking
         private bool _firstLoad = true;
 
         private bool _approvePrint = false;// lệnh cho phép in hay không, chỉ khi nào pass cân thì active lên cho in.
+
+        //20250510 upgrade system to use scanner cogned DM290-X at station check weight
         public frmScale()
         {
             InitializeComponent();
@@ -402,6 +404,17 @@ namespace WeightChecking
                 Thread.Sleep(10000);
                 SendDynamicString(" ", " ", " ");
             }
+
+            #region 20250310 update to use scanner Cognex
+            //_driverTelnet.HostName = "192.168.80.4";
+            //_driverTelnet.Port = 23;
+
+            //_driverTelnet.DataEvent.EventHandleValueChange += DataEvent_EventHandleValueChange;
+            //_driverTelnet.DataEvent.EventHandleStatusChange += DataEvent_EventHandleStatusChange;
+
+            //_driverTelnet.ConnectDevices();
+
+            #endregion
 
             GlobalVariables.AppStatus = "READY";
         }
@@ -1736,7 +1749,7 @@ namespace WeightChecking
                                     if (statusLogData == 0 || statusLogData == 1)
                                     {
                                         _approvePrint = true;//cho phép in
-                                        LogDataScan();
+                                        ọLogDataScan();
 
                                         //bat den xanh 
                                         GlobalVariables.MyEvent.StatusLightPLC = 2;
@@ -2733,40 +2746,40 @@ namespace WeightChecking
                 }
                 else if (scannerId[0].InnerText == GlobalVariables.ScannerIdWeight.ToString())//vị trí check weight. ngay cân
                 {
-                    if (!_scannerIsBussy[1])
-                    {
-                        GlobalVariables.AutoPostingStatus3 = string.Empty;
+                    //if (!_scannerIsBussy[1])
+                    //{
+                    //    GlobalVariables.AutoPostingStatus3 = string.Empty;
 
-                        //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
-                        _scannerIsBussy[1] = true;
+                    //    //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                    //    _scannerIsBussy[1] = true;
 
-                        //bật biến báo đọc đc QR code từ label
-                        _readQrStatus[1] = true;
+                    //    //bật biến báo đọc đc QR code từ label
+                    //    _readQrStatus[1] = true;
 
-                        _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+                    //    _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
-                        para = new DynamicParameters();
-                        para.Add("@Message", $"After2|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
-                        para.Add("Level", "Scanner trigger.");
-                        //para.Add("Exception", ex.ToString());
-                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                    //    para = new DynamicParameters();
+                    //    para.Add("@Message", $"After2|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
+                    //    para.Add("Level", "Scanner trigger.");
+                    //    //para.Add("Exception", ex.ToString());
+                    //    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                        //reset model;
-                        //_scanDataWeight = null;
-                        //_scanDataWeight = new tblScanDataModel();
+                    //    //reset model;
+                    //    //_scanDataWeight = null;
+                    //    //_scanDataWeight = new tblScanDataModel();
 
-                        BarcodeScanner2Handle(2, _barcodeString2);
+                    //    BarcodeScanner2Handle(2, _barcodeString2);
 
-                        para = new DynamicParameters();
-                        para.Add("@Message", $"After2 1|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
-                        para.Add("Level", "Scanner trigger.");
-                        //para.Add("Exception", ex.ToString());
-                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                    //    para = new DynamicParameters();
+                    //    para.Add("@Message", $"After2 1|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
+                    //    para.Add("Level", "Scanner trigger.");
+                    //    //para.Add("Exception", ex.ToString());
+                    //    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                        ////reset model;
-                        //_scanDataWeight = null;
-                        //_scanDataWeight = new tblScanDataModel();
-                    }
+                    //    ////reset model;
+                    //    //_scanDataWeight = null;
+                    //    //_scanDataWeight = new tblScanDataModel();
+                    //}
                 }
                 else if (scannerId[0].InnerText == GlobalVariables.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
                 {
