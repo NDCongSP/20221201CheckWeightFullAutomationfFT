@@ -1,7 +1,11 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace CognexLibrary
@@ -25,7 +29,7 @@ namespace CognexLibrary
             }
         }
         /// <summary>
-        /// Telnet port.
+        /// Telnet port. Default port 23
         /// </summary>
         public int Port
         {
@@ -49,10 +53,22 @@ namespace CognexLibrary
                     _dataEvent = value;
             }
         }
+
+        public bool IsDisconect
+        {
+            get => _isDisconnect;
+            set
+            {
+                if (_isDisconnect != value)
+                    _isDisconnect = value;
+            }
+        }
         #endregion
         private static string _hostName = "192.168.1.100";
-        private static int _port = 24;
+        private static int _port = 23;
         private static DataEvent _dataEvent = new DataEvent();
+
+        private static bool _isDisconnect = false;
 
         private static TcpClient client;
         private static NetworkStream stream;
@@ -70,14 +86,30 @@ namespace CognexLibrary
             try
             {
                 Debug.WriteLine("Connecting...");
+                _isDisconnect = false;//disable disconnect flag to reconnect when connection is lost.
+                if (client != null)
+                {
+                    client.Close();
+                    client.Dispose();
+                }
                 client = new TcpClient();
                 await client.ConnectAsync(_hostName, _port);
                 Console.WriteLine($"Connected to {_hostName}:{_port}");
 
                 stream = client.GetStream();
+                if (reader != null)
+                {
+                    reader.Close();
+                    reader.Dispose();
+                }
                 reader = new StreamReader(stream, Encoding.ASCII);
 
                 // Set up a timer to read data every 2 seconds
+                if (timer != null)
+                {
+                    timer.Close();
+                    timer.Dispose();
+                }
                 timer = new System.Timers.Timer(100); // 2000ms = 2 seconds
                 timer.Elapsed += ReadData;
                 timer.AutoReset = true;
@@ -93,28 +125,41 @@ namespace CognexLibrary
                 _dataEvent.Status = "Error";
 
                 // Directly await the reconnect method
-                await Reconnect();
+                if (!_isDisconnect)
+                    await Reconnect();
                 //Console.WriteLine($"Error: {ex.Message}");
             }
         }
 
-        private async Task Reconnect()
+        public async Task Reconnect()
         {
             Debug.WriteLine("Reconnecting...");
-            //while (_dataEvent.Status != "Connected")
+            try
             {
-                DisconnectDevices();
-                await Task.Delay(1000);
-                await ConnectDevices();
+                //while (_dataEvent.Status != "Connected")
+                {
+                    DisconnectDevices();
+                    await Task.Delay(1000);
+                    await ConnectDevices();
 
-                // Check if connection is restored
-                //if (_dataEvent.Status == "Connected")
-                //    break;
+                    // Check if connection is restored
+                    //if (_dataEvent.Status == "Connected")
+                    //    break;
 
-                //await Task.Delay(1000); // Non-blocking alternative to Thread.Sleep(1000)
+                    //await Task.Delay(1000); // Non-blocking alternative to Thread.Sleep(1000)
+                }
+            }
+            catch (Exception ex)
+            {
+                _dataEvent.ExceptionLog = ex;
+                _dataEvent.Status = "Error";
             }
         }
-        private void DisconnectDevices()
+
+        /// <summary>
+        /// Need to set _isDisconnect = true to avoid reconnecting when disconnecting directly.
+        /// </summary>
+        public void DisconnectDevices()
         {
             Debug.WriteLine("Disconnecting...");
             try
@@ -124,8 +169,8 @@ namespace CognexLibrary
                 stream?.Dispose();
                 client?.Close();
 
-                _dataEvent.ExceptionLog = null;
-                _dataEvent.Status = "Disconnected";
+                //_dataEvent.ExceptionLog = null;
+                //_dataEvent.Status = "Disconnected";
             }
             catch (Exception ex)
             {
@@ -158,7 +203,8 @@ namespace CognexLibrary
                 _dataEvent.Status = "Error";
 
                 // Directly await the reconnect method
-                await Reconnect();
+                if (!_isDisconnect)
+                    await Reconnect();
                 //Console.WriteLine($"Read error: {ex.Message}");
             }
             finally

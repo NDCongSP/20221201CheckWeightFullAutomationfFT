@@ -124,5 +124,10 @@ namespace WeightChecking
         public static bool PrintApprove { get; set; } = false;
         public static DateTime CreatedDate { get; set; }//dung de chua thoi gian tạo, để đồng bộ giữa in tem và log DB. dung trong Confirm in tem
         #endregion
+
+        #region Cognex
+        public static string IpCognexCam_2 { get; set; } = "192.168.80.4";
+        public static string CognexCam_2Status { get; set; }
+        #endregion
     }
 }

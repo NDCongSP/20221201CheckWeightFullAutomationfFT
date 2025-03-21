@@ -168,7 +168,7 @@ namespace WeightChecking
                 ribbonPageMasterData.Visible = false;
                 ribbonPageReports.Visible = false;
             }
-            else if (GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin|| GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin1)//Admin
+            else if (GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin || GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin1)//Admin
             {
                 if (_masterData == null)
                 {
@@ -185,7 +185,7 @@ namespace WeightChecking
 
                 ribbonControl1.SelectedPage = ribbonPageMasterData;
 
-                if (GlobalVariables.UserLoginInfo.Role==RolesEnum.Admin1)
+                if (GlobalVariables.UserLoginInfo.Role == RolesEnum.Admin1)
                 {
                     _barButtonItemDeleteBox.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
                 }
@@ -852,7 +852,7 @@ namespace WeightChecking
 
                                 // format column BoxNo as string value
                                 ws[$"C6:C{resMetalScanResult.Count + 1}"].NumberFormat = "@";
-                         
+
                                 ws.Import(resMetalScanResult, 1, 0);
 
                                 //ws.Range[$"Q2:Y{res.Count}"].NumberFormat = "#,#0.00";
@@ -959,9 +959,10 @@ namespace WeightChecking
             {
                 t.Enabled = false;
 
-                GlobalVariables.InvokeIfRequired(this, () => {
+                GlobalVariables.InvokeIfRequired(this, () =>
+                {
                     barStaticItemStatus.Caption = $"{DateTime.Now.ToString("yyyy/MM/dd HH:mm")} " +
-                              $"| {GlobalVariables.UserLoginInfo.UserName}" +
+                              $"| {GlobalVariables.UserLoginInfo.UserName} | Cognex cam: {GlobalVariables.CognexCam_2Status}" +
                               $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
                               $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
                               $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
@@ -1081,11 +1082,11 @@ namespace WeightChecking
 
                             if (_insertCount == res.Count)
                             {
-                                XtraMessageBox.Show($"Get data from winline Ok.  Rows inserted {_insertCount}/{ res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                XtraMessageBox.Show($"Get data from winline Ok.  Rows inserted {_insertCount}/{res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
                             else
                             {
-                                XtraMessageBox.Show($"Get data from winline fail. Rows inserted {_insertCount}/{ res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                XtraMessageBox.Show($"Get data from winline fail. Rows inserted {_insertCount}/{res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
                         }
                         GlobalVariables.MyEvent.RefreshStatus = true;

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CognexLibrary
 {
@@ -15,7 +11,7 @@ namespace CognexLibrary
             get => _qrCodeValue;
             set
             {
-                if (_qrCodeValue != value)
+                //if (_qrCodeValue != value)
                 {
                     var oldValue = _qrCodeValue;
                     _qrCodeValue = value;

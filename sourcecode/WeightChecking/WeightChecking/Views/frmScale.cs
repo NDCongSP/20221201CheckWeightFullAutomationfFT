@@ -1,4 +1,5 @@
-﻿using CoreScanner;
+﻿using CognexLibrary;
+using CoreScanner;
 using Dapper;
 using DevExpress.XtraEditors;
 using DevExpress.XtraExport.Xls;
@@ -9,6 +10,7 @@ using DevExpress.XtraSplashScreen;
 using Newtonsoft.Json;
 using Serilog;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -66,6 +68,8 @@ namespace WeightChecking
         private bool _approvePrint = false;// lệnh cho phép in hay không, chỉ khi nào pass cân thì active lên cho in.
 
         //20250510 upgrade system to use scanner cogned DM290-X at station check weight
+        private static CognexLibrary.DriverTelnet _driverTelnet = new CognexLibrary.DriverTelnet();
+
         public frmScale()
         {
             InitializeComponent();
@@ -406,17 +410,55 @@ namespace WeightChecking
             }
 
             #region 20250310 update to use scanner Cognex
-            //_driverTelnet.HostName = "192.168.80.4";
+            _driverTelnet.HostName = GlobalVariables.IpCognexCam_2;
             //_driverTelnet.Port = 23;
 
-            //_driverTelnet.DataEvent.EventHandleValueChange += DataEvent_EventHandleValueChange;
-            //_driverTelnet.DataEvent.EventHandleStatusChange += DataEvent_EventHandleStatusChange;
+            _driverTelnet.DataEvent.EventHandleValueChange += DataEvent_EventHandleValueChange;
+            _driverTelnet.DataEvent.EventHandleStatusChange += DataEvent_EventHandleStatusChange;
 
-            //_driverTelnet.ConnectDevices();
+            _driverTelnet.ConnectDevices();
 
             #endregion
 
             GlobalVariables.AppStatus = "READY";
+        }
+
+        private void DataEvent_EventHandleStatusChange(object sender, StatusChangeEventArgs e)
+        {
+            GlobalVariables.CognexCam_2Status = e.Status;
+            Debug.WriteLine($"[{DateTime.Now}]: {e.Status}|{e.Exception?.Message}");
+        }
+
+        private void DataEvent_EventHandleValueChange(object sender, ValueChangeEventArgs e)
+        {
+            Debug.WriteLine($"[{DateTime.Now}]: {e.NewValue}|{e.OldValue}");
+            if (!_scannerIsBussy[1])
+            {
+                GlobalVariables.AutoPostingStatus3 = string.Empty;
+
+                //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                _scannerIsBussy[1] = true;
+
+                //bật biến báo đọc đc QR code từ label
+                _readQrStatus[1] = true;
+
+                _barcodeString2 = e.NewValue;
+
+                BarcodeScanner2Handle(2, _barcodeString2);
+
+                using (var connection = GlobalVariables.GetDbConnection())
+                {
+                    var para = new DynamicParameters();
+                    para.Add("@Message", $"After2 1|Barcode Id Cognex|{_barcodeString2}");
+                    para.Add("Level", "Scanner trigger.");
+                    //para.Add("Exception", ex.ToString());
+                    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                }
+            }
+            else
+            {
+                GlobalVariables.InvokeIfRequired(this, () => { labErrInfoScale.Text = "The sensor clears the busy flag, it is not active."; });
+            }
         }
 
         private void frmScale_FormClosing(object sender, FormClosingEventArgs e)
@@ -430,6 +472,10 @@ namespace WeightChecking
                 _ckQRTask.Dispose();
             }
 
+            _driverTelnet.DataEvent.EventHandleValueChange -= DataEvent_EventHandleValueChange;
+            _driverTelnet.DataEvent.EventHandleStatusChange -= DataEvent_EventHandleStatusChange;
+
+            _driverTelnet.DisconnectDevices();
             //huy doi tuong can
             //_scaleHelper.StopScale = true;
             //_ckTask.Wait();
@@ -1749,7 +1795,7 @@ namespace WeightChecking
                                     if (statusLogData == 0 || statusLogData == 1)
                                     {
                                         _approvePrint = true;//cho phép in
-                                        ọLogDataScan();
+                                        LogDataScan();
 
                                         //bat den xanh 
                                         GlobalVariables.MyEvent.StatusLightPLC = 2;
