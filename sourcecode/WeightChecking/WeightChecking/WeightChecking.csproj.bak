@@ -459,9 +459,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CognexLibrary\CognexLibrary.csproj">
-      <Project>{8ee59516-232a-4a61-982a-f67a7f1360e7}</Project>
-      <Name>CognexLibrary</Name>
+    <ProjectReference Include="..\CognexLibrary_NETFramework\CognexLibrary_NETFramework.csproj">
+      <Project>{62c3b090-ef4f-46c8-ad2e-2310b148eb3d}</Project>
+      <Name>CognexLibrary_NETFramework</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

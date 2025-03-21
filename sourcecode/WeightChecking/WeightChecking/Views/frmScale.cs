@@ -1,4 +1,4 @@
-﻿using CognexLibrary;
+﻿using CognexLibrary_NETFramework;
 using CoreScanner;
 using Dapper;
 using DevExpress.XtraEditors;
@@ -68,7 +68,7 @@ namespace WeightChecking
         private bool _approvePrint = false;// lệnh cho phép in hay không, chỉ khi nào pass cân thì active lên cho in.
 
         //20250510 upgrade system to use scanner cogned DM290-X at station check weight
-        private static CognexLibrary.DriverTelnet _driverTelnet = new CognexLibrary.DriverTelnet();
+        private static CognexLibrary_NETFramework.DriverTelnet _driverTelnet = new CognexLibrary_NETFramework.DriverTelnet();
 
         public frmScale()
         {
@@ -475,7 +475,8 @@ namespace WeightChecking
             _driverTelnet.DataEvent.EventHandleValueChange -= DataEvent_EventHandleValueChange;
             _driverTelnet.DataEvent.EventHandleStatusChange -= DataEvent_EventHandleStatusChange;
 
-            _driverTelnet.DisconnectDevices();
+            _driverTelnet.IsDisconect = true; 
+            _driverTelnet?.DisconnectDevices();
             //huy doi tuong can
             //_scaleHelper.StopScale = true;
             //_ckTask.Wait();
