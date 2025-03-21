@@ -15,9 +15,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnserU2_cSharp", "..\AnserU
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PLCPi", "..\..\..\OtherSourceCode\2014PLCPiProject\PLCPiForPC\PLCPi\PLCPi\PLCPi.csproj", "{15DD2F14-1735-4D96-BA90-B57E90BEB545}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CognexLibrary", "CognexLibrary\CognexLibrary.csproj", "{F60BD193-82DF-4F67-A7B7-8DB3ABF7434F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cognex", "Cognex\Cognex.csproj", "{4BA4EFD7-B65D-4C9C-8B39-85D6157D4CF5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEST", "TEST\TEST.csproj", "{55AF5A0F-B790-42EB-9D73-9968B756D35A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CognexLibrary", "CognexLibrary\CognexLibrary.csproj", "{8EE59516-232A-4A61-982A-F67A7F1360E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CognexLibrary_NETFramework", "CognexLibrary_NETFramework\CognexLibrary_NETFramework.csproj", "{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,14 +51,18 @@ Global
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F60BD193-82DF-4F67-A7B7-8DB3ABF7434F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F60BD193-82DF-4F67-A7B7-8DB3ABF7434F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F60BD193-82DF-4F67-A7B7-8DB3ABF7434F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F60BD193-82DF-4F67-A7B7-8DB3ABF7434F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{55AF5A0F-B790-42EB-9D73-9968B756D35A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{55AF5A0F-B790-42EB-9D73-9968B756D35A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{55AF5A0F-B790-42EB-9D73-9968B756D35A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{55AF5A0F-B790-42EB-9D73-9968B756D35A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BA4EFD7-B65D-4C9C-8B39-85D6157D4CF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BA4EFD7-B65D-4C9C-8B39-85D6157D4CF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BA4EFD7-B65D-4C9C-8B39-85D6157D4CF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BA4EFD7-B65D-4C9C-8B39-85D6157D4CF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

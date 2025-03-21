@@ -1,20 +1,11 @@
-﻿using CognexLibrary;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
-using System.Windows.Forms;
 
-namespace TEST
+using CognexLibrary_NETFramework;
+using System.Diagnostics;
+using System.Net.Sockets;
+using System.Text;
+using System.Timers;
+
+namespace Cognex
 {
     public partial class Form1 : Form
     {
@@ -22,10 +13,9 @@ namespace TEST
         private static NetworkStream stream;
         private static StreamReader reader;
         private static System.Timers.Timer timer;
-        private static CognexLibrary.DriverTelnet _driverTelnet = new CognexLibrary.DriverTelnet();
+        private static CognexLibrary_NETFramework.DriverTelnet _driverTelnet = new CognexLibrary_NETFramework.DriverTelnet();
 
         private static bool isReading = false;
-
 
         public Form1()
         {
@@ -33,7 +23,7 @@ namespace TEST
             Load += Form1_Load;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private async void Form1_Load(object? sender, EventArgs e)
         {
             _driverTelnet.HostName = "192.168.80.4";
             _driverTelnet.Port = 23;
@@ -76,25 +66,14 @@ namespace TEST
             //}
         }
 
-        private void DataEvent_EventHandleStatusChange(object sender, StatusChangeEventArgs e)
+        private void DataEvent_EventHandleStatusChange(object? sender, StatusChangeEventArgs e)
         {
             Debug.WriteLine($"[{DateTime.Now}]: {e.Status}|{e.Exception?.Message}");
-
-            SafeInvoke(this, () =>
-            {
-                _labStatus.Text = $"[{DateTime.Now}]: {e.Status}|{e.Exception?.Message}";                
-            });
         }
 
-        private void DataEvent_EventHandleValueChange(object sender, ValueChangeEventArgs e)
+        private void DataEvent_EventHandleValueChange(object? sender, ValueChangeEventArgs e)
         {
             Debug.WriteLine($"[{DateTime.Now}]: {e.NewValue}|{e.OldValue}");
-
-            SafeInvoke(this, () =>
-            {
-                _labNewValue.Text = $"[{DateTime.Now}]: {e.NewValue}";
-                _labOldValue.Text = $"[{DateTime.Now}]: {e.OldValue}";
-            });
         }
 
         private static async void ReadData(object sender, ElapsedEventArgs e)
@@ -121,30 +100,6 @@ namespace TEST
             {
                 isReading = false; // Reset flag after operation completes
             }
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            _driverTelnet.IsDisconect = true;
-            _driverTelnet?.DisconnectDevices();
-        }
-
-        public static void SafeInvoke(Control control, Action action)
-        {
-            if (control.InvokeRequired)
-                control.Invoke(action);
-            else
-                action();
-        }
-
-        private void _btnConnect_Click(object sender, EventArgs e)
-        {
-            _driverTelnet?.ConnectDevices();
-        }
-
-        private void _btnReconnect_Click(object sender, EventArgs e)
-        {
-            _driverTelnet.Reconnect();
         }
     }
 }
