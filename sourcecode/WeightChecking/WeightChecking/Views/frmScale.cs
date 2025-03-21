@@ -1749,7 +1749,7 @@ namespace WeightChecking
                                     if (statusLogData == 0 || statusLogData == 1)
                                     {
                                         _approvePrint = true;//cho phép in
-                                        ọLogDataScan();
+                                        LogDataScan();
 
                                         //bat den xanh 
                                         GlobalVariables.MyEvent.StatusLightPLC = 2;

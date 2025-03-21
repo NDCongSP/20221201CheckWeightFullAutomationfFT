@@ -1,5 +1,5 @@
 
-using CognexLibrary;
+using CognexLibrary_NETFramework;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
@@ -13,7 +13,7 @@ namespace Cognex
         private static NetworkStream stream;
         private static StreamReader reader;
         private static System.Timers.Timer timer;
-        private static CognexLibrary.DriverTelnet _driverTelnet = new CognexLibrary.DriverTelnet();
+        private static CognexLibrary_NETFramework.DriverTelnet _driverTelnet = new CognexLibrary_NETFramework.DriverTelnet();
 
         private static bool isReading = false;
 

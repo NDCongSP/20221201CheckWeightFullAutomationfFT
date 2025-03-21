@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeightChecking", "WeightChecking\WeightChecking.csproj", "{128A07EE-4022-4DD6-9154-F34229C5F7C0}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cognex", "Cognex\Cognex.csproj", "{4BA4EFD7-B65D-4C9C-8B39-85D6157D4CF5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CognexLibrary", "CognexLibrary\CognexLibrary.csproj", "{8EE59516-232A-4A61-982A-F67A7F1360E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CognexLibrary_NETFramework", "CognexLibrary_NETFramework\CognexLibrary_NETFramework.csproj", "{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

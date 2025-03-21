@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CognexLibrary\CognexLibrary.csproj" />
+    <ProjectReference Include="..\CognexLibrary_NETFramework\CognexLibrary_NETFramework.csproj" />
   </ItemGroup>
 
 </Project>
