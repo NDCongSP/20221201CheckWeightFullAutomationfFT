@@ -1,4 +1,5 @@
-﻿using CoreScanner;
+﻿using CognexLibrary_NETFramework;
+using CoreScanner;
 using Dapper;
 using DevExpress.XtraEditors;
 using DevExpress.XtraExport.Xls;
@@ -9,6 +10,7 @@ using DevExpress.XtraSplashScreen;
 using Newtonsoft.Json;
 using Serilog;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -64,6 +66,10 @@ namespace WeightChecking
         private bool _firstLoad = true;
 
         private bool _approvePrint = false;// lệnh cho phép in hay không, chỉ khi nào pass cân thì active lên cho in.
+
+        //20250510 upgrade system to use scanner cogned DM290-X at station check weight
+        private static CognexLibrary_NETFramework.DriverTelnet _driverTelnet = new CognexLibrary_NETFramework.DriverTelnet();
+
         public frmScale()
         {
             InitializeComponent();
@@ -218,16 +224,42 @@ namespace WeightChecking
                 }
             };
 
+            GlobalVariables.MyEvent.EventHandleSensorBeforeWeightScan += (s, o) =>
+            {
+                Debug.WriteLine($"Event Sensor before weight scan: {o.NewValue}");
+                //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ Scanner cognex
+                //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
+                if (o.NewValue == 1)
+                {
+                    //bật biến báo đọc đc QR code từ label
+                    _readQrStatus[1] = true;
+
+                    _ckQrWeightScanTask = new Task(() => CheckReadQrWeight());
+                    _ckQrWeightScanTask.Start();
+                }
+                //else
+                //{
+                //    if (_ckQrWeightScanTask != null)
+                //    {
+                //        _ckQrWeightScanTask.Wait();
+                //        _ckQrWeightScanTask.Dispose();
+                //    }
+                //}
+            };
             //khi thùng đụng cảm biến out của cân thì reset biến báo bận cho scanner trạm cân quét tiếp
             GlobalVariables.MyEvent.EventHandleSensorAfterWeightScan += (s, o) =>
             {
                 if (o.NewValue == 1)
                 {
+                    //reset biến báo bận cho scanner trạm cân quét tiếp
                     _scannerIsBussy[1] = false;
+                    //tắt biến báo đọc đc QR code từ label
+                    _readQrStatus[1] = false;
                 }
 
                 Debug.WriteLine($"Event Sensor after scale: {o.NewValue}|ScannerBussy{_scannerIsBussy[1]}");
             };
+
             //khi thùng đụng cảm biến sau printing scanner thì reset biến báo bận cho scanner trạm print quét tiếp
             GlobalVariables.MyEvent.EventHandlerSensorAfterPrintScanner += (s, o) =>
             {
@@ -250,26 +282,6 @@ namespace WeightChecking
                 }
 
                 Debug.WriteLine($"Sensor middle metal: {o.NewValue}|ScannerBussy{_scannerIsBussy[0]}");
-            };
-
-            GlobalVariables.MyEvent.EventHandleSensorBeforeWeightScan += (s, o) =>
-            {
-                Debug.WriteLine($"Event Sensor before weight scan: {o.NewValue}");
-                //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ metal scanner
-                //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
-                if (o.NewValue == 1)
-                {
-                    _ckQrWeightScanTask = new Task(() => CheckReadQrWeight());
-                    _ckQrWeightScanTask.Start();
-                }
-                //else
-                //{
-                //    if (_ckQrWeightScanTask != null)
-                //    {
-                //        _ckQrWeightScanTask.Wait();
-                //        _ckQrWeightScanTask.Dispose();
-                //    }
-                //}
             };
 
             GlobalVariables.MyEvent.EventHandleSensorAfterMetalScan += (s, o) =>
@@ -403,7 +415,56 @@ namespace WeightChecking
                 SendDynamicString(" ", " ", " ");
             }
 
+            #region 20250310 update to use scanner Cognex
+            _driverTelnet.HostName = GlobalVariables.IpCognexCam_2;
+            //_driverTelnet.Port = 23;
+
+            _driverTelnet.DataEvent.EventHandleValueChange += DataEvent_EventHandleValueChange;
+            _driverTelnet.DataEvent.EventHandleStatusChange += DataEvent_EventHandleStatusChange;
+
+            _driverTelnet.ConnectDevices();
+
+            #endregion
+
             GlobalVariables.AppStatus = "READY";
+        }
+
+        private void DataEvent_EventHandleStatusChange(object sender, StatusChangeEventArgs e)
+        {
+            GlobalVariables.CognexCam_2Status = e.Status;
+            Debug.WriteLine($"[{DateTime.Now}]: {e.Status}|{e.Exception?.Message}");
+        }
+
+        private void DataEvent_EventHandleValueChange(object sender, ValueChangeEventArgs e)
+        {
+            Debug.WriteLine($"[{DateTime.Now}]: {e.NewValue}|{e.OldValue}");
+            if (!_scannerIsBussy[1])
+            {
+                GlobalVariables.AutoPostingStatus3 = string.Empty;
+
+                //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                _scannerIsBussy[1] = true;
+
+                //bật biến báo đọc đc QR code từ label
+                //_readQrStatus[1] = true;
+
+                _barcodeString2 = e.NewValue;
+
+                BarcodeScanner2Handle(2, _barcodeString2);
+
+                using (var connection = GlobalVariables.GetDbConnection())
+                {
+                    var para = new DynamicParameters();
+                    para.Add("@Message", $"After2 1|Barcode Id Cognex|{_barcodeString2}");
+                    para.Add("Level", "Scanner trigger.");
+                    //para.Add("Exception", ex.ToString());
+                    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                }
+            }
+            else
+            {
+                GlobalVariables.InvokeIfRequired(this, () => { labErrInfoScale.Text = "The sensor clears the busy flag, it is not active."; });
+            }
         }
 
         private void frmScale_FormClosing(object sender, FormClosingEventArgs e)
@@ -417,6 +478,11 @@ namespace WeightChecking
                 _ckQRTask.Dispose();
             }
 
+            _driverTelnet.DataEvent.EventHandleValueChange -= DataEvent_EventHandleValueChange;
+            _driverTelnet.DataEvent.EventHandleStatusChange -= DataEvent_EventHandleStatusChange;
+
+            _driverTelnet.IsDisconect = true;
+            _driverTelnet?.DisconnectDevices();
             //huy doi tuong can
             //_scaleHelper.StopScale = true;
             //_ckTask.Wait();
@@ -2733,40 +2799,40 @@ namespace WeightChecking
                 }
                 else if (scannerId[0].InnerText == GlobalVariables.ScannerIdWeight.ToString())//vị trí check weight. ngay cân
                 {
-                    if (!_scannerIsBussy[1])
-                    {
-                        GlobalVariables.AutoPostingStatus3 = string.Empty;
+                    //if (!_scannerIsBussy[1])
+                    //{
+                    //    GlobalVariables.AutoPostingStatus3 = string.Empty;
 
-                        //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
-                        _scannerIsBussy[1] = true;
+                    //    //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                    //    _scannerIsBussy[1] = true;
 
-                        //bật biến báo đọc đc QR code từ label
-                        _readQrStatus[1] = true;
+                    //    //bật biến báo đọc đc QR code từ label
+                    //    _readQrStatus[1] = true;
 
-                        _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+                    //    _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
-                        para = new DynamicParameters();
-                        para.Add("@Message", $"After2|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
-                        para.Add("Level", "Scanner trigger.");
-                        //para.Add("Exception", ex.ToString());
-                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                    //    para = new DynamicParameters();
+                    //    para.Add("@Message", $"After2|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
+                    //    para.Add("Level", "Scanner trigger.");
+                    //    //para.Add("Exception", ex.ToString());
+                    //    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                        //reset model;
-                        //_scanDataWeight = null;
-                        //_scanDataWeight = new tblScanDataModel();
+                    //    //reset model;
+                    //    //_scanDataWeight = null;
+                    //    //_scanDataWeight = new tblScanDataModel();
 
-                        BarcodeScanner2Handle(2, _barcodeString2);
+                    //    BarcodeScanner2Handle(2, _barcodeString2);
 
-                        para = new DynamicParameters();
-                        para.Add("@Message", $"After2 1|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
-                        para.Add("Level", "Scanner trigger.");
-                        //para.Add("Exception", ex.ToString());
-                        connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
+                    //    para = new DynamicParameters();
+                    //    para.Add("@Message", $"After2 1|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
+                    //    para.Add("Level", "Scanner trigger.");
+                    //    //para.Add("Exception", ex.ToString());
+                    //    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-                        ////reset model;
-                        //_scanDataWeight = null;
-                        //_scanDataWeight = new tblScanDataModel();
-                    }
+                    //    ////reset model;
+                    //    //_scanDataWeight = null;
+                    //    //_scanDataWeight = new tblScanDataModel();
+                    //}
                 }
                 else if (scannerId[0].InnerText == GlobalVariables.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
                 {
@@ -3567,28 +3633,16 @@ namespace WeightChecking
 
                 // Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
 
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem.";
-                        labQrScale.Text = string.Empty;
-                        labResult.Text = "Fail";
-                        labResult.BackColor = Color.Red;
-                        labResult.ForeColor = Color.White;
-                    }));
-                }
-                else
-                {
+                GlobalVariables.InvokeIfRequired(this, () => {
                     labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem.";
                     labQrScale.Text = string.Empty;
                     labResult.Text = "Fail";
                     labResult.BackColor = Color.Red;
                     labResult.ForeColor = Color.White;
-                }
+                });
 
                 //hết thời gian đọc QR code mà chưa đọc được
-                //gui data xuong PLC báo reject metalPusher
+                //gui data xuong PLC báo reject Weight Pusher
                 GlobalVariables.MyEvent.WeightPusher = 1;
                 //bật đèn đỏ
                 GlobalVariables.MyEvent.StatusLightPLC = 1;
@@ -3616,7 +3670,7 @@ namespace WeightChecking
                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                 }
             }
-            _readQrStatus[1] = false;//xóa biến này cho lần đọc kế tiếp
+            //_readQrStatus[1] = false;//xóa biến này cho lần đọc kế tiếp
         }
         #endregion
 

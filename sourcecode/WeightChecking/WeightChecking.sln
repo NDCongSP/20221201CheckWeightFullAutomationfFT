@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32228.343
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeightChecking", "WeightChecking\WeightChecking.csproj", "{128A07EE-4022-4DD6-9154-F34229C5F7C0}"
 EndProject
@@ -15,7 +15,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnserU2_cSharp", "..\AnserU
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PLCPi", "..\..\..\OtherSourceCode\2014PLCPiProject\PLCPiForPC\PLCPi\PLCPi\PLCPi.csproj", "{15DD2F14-1735-4D96-BA90-B57E90BEB545}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScannerCam", "ScannerCam\ScannerCam.csproj", "{75ECC053-5269-4F64-93A4-D98A56D55EC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CognexLibrary", "CognexLibrary\CognexLibrary.csproj", "{8EE59516-232A-4A61-982A-F67A7F1360E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CognexLibrary_NETFramework", "CognexLibrary_NETFramework\CognexLibrary_NETFramework.csproj", "{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApp1", "WindowsFormsApp1\WindowsFormsApp1.csproj", "{365D88BC-8F68-4AB1-8C15-8409AB9DBC09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,10 +51,18 @@ Global
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15DD2F14-1735-4D96-BA90-B57E90BEB545}.Release|Any CPU.Build.0 = Release|Any CPU
-		{75ECC053-5269-4F64-93A4-D98A56D55EC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{75ECC053-5269-4F64-93A4-D98A56D55EC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75ECC053-5269-4F64-93A4-D98A56D55EC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{75ECC053-5269-4F64-93A4-D98A56D55EC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EE59516-232A-4A61-982A-F67A7F1360E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62C3B090-EF4F-46C8-AD2E-2310B148EB3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{365D88BC-8F68-4AB1-8C15-8409AB9DBC09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{365D88BC-8F68-4AB1-8C15-8409AB9DBC09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{365D88BC-8F68-4AB1-8C15-8409AB9DBC09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{365D88BC-8F68-4AB1-8C15-8409AB9DBC09}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

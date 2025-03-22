@@ -50,6 +50,7 @@ namespace WeightChecking
             GlobalVariables.TimeCheckQrMetal = Properties.Settings.Default.TimeCheckQrMetal;
             GlobalVariables.TimeCheckQrScale = Properties.Settings.Default.TimeCheckQrScale;
             GlobalVariables.UpdatePath = Properties.Settings.Default.UpdatePath;
+            GlobalVariables.CognexCam_2Status = Properties.Settings.Default.IpCognexCam_2;
 
             if (Properties.Settings.Default.Station == 0)
             {

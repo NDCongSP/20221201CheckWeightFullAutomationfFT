@@ -21,7 +21,7 @@
       <Value Profile="(Default)">\\10.40.10.9\Public$\98_Public_Share\99_Shared\05_IT\01_Update\21- IDCScaleSystem\update.xml</Value>
     </Setting>
     <Setting Name="IsScale" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="IsCounter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
@@ -55,6 +55,9 @@
     </Setting>
     <Setting Name="conStringTest" Type="System.String" Scope="User">
       <Value Profile="(Default)">ed3YbBgz3fF3bb/osXwqYNhSCfyKvNWvXPUgvQLnsbz+Nd6Vj/7Bp3JpDzU1SquQf9r/UjvioXIcrdYeKJIBZxfUIaWnODCfVyoZD4vtKfTY2bzuwo+x9IWaUwNDM8sXy0vvVfwBcTaxNaqOPWxs7wJ2VL5tVKN6NXz6gB+a8K0JokfzGUFtGBP4RKiPCgVqqhImSXhPA27fwcNR/ExwoYestgqmQS8+</Value>
+    </Setting>
+    <Setting Name="IpCognexCam_2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">192.168.80.4</Value>
     </Setting>
   </Settings>
 </SettingsFile>
