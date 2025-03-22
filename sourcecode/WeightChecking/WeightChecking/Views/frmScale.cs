@@ -224,16 +224,42 @@ namespace WeightChecking
                 }
             };
 
+            GlobalVariables.MyEvent.EventHandleSensorBeforeWeightScan += (s, o) =>
+            {
+                Debug.WriteLine($"Event Sensor before weight scan: {o.NewValue}");
+                //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ Scanner cognex
+                //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
+                if (o.NewValue == 1)
+                {
+                    //bật biến báo đọc đc QR code từ label
+                    _readQrStatus[1] = true;
+
+                    _ckQrWeightScanTask = new Task(() => CheckReadQrWeight());
+                    _ckQrWeightScanTask.Start();
+                }
+                //else
+                //{
+                //    if (_ckQrWeightScanTask != null)
+                //    {
+                //        _ckQrWeightScanTask.Wait();
+                //        _ckQrWeightScanTask.Dispose();
+                //    }
+                //}
+            };
             //khi thùng đụng cảm biến out của cân thì reset biến báo bận cho scanner trạm cân quét tiếp
             GlobalVariables.MyEvent.EventHandleSensorAfterWeightScan += (s, o) =>
             {
                 if (o.NewValue == 1)
                 {
+                    //reset biến báo bận cho scanner trạm cân quét tiếp
                     _scannerIsBussy[1] = false;
+                    //tắt biến báo đọc đc QR code từ label
+                    _readQrStatus[1] = false;
                 }
 
                 Debug.WriteLine($"Event Sensor after scale: {o.NewValue}|ScannerBussy{_scannerIsBussy[1]}");
             };
+
             //khi thùng đụng cảm biến sau printing scanner thì reset biến báo bận cho scanner trạm print quét tiếp
             GlobalVariables.MyEvent.EventHandlerSensorAfterPrintScanner += (s, o) =>
             {
@@ -256,26 +282,6 @@ namespace WeightChecking
                 }
 
                 Debug.WriteLine($"Sensor middle metal: {o.NewValue}|ScannerBussy{_scannerIsBussy[0]}");
-            };
-
-            GlobalVariables.MyEvent.EventHandleSensorBeforeWeightScan += (s, o) =>
-            {
-                Debug.WriteLine($"Event Sensor before weight scan: {o.NewValue}");
-                //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ metal scanner
-                //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
-                if (o.NewValue == 1)
-                {
-                    _ckQrWeightScanTask = new Task(() => CheckReadQrWeight());
-                    _ckQrWeightScanTask.Start();
-                }
-                //else
-                //{
-                //    if (_ckQrWeightScanTask != null)
-                //    {
-                //        _ckQrWeightScanTask.Wait();
-                //        _ckQrWeightScanTask.Dispose();
-                //    }
-                //}
             };
 
             GlobalVariables.MyEvent.EventHandleSensorAfterMetalScan += (s, o) =>
@@ -440,7 +446,7 @@ namespace WeightChecking
                 _scannerIsBussy[1] = true;
 
                 //bật biến báo đọc đc QR code từ label
-                _readQrStatus[1] = true;
+                //_readQrStatus[1] = true;
 
                 _barcodeString2 = e.NewValue;
 
@@ -475,7 +481,7 @@ namespace WeightChecking
             _driverTelnet.DataEvent.EventHandleValueChange -= DataEvent_EventHandleValueChange;
             _driverTelnet.DataEvent.EventHandleStatusChange -= DataEvent_EventHandleStatusChange;
 
-            _driverTelnet.IsDisconect = true; 
+            _driverTelnet.IsDisconect = true;
             _driverTelnet?.DisconnectDevices();
             //huy doi tuong can
             //_scaleHelper.StopScale = true;
@@ -3627,28 +3633,16 @@ namespace WeightChecking
 
                 // Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
 
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem.";
-                        labQrScale.Text = string.Empty;
-                        labResult.Text = "Fail";
-                        labResult.BackColor = Color.Red;
-                        labResult.ForeColor = Color.White;
-                    }));
-                }
-                else
-                {
+                GlobalVariables.InvokeIfRequired(this, () => {
                     labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem.";
                     labQrScale.Text = string.Empty;
                     labResult.Text = "Fail";
                     labResult.BackColor = Color.Red;
                     labResult.ForeColor = Color.White;
-                }
+                });
 
                 //hết thời gian đọc QR code mà chưa đọc được
-                //gui data xuong PLC báo reject metalPusher
+                //gui data xuong PLC báo reject Weight Pusher
                 GlobalVariables.MyEvent.WeightPusher = 1;
                 //bật đèn đỏ
                 GlobalVariables.MyEvent.StatusLightPLC = 1;
@@ -3676,7 +3670,7 @@ namespace WeightChecking
                     connection.Execute("sp_tblScanDataRejectInsert", para, commandType: CommandType.StoredProcedure);
                 }
             }
-            _readQrStatus[1] = false;//xóa biến này cho lần đọc kế tiếp
+            //_readQrStatus[1] = false;//xóa biến này cho lần đọc kế tiếp
         }
         #endregion
 
