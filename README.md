@@ -9,6 +9,10 @@ THÔNG TIN IP/PORT CÁC THIẾT BỊ
 2. Convert ATC-1000 PLC: 192.168.80.2/23
 3. Convert ATC-1000 Printing: 192.168.80.1/24
 4. PLC Conveyor: S7-1200 Profinet: 192.168.80.3
+5. Matrix scanner Cognex DM290-X:
+    Using the telnet to getting the data from scanner via ehternet
+    IP scanner: 192.168.80.4
+    Port: 23
 
 THÔNG TIN ĐỊA CHỈ MAPPING
 1. PLC Scale:
