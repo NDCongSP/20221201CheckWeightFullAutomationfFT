@@ -8,8 +8,8 @@ namespace WeightChecking
 {
     public enum StationEnum
     {
-        IDC_1,
-        IDC_2,
-        Kerry_3
+        IDC_1 = 0,
+        IDC_2 = 1,
+        Kerry_3 = 2
     }
 }

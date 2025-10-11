@@ -213,7 +213,7 @@ namespace WeightChecking
                     if (o.NewValue == 0)
                     {
                         _isStartCountTimer = true;
-                        _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.TimeCheckQrMetal)));
+                        _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.ConfigJson.TimerCheckQrMetal)));
                         _ckQRTask.Start();
                     }
                     //else if (o.NewValue == 0)
@@ -408,7 +408,7 @@ namespace WeightChecking
             InitializeScaner();
 
             //Khởi tạo máy in AnserU2 Smart one
-            if (!GlobalVariables.IsTest)
+            if (!GlobalVariables.ConfigJson.IsTest)
             {
                 SerialPortOpen();
                 Thread.Sleep(10000);
@@ -416,7 +416,7 @@ namespace WeightChecking
             }
 
             #region 20250310 update to use scanner Cognex
-            _driverTelnet.HostName = GlobalVariables.IpCognexCam_2;
+            _driverTelnet.HostName = GlobalVariables.ConfigJson.IpCognexCamScale;
             //_driverTelnet.Port = 23;
 
             _driverTelnet.DataEvent.EventHandleValueChange += DataEvent_EventHandleValueChange;
@@ -536,7 +536,7 @@ namespace WeightChecking
 
                 #region Xử lý data ban đầu theo QR code
                 _scanDataMetal.CreatedBy = GlobalVariables.UserLoginInfo.Id;
-                _scanDataMetal.Station = GlobalVariables.Station;
+                _scanDataMetal.Station = GlobalVariables.ConfigJson.Station;
 
                 bool specialCaseMetal = false;//dùng có các trường hợp hàng PU, trên WL decpration là 0, nhưng QC phân ra printing 0-1. beforePrinting thì get theo
                                               //printing=0; afterPrinting thì get theo printing=1. 6112012228
@@ -825,7 +825,7 @@ namespace WeightChecking
                         }
                         else//trường hợp quét lại chính thùng trước đó đã đi qua băng tải
                         {
-                            if ((box.Pass == 1 && (box.Status == 2 || GlobalVariables.Station == StationEnum.IDC_1))
+                            if ((box.Pass == 1 && (box.Status == 2 || GlobalVariables.ConfigJson.Station == StationEnum.IDC_1))
                                 //|| (item.Pass == 0 && item.ActualDeviationPairs == 0 && item.ApprovedBy != Guid.Empty)
                                 || (box.Pass == 0 && box.Status == 2 && box.ActualDeviationPairs == 0)
                                 )
@@ -1152,7 +1152,7 @@ namespace WeightChecking
 
                 #region Xử lý data ban đầu theo QR code
                 _scanDataWeight.CreatedBy = GlobalVariables.UserLoginInfo.Id;
-                _scanDataWeight.Station = GlobalVariables.Station;
+                _scanDataWeight.Station = GlobalVariables.ConfigJson.Station;
 
                 bool specialCase = false;//dùng có các trường hợp hàng PU, trên WL decpration là 0, nhưng QC phân ra printing 0-1. beforePrinting thì get theo
                                          //printing=0; afterPrinting thì get theo printing=1. 6112012228
@@ -1343,7 +1343,7 @@ namespace WeightChecking
                 #region truy vấn data và xử lý
                 //lấy thông tin khối lượng cân sau khi cân đã báo stable
                 //Debug.WriteLine($"da vao can,dang doi stable {_stableScale}");
-                while (_stableScale == 0 && GlobalVariables.IsScale)
+                while (_stableScale == 0 && GlobalVariables.ConfigJson.IsScale)
                 {
                     Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
                 }
@@ -1364,7 +1364,7 @@ namespace WeightChecking
                     foreach (var item in checkInfo)
                     {
                         if (
-                            (item.Pass == 1 && (item.Status == 2 || GlobalVariables.Station == StationEnum.IDC_1))
+                            (item.Pass == 1 && (item.Status == 2 || GlobalVariables.ConfigJson.Station == StationEnum.IDC_1))
                             //|| (item.Pass == 0 && item.ActualDeviationPairs == 0 && item.ApprovedBy != Guid.Empty)
                             || (item.Pass == 0 && item.Status == 2 && item.ActualDeviationPairs == 0)
                             )
@@ -1410,7 +1410,7 @@ namespace WeightChecking
                     if (specialCase)
                     {
                         //after printing
-                        if (checkOc != null || (ocFirstChar == "PR" && GlobalVariables.AfterPrinting != 0))
+                        if (checkOc != null || (ocFirstChar == "PR" && GlobalVariables.ConfigJson.AfterPrinting != 0))
                         {
                             para.Add("@Printing", 1);//sau son
                         }
@@ -1599,7 +1599,7 @@ namespace WeightChecking
                                 lowerToleranceOfBox = res.LowerToleranceOfPlasticBox;
                                 upperToleranceOfBox = res.UpperToleranceOfPlasticBox;
 
-                                if (GlobalVariables.AfterPrinting == 0 && _scanDataWeight.OcNo.Contains("PR"))
+                                if (GlobalVariables.ConfigJson.AfterPrinting == 0 && _scanDataWeight.OcNo.Contains("PR"))
                                 {
                                     _scanDataWeight.Status = 1;// báo trạng thái hàng sơn cần đưa đi sơn, trạm SSFG01
                                 }
@@ -2757,7 +2757,7 @@ namespace WeightChecking
                 connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
 
-                if (scannerId[0].InnerText == GlobalVariables.ScannerIdMetal.ToString())//vị trí check metal. đầu chuyền
+                if (scannerId[0].InnerText == GlobalVariables.ConfigJson.ScannerIdMetal.ToString())//vị trí check metal. đầu chuyền
                 {
                     _barcodeString1 = string.Empty;
 
@@ -2797,7 +2797,7 @@ namespace WeightChecking
                         connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
                     }
                 }
-                else if (scannerId[0].InnerText == GlobalVariables.ScannerIdWeight.ToString())//vị trí check weight. ngay cân
+                else if (scannerId[0].InnerText == GlobalVariables.ConfigJson.ScannerIdWeight.ToString())//vị trí check weight. ngay cân
                 {
                     //if (!_scannerIsBussy[1])
                     //{
@@ -2834,7 +2834,7 @@ namespace WeightChecking
                     //    //_scanDataWeight = new tblScanDataModel();
                     //}
                 }
-                else if (scannerId[0].InnerText == GlobalVariables.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
+                else if (scannerId[0].InnerText == GlobalVariables.ConfigJson.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
                 {
                     if (!_scannerIsBussy[2])
                     {
@@ -2895,7 +2895,7 @@ namespace WeightChecking
             DateTime dt = DateTime.Now;
             String dtn = dt.ToShortTimeString();
 
-            _serialPort = new System.IO.Ports.SerialPort(GlobalVariables.PrintComPort, 57600, Parity.None, 8, StopBits.One);
+            _serialPort = new System.IO.Ports.SerialPort(GlobalVariables.ConfigJson.ComPortPrinter, 57600, Parity.None, 8, StopBits.One);
             try
             {
                 _serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
@@ -3618,7 +3618,7 @@ namespace WeightChecking
             DateTime startTime = DateTime.Now;
             DateTime endTime = DateTime.Now;
 
-            while (timeCheck <= GlobalVariables.TimeCheckQrScale)
+            while (timeCheck <= GlobalVariables.ConfigJson.TimerCheckQrScale)
             {
                 timeCheck = (endTime - startTime).TotalSeconds;
                 endTime = DateTime.Now;
@@ -3633,7 +3633,8 @@ namespace WeightChecking
 
                 // Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
 
-                GlobalVariables.InvokeIfRequired(this, () => {
+                GlobalVariables.InvokeIfRequired(this, () =>
+                {
                     labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem.";
                     labQrScale.Text = string.Empty;
                     labResult.Text = "Fail";

@@ -11,6 +11,7 @@ namespace WeightChecking
         Empty,
         fVN,
         fFT,
-        fKV
+        fKV,
+        fIN
     }
 }

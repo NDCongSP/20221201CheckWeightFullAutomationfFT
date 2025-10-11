@@ -325,7 +325,7 @@ namespace WeightChecking
                                 para.Add("OC", _scanData.OcNo);
                                 para.Add("BoxNo", _scanData.BoxNo);
                                 para.Add("GrossWeight", _scaleValue.ToString("#,#0.00"));
-                                para.Add("Station", GlobalVariables.Station);
+                                para.Add("Station", GlobalVariables.ConfigJson.Station);
                                 para.Add("QRLabel", _scanData.BarcodeString);
                                 para.Add("ApproveType", approveType);
 

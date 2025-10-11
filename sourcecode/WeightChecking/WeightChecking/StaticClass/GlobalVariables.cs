@@ -20,16 +20,16 @@ namespace WeightChecking
         }
 
         public static string ConnectionString { get; set; }
-        public static string ConStringWinline { get; set; }
+        //public static string ConStringWinline { get; set; }
 
         public static IDbConnection GetDbConnection()
         {
-            return new SqlConnection(ConnectionString);
+            return new SqlConnection(GlobalVariables.ConfigJson.ConStringSSFG);
         }
 
         public static IDbConnection GetDbConnectionWinline()
         {
-            return new SqlConnection(ConStringWinline);
+            return new SqlConnection(GlobalVariables.ConfigJson.ConStringWL);
         }
         //chứa các thông tin cần lưu lại để khi mở phần mềm lên thì sẽ đọc lên để tiếp tục làm việc.
         public static RememberInfo RememberInfo { get; set; } = new RememberInfo();
@@ -37,11 +37,11 @@ namespace WeightChecking
         public static CustomEvents MyEvent = new CustomEvents();
 
         //biến cấu hình cân
-        public static string IpConveyor = "";//ip cau PLC S7-1200 kết n
-        public static string PortScale = "23";
+        //public static string IpConveyor = "";//ip cau PLC S7-1200 kết n
+        //public static string PortScale = "23";
         public static string ScaleStatus = "Disconnected";
-        public static int ScaleDelay = 300;
-        public static int UnitScale { get; set; } = 0;
+        //public static int ScaleDelay = 300;
+        //public static int UnitScale { get; set; } = 0;
 
         public static tblUsers UserLoginInfo { get; set; } = new tblUsers();
 
@@ -50,17 +50,17 @@ namespace WeightChecking
         public static bool ModbusStatus { get; set; }
         public static string ComPortScale { get; set; }//com kết nối PLC Delta ngay bàn cân, để đọc khố lượng cân và điều khiển đèn tháp
 
-        public static bool IsScale { get; set; } = false;
-        public static bool IsCounter { get; set; } = false;
-        public static StationEnum Station { get; set; }
+        //public static bool IsScale { get; set; } = false;
+        //public static bool IsCounter { get; set; } = false;
+        //public static StationEnum Station { get; set; }
 
         //bao can o tram truoc son hay sau son. 0-truoc; 1-sau
-        public static int AfterPrinting { get; set; } = 0;
+        //public static int AfterPrinting { get; set; } = 0;
 
-        public static string PrintComPort { get; set; }
-        public static int ScannerIdMetal { get; set; } = 1;
-        public static int ScannerIdWeight { get; set; } = 2;
-        public static int ScannerIdPrint { get; set; } = 3;
+        //public static string PrintComPort { get; set; }
+        //public static int ScannerIdMetal { get; set; } = 1;
+        //public static int ScannerIdWeight { get; set; } = 2;
+        //public static int ScannerIdPrint { get; set; } = 3;
 
         public static string ConveyorStatus { get; set; } = "Bad";
         public static string PrintConnectionStatus { get; set; } = "Bad";
@@ -71,17 +71,17 @@ namespace WeightChecking
         //byte[0]-Metal; byte[1]-Scale; byte[2]-print
 
         public static List<OcUsingModel> OcUsingList { get; set; } = new List<OcUsingModel>();//get ra danh sách tất cả các OcNo đang sử dụng
-        public static double TimeCheckQrMetal { get; set; }//Đơn vị (s), thời gian quy định thùng chạy từ cảm biến trước metal scanner đến vị trí scanner,n
+        //public static double TimeCheckQrMetal { get; set; }//Đơn vị (s), thời gian quy định thùng chạy từ cảm biến trước metal scanner đến vị trí scanner,n
                                                            //nếu qua thời gian này mà scanner chưa có tín hiệu thì báo lỗi không đọc được QR code, ghi lệnh xuống PLC conveyor reject 
-        public static double TimeCheckQrScale { get; set; }        
+        //public static double TimeCheckQrScale { get; set; }        
         public static bool AutoMan { get; set; } = true;//biến chọn chế độ hoạt động là tự động hoàn toàn hay là bằng tay. True-Auto; False-Man
         public static List<tblSpecialCaseModel> SpecialCaseList { get; set; } = new List<tblSpecialCaseModel>();
 
         public static string PrintResult { get; set; } = "";//ket qua tra ve khi thuc hien in
         public static string PrintedResult { get; set; } = "";//ket qua tra ve khi thuc hien in
-        public static string  UpdatePath { get; set; }
+        //public static string  UpdatePath { get; set; }
         public static string AppStatus { get; set; } = "DANG KHỞI ĐỘNG...";
-        public static bool IsTest { get; set; } = false;//biến báo đang ở chế độ test hay chạy chính
+        //public static bool IsTest { get; set; } = false;//biến báo đang ở chế độ test hay chạy chính
         public static bool IsOutsoleMode { get; set; } = true;
 
         #region Printing
@@ -126,8 +126,10 @@ namespace WeightChecking
         #endregion
 
         #region Cognex
-        public static string IpCognexCam_2 { get; set; } = "192.168.80.4";
+        //public static string IpCognexCam_2 { get; set; } = "192.168.80.4";
         public static string CognexCam_2Status { get; set; }
         #endregion
+
+        public static ConfigJsonModel ConfigJson { get; set; } = new ConfigJsonModel();
     }
 }

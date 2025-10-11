@@ -91,6 +91,7 @@
     <Reference Include="DevExpress.XtraPrinting.v24.2, Version=24.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.XtraReports.v24.2, Version=24.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.XtraReports.v24.2.Extensions, Version=24.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraVerticalGrid.v24.2, Version=24.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -275,6 +276,7 @@
     <Compile Include="ApplicationDbEntities.cs" />
     <Compile Include="Class\AnserU2Print.cs" />
     <Compile Include="Class\CommonDefs.cs" />
+    <Compile Include="Enums\EnumFactory.cs" />
     <Compile Include="Enums\LocationEnum.cs" />
     <Compile Include="Enums\RolesEnum.cs" />
     <Compile Include="Enums\StationEnum.cs" />
@@ -285,6 +287,7 @@
     <Compile Include="frmScaleNewUI.Designer.cs">
       <DependentUpon>frmScaleNewUI.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\Entities\tblConfig.cs" />
     <Compile Include="Models\FT050Model.cs" />
     <Compile Include="Models\MetalScanResultModel.cs" />
     <Compile Include="Views\frmDeleteBox.cs">

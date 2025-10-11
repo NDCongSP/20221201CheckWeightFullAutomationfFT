@@ -26,9 +26,22 @@ namespace WeightChecking
         static void Main()
         {
             #region Đọc các thông số cấu hình ban đầu từ settings
-            GlobalVariables.IsTest = Properties.Settings.Default.IsTest;
+            GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");//0-trước in; 1-sau in
 
-            GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");
+            using (var dbContext = new ApplicationDbEntities(GlobalVariables.ConnectionString))
+            {
+                var c = dbContext.TblConfigs.FirstOrDefault();
+
+                GlobalVariables.ConfigJson = c != null
+                    ? JsonConvert.DeserializeObject<ConfigJsonModel>(c.ConfigJson)
+                    : new ConfigJsonModel();
+
+                GlobalVariables.ConfigJson.ConStringSSFG = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringSSFG, "ITFramasBDVN");
+                GlobalVariables.ConfigJson.ConStringWL = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringWL, "ITFramasBDVN");
+                GlobalVariables.ConfigJson.ConStringTest = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringTest, "ITFramasBDVN");
+            }
+
+            //GlobalVariables.IsTest = Properties.Settings.Default.IsTest;
 
             //if (!GlobalVariables.IsTest)
             //{
@@ -39,33 +52,16 @@ namespace WeightChecking
             //    GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conStringTest, "ITFramasBDVN");
             //}
 
-            GlobalVariables.ConStringWinline = EncodeMD5.DecryptString(Properties.Settings.Default.conStringWL, "ITFramasBDVN");
-            GlobalVariables.IpConveyor = Properties.Settings.Default.ipConveyor;
-            GlobalVariables.UnitScale = int.TryParse(Properties.Settings.Default.UnitScale, out int value) ? value : 0;
-            GlobalVariables.IsScale = Properties.Settings.Default.IsScale;
-            GlobalVariables.IsCounter = Properties.Settings.Default.IsCounter;
-            GlobalVariables.AfterPrinting = Properties.Settings.Default.AfterPrinting;//0-trước in; 1-sau in
-            GlobalVariables.PrintComPort = Properties.Settings.Default.PrintComPort;
-            GlobalVariables.ScannerIdMetal = Properties.Settings.Default.ScannerIdMetal;
-            GlobalVariables.ScannerIdWeight = Properties.Settings.Default.ScannerIdWeight;
-            GlobalVariables.ScannerIdPrint = Properties.Settings.Default.ScannerIdPrint;
-            GlobalVariables.TimeCheckQrMetal = Properties.Settings.Default.TimeCheckQrMetal;
-            GlobalVariables.TimeCheckQrScale = Properties.Settings.Default.TimeCheckQrScale;
-            GlobalVariables.UpdatePath = Properties.Settings.Default.UpdatePath;
+            //GlobalVariables.AfterPrinting = Properties.Settings.Default.AfterPrinting;//0-trước in; 1-sau in
+            //GlobalVariables.PrintComPort = Properties.Settings.Default.PrintComPort;
+            //GlobalVariables.ScannerIdMetal = Properties.Settings.Default.ScannerIdMetal;
+            //GlobalVariables.ScannerIdWeight = Properties.Settings.Default.ScannerIdWeight;
+            //GlobalVariables.ScannerIdPrint = Properties.Settings.Default.ScannerIdPrint;
+            //GlobalVariables.TimeCheckQrMetal = Properties.Settings.Default.TimeCheckQrMetal;
+            //GlobalVariables.TimeCheckQrScale = Properties.Settings.Default.TimeCheckQrScale;
+            //GlobalVariables.UpdatePath = Properties.Settings.Default.UpdatePath;
             GlobalVariables.CognexCam_2Status = Properties.Settings.Default.IpCognexCam_2;
 
-            if (Properties.Settings.Default.Station == 0)
-            {
-                GlobalVariables.Station = StationEnum.IDC_1;
-            }
-            else if (Properties.Settings.Default.Station == 1)
-            {
-                GlobalVariables.Station = StationEnum.IDC_2;
-            }
-            else if (Properties.Settings.Default.Station == 2)
-            {
-                GlobalVariables.Station = StationEnum.Kerry_3;
-            }
 
             Console.WriteLine($"Path app: {Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
 
@@ -103,7 +99,7 @@ namespace WeightChecking
             };
             Log.Logger = new LoggerConfiguration().WriteTo.MSSqlServer(
 
-              connectionString: GlobalVariables.ConnectionString,
+              connectionString: GlobalVariables.ConfigJson.ConStringSSFG,
               sinkOptions: sinkOption
 
               ).MinimumLevel.Error().CreateLogger();
@@ -118,7 +114,7 @@ namespace WeightChecking
             if (!createdNew)
             {
                 // myApp is already running...
-                MessageBox.Show("Ứng dụng đã được mở. Chờ trong giây lát...", "THÔNG BÁO", MessageBoxButtons.OK,
+                MessageBox.Show("The Application is opening, please waiting.", "Info", MessageBoxButtons.OK,
                           MessageBoxIcon.Information);
                 return;
             }
@@ -128,7 +124,7 @@ namespace WeightChecking
                 AutoUpdater.DownloadPath = Environment.CurrentDirectory;
                 AutoUpdater.ApplicationExitEvent += AutoUpdater_ApplicationExitEvent;
                 AutoUpdater.CheckForUpdateEvent += AutoUpdater_CheckForUpdateEvent;
-                AutoUpdater.Start(GlobalVariables.UpdatePath);
+                AutoUpdater.Start(GlobalVariables.ConfigJson.UpdatePath);
                 Application.Run(new Login());
 
             }

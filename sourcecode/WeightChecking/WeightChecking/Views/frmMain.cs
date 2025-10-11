@@ -217,10 +217,10 @@ namespace WeightChecking
             }
             #endregion
 
-            if (!GlobalVariables.IsTest)
+            if (!GlobalVariables.ConfigJson.IsTest)
             {
                 #region Ket noi modbus RTU PLC: Scale, Metal scan
-                if (GlobalVariables.IsScale)
+                if (GlobalVariables.ConfigJson.IsScale)
                 {
                     GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
 
@@ -279,7 +279,7 @@ namespace WeightChecking
                 #endregion
 
                 #region Ket noi conveyor
-                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.IpConveyor);
+                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.ConfigJson.IpConveyor);
                 Console.WriteLine($"Conveyor Status: {GlobalVariables.ConveyorStatus}");
 
                 if (GlobalVariables.ConveyorStatus == "GOOD")
@@ -942,7 +942,7 @@ namespace WeightChecking
             {
                 isUpdateClicked = true;
                 //string UUrl = "\\10.40.10.9\\Public$\\05_IT\\01_Update\\21- IDCScaleSystem\\Update.xml";
-                string UUrl = GlobalVariables.UpdatePath;
+                string UUrl = GlobalVariables.ConfigJson.UpdatePath;
                 SplashScreenManager.ShowForm(typeof(WaitForm1));
                 System.Threading.Thread.Sleep(3000);
                 AutoUpdater.Start(UUrl);
@@ -987,25 +987,37 @@ namespace WeightChecking
 
         private void BarButtonItemSettings_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
+            //if (GlobalVariables.UserLoginInfo.Role != RolesEnum.Admin)
+            //{
+            //    XtraMessageBox.Show("You don't have permission for this function.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //    return;
+            //}
+
             try
             {
-                if (_settings == null)
+                //if (_settings == null)
+                //{
+                //    _settings = "Actived";
+
+                //    SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
+                //    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                //    SplashScreenManager.Default.SetWaitFormDescription("Loading...");
+
+                //    _frmSettings = new frmSettings();
+                //    tabbedView1.AddDocument(_frmSettings);
+                //    tabbedView1.ActivateDocument(_frmSettings);
+
+                //    SplashScreenManager.CloseForm(false);
+                //}
+                //else
+                //{
+                //    tabbedView1.ActivateDocument(_frmSettings);
+                //}
+
+                using (var nf = new frmSettings())
                 {
-                    _settings = "Actived";
-
-                    SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
-                    SplashScreenManager.Default.SetWaitFormDescription("Loading...");
-
-                    _frmSettings = new frmSettings();
-                    tabbedView1.AddDocument(_frmSettings);
-                    tabbedView1.ActivateDocument(_frmSettings);
-
-                    SplashScreenManager.CloseForm(false);
-                }
-                else
-                {
-                    tabbedView1.ActivateDocument(_frmSettings);
+                    nf.StartPosition = FormStartPosition.CenterScreen;
+                    nf.ShowDialog();
                 }
             }
             catch (Exception ex)
@@ -1391,7 +1403,7 @@ namespace WeightChecking
             while (true)
             {
                 #region Đọc các giá trị từ PLC Cân
-                if (GlobalVariables.IsScale)
+                if (GlobalVariables.ConfigJson.IsScale)
                 {
                     if (GlobalVariables.ModbusStatus)
                     {
@@ -1513,7 +1525,7 @@ namespace WeightChecking
                 {
                     GlobalVariables.MyDriver.S7Ethernet.Client.NgatKetNoi();
 
-                    GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.IpConveyor);
+                    GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.ConfigJson.IpConveyor);
                 }
                 #endregion
 
