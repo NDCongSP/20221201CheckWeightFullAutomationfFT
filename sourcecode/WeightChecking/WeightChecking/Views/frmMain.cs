@@ -28,6 +28,7 @@ namespace WeightChecking
         private bool isUpdateClicked = false;
 
         frmScale _frmScale;
+        frmScaleNewUI _frmScaleNewUI;
         frmSettings _frmSettings;
         frmMasterData _frmMasterData;
         frmReports _frmReports;
@@ -155,9 +156,13 @@ namespace WeightChecking
                 {
                     _scale = "Actived";
 
-                    _frmScale = new frmScale();
-                    tabbedView1.AddDocument(_frmScale);
-                    tabbedView1.ActivateDocument(_frmScale);
+                    //_frmScale = new frmScale();
+                    //tabbedView1.AddDocument(_frmScale);
+                    //tabbedView1.ActivateDocument(_frmScale);
+
+                    _frmScaleNewUI = new frmScaleNewUI();
+                    tabbedView1.AddDocument(_frmScaleNewUI);
+                    tabbedView1.ActivateDocument(_frmScaleNewUI);
                 }
                 else
                 {

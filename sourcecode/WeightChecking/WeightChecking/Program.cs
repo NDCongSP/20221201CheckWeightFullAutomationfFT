@@ -28,14 +28,16 @@ namespace WeightChecking
             #region Đọc các thông số cấu hình ban đầu từ settings
             GlobalVariables.IsTest = Properties.Settings.Default.IsTest;
 
-            if (!GlobalVariables.IsTest)
-            {
-                GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");
-            }
-            else
-            {
-                GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conStringTest, "ITFramasBDVN");
-            }
+            GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");
+
+            //if (!GlobalVariables.IsTest)
+            //{
+            //    GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");
+            //}
+            //else
+            //{
+            //    GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conStringTest, "ITFramasBDVN");
+            //}
 
             GlobalVariables.ConStringWinline = EncodeMD5.DecryptString(Properties.Settings.Default.conStringWL, "ITFramasBDVN");
             GlobalVariables.IpConveyor = Properties.Settings.Default.ipConveyor;

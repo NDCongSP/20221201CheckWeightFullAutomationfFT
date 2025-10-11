@@ -102,18 +102,6 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool IsScale {
-            get {
-                return ((bool)(this["IsScale"]));
-            }
-            set {
-                this["IsScale"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool IsCounter {
             get {
@@ -222,7 +210,7 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool IsTest {
             get {
                 return ((bool)(this["IsTest"]));
@@ -255,6 +243,18 @@ namespace WeightChecking.Properties {
             }
             set {
                 this["IpCognexCam_2"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IsScale {
+            get {
+                return ((bool)(this["IsScale"]));
+            }
+            set {
+                this["IsScale"] = value;
             }
         }
     }
