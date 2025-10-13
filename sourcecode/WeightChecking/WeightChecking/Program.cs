@@ -73,7 +73,6 @@ namespace WeightChecking
                 GlobalVariables.RememberInfo.Pass = EncodeMD5.DecryptString(GlobalVariables.RememberInfo.Pass, "ITFramasBDVN");
             }
 
-            GlobalVariables.ComPortScale = Properties.Settings.Default.ComPortScale;
             #endregion
 
             #region Get danh sách tất cả các OC đang sử dụng

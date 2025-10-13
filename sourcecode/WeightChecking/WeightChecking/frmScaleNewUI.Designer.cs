@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmScaleNewUI));
             this.groupControl2 = new DevExpress.XtraEditors.GroupControl();
             this.labUpperTolerance = new DevExpress.XtraEditors.TextEdit();
             this.labLowerTolerance = new DevExpress.XtraEditors.TextEdit();
@@ -93,13 +94,10 @@
             this.labDeviation = new DevExpress.XtraEditors.TextEdit();
             this.labelControl20 = new DevExpress.XtraEditors.LabelControl();
             this.labelControl18 = new DevExpress.XtraEditors.LabelControl();
-            this.groupControl3 = new DevExpress.XtraEditors.GroupControl();
             this.labErrInfoPrint = new DevExpress.XtraEditors.LabelControl();
             this.labErrInfoScale = new DevExpress.XtraEditors.LabelControl();
             this.labErrInfoMetal = new DevExpress.XtraEditors.LabelControl();
-            this.labelControl37 = new DevExpress.XtraEditors.LabelControl();
-            this.labelControl39 = new DevExpress.XtraEditors.LabelControl();
-            this.labelControl41 = new DevExpress.XtraEditors.LabelControl();
+            this.labelControl2 = new DevExpress.XtraEditors.LabelControl();
             ((System.ComponentModel.ISupportInitialize)(this.groupControl2)).BeginInit();
             this.groupControl2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.labUpperTolerance.Properties)).BeginInit();
@@ -123,15 +121,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.labDeviationPairs.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.labCalculatedPairs.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.labDeviation.Properties)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.groupControl3)).BeginInit();
-            this.groupControl3.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupControl2
             // 
             this.groupControl2.AppearanceCaption.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(45)))), ((int)(((byte)(66)))));
             this.groupControl2.AppearanceCaption.Font = new System.Drawing.Font("Tahoma", 15F, System.Drawing.FontStyle.Bold);
-            this.groupControl2.AppearanceCaption.ForeColor = DevExpress.LookAndFeel.DXSkinColors.ForeColors.Information;
+            this.groupControl2.AppearanceCaption.ForeColor = DevExpress.LookAndFeel.DXSkinColors.ForeColors.WindowText;
             this.groupControl2.AppearanceCaption.Options.UseBorderColor = true;
             this.groupControl2.AppearanceCaption.Options.UseFont = true;
             this.groupControl2.AppearanceCaption.Options.UseForeColor = true;
@@ -172,16 +168,16 @@
             this.groupControl2.Controls.Add(this.labProductCode);
             this.groupControl2.Controls.Add(this.labelControl12);
             this.groupControl2.GroupStyle = DevExpress.Utils.GroupStyle.Light;
-            this.groupControl2.Location = new System.Drawing.Point(12, 165);
+            this.groupControl2.Location = new System.Drawing.Point(12, 310);
             this.groupControl2.Name = "groupControl2";
-            this.groupControl2.Size = new System.Drawing.Size(950, 451);
+            this.groupControl2.Size = new System.Drawing.Size(950, 524);
             this.groupControl2.TabIndex = 7;
-            this.groupControl2.Text = "Product Information";
+            this.groupControl2.Text = "PRODUCT INFORMATION";
             // 
             // labUpperTolerance
             // 
             this.labUpperTolerance.EditValue = "353.76";
-            this.labUpperTolerance.Location = new System.Drawing.Point(246, 411);
+            this.labUpperTolerance.Location = new System.Drawing.Point(246, 481);
             this.labUpperTolerance.Name = "labUpperTolerance";
             this.labUpperTolerance.Properties.Appearance.BackColor = System.Drawing.Color.White;
             this.labUpperTolerance.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
@@ -205,7 +201,7 @@
             // labLowerTolerance
             // 
             this.labLowerTolerance.EditValue = "353.76";
-            this.labLowerTolerance.Location = new System.Drawing.Point(10, 411);
+            this.labLowerTolerance.Location = new System.Drawing.Point(10, 481);
             this.labLowerTolerance.Name = "labLowerTolerance";
             this.labLowerTolerance.Properties.Appearance.BackColor = System.Drawing.Color.White;
             this.labLowerTolerance.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
@@ -229,7 +225,7 @@
             // labGrossWeight
             // 
             this.labGrossWeight.EditValue = "10212.5";
-            this.labGrossWeight.Location = new System.Drawing.Point(712, 352);
+            this.labGrossWeight.Location = new System.Drawing.Point(713, 408);
             this.labGrossWeight.Name = "labGrossWeight";
             this.labGrossWeight.Properties.Appearance.BackColor = System.Drawing.Color.White;
             this.labGrossWeight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
@@ -253,7 +249,7 @@
             // labAccessoriesWeight
             // 
             this.labAccessoriesWeight.EditValue = "158.5";
-            this.labAccessoriesWeight.Location = new System.Drawing.Point(246, 350);
+            this.labAccessoriesWeight.Location = new System.Drawing.Point(247, 406);
             this.labAccessoriesWeight.Name = "labAccessoriesWeight";
             this.labAccessoriesWeight.Properties.Appearance.BackColor = System.Drawing.Color.White;
             this.labAccessoriesWeight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
@@ -275,7 +271,7 @@
             // labBoxWeight
             // 
             this.labBoxWeight.EditValue = "1210";
-            this.labBoxWeight.Location = new System.Drawing.Point(10, 350);
+            this.labBoxWeight.Location = new System.Drawing.Point(11, 406);
             this.labBoxWeight.Name = "labBoxWeight";
             this.labBoxWeight.Properties.Appearance.BackColor = System.Drawing.Color.White;
             this.labBoxWeight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
@@ -297,7 +293,7 @@
             // labAveWeight
             // 
             this.labAveWeight.EditValue = "100";
-            this.labAveWeight.Location = new System.Drawing.Point(479, 289);
+            this.labAveWeight.Location = new System.Drawing.Point(480, 327);
             this.labAveWeight.Name = "labAveWeight";
             this.labAveWeight.Properties.Appearance.BackColor = System.Drawing.Color.White;
             this.labAveWeight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
@@ -320,7 +316,7 @@
             // 
             this.labelControl43.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl43.Appearance.Options.UseFont = true;
-            this.labelControl43.Location = new System.Drawing.Point(764, 388);
+            this.labelControl43.Location = new System.Drawing.Point(764, 458);
             this.labelControl43.Name = "labelControl43";
             this.labelControl43.Size = new System.Drawing.Size(84, 19);
             this.labelControl43.TabIndex = 47;
@@ -330,7 +326,7 @@
             // 
             this.labelControl36.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl36.Appearance.Options.UseFont = true;
-            this.labelControl36.Location = new System.Drawing.Point(548, 388);
+            this.labelControl36.Location = new System.Drawing.Point(548, 458);
             this.labelControl36.Name = "labelControl36";
             this.labelControl36.Size = new System.Drawing.Size(55, 19);
             this.labelControl36.TabIndex = 46;
@@ -339,7 +335,7 @@
             // _toggleSwitchMetal
             // 
             this._toggleSwitchMetal.EditValue = true;
-            this._toggleSwitchMetal.Location = new System.Drawing.Point(764, 412);
+            this._toggleSwitchMetal.Location = new System.Drawing.Point(764, 482);
             this._toggleSwitchMetal.Name = "_toggleSwitchMetal";
             this._toggleSwitchMetal.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
             this._toggleSwitchMetal.Properties.Appearance.Options.UseFont = true;
@@ -351,7 +347,7 @@
             // 
             // _toggleSwitchPrinting
             // 
-            this._toggleSwitchPrinting.Location = new System.Drawing.Point(531, 413);
+            this._toggleSwitchPrinting.Location = new System.Drawing.Point(531, 483);
             this._toggleSwitchPrinting.Name = "_toggleSwitchPrinting";
             this._toggleSwitchPrinting.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
             this._toggleSwitchPrinting.Properties.Appearance.Options.UseFont = true;
@@ -364,7 +360,7 @@
             // labNetWeight
             // 
             this.labNetWeight.EditValue = "8844";
-            this.labNetWeight.Location = new System.Drawing.Point(712, 289);
+            this.labNetWeight.Location = new System.Drawing.Point(713, 327);
             this.labNetWeight.Name = "labNetWeight";
             this.labNetWeight.Properties.Appearance.BackColor = System.Drawing.Color.White;
             this.labNetWeight.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
@@ -389,7 +385,7 @@
             // 
             this.labelControl46.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl46.Appearance.Options.UseFont = true;
-            this.labelControl46.Location = new System.Drawing.Point(712, 264);
+            this.labelControl46.Location = new System.Drawing.Point(713, 302);
             this.labelControl46.Name = "labelControl46";
             this.labelControl46.Size = new System.Drawing.Size(132, 19);
             this.labelControl46.TabIndex = 42;
@@ -397,8 +393,8 @@
             // 
             // labBoxType
             // 
-            this.labBoxType.EditValue = "Placstic";
-            this.labBoxType.Location = new System.Drawing.Point(10, 289);
+            this.labBoxType.EditValue = "Plastic";
+            this.labBoxType.Location = new System.Drawing.Point(11, 327);
             this.labBoxType.Name = "labBoxType";
             this.labBoxType.Properties.Appearance.BackColor = System.Drawing.Color.White;
             this.labBoxType.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
@@ -412,7 +408,7 @@
             // labQuantity
             // 
             this.labQuantity.EditValue = "100";
-            this.labQuantity.Location = new System.Drawing.Point(246, 289);
+            this.labQuantity.Location = new System.Drawing.Point(247, 327);
             this.labQuantity.Name = "labQuantity";
             this.labQuantity.Properties.Appearance.BackColor = System.Drawing.Color.White;
             this.labQuantity.Properties.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
@@ -459,7 +455,7 @@
             // 
             this.labelControl33.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl33.Appearance.Options.UseFont = true;
-            this.labelControl33.Location = new System.Drawing.Point(246, 386);
+            this.labelControl33.Location = new System.Drawing.Point(246, 456);
             this.labelControl33.Name = "labelControl33";
             this.labelControl33.Size = new System.Drawing.Size(148, 19);
             this.labelControl33.TabIndex = 29;
@@ -469,7 +465,7 @@
             // 
             this.labelControl31.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl31.Appearance.Options.UseFont = true;
-            this.labelControl31.Location = new System.Drawing.Point(10, 386);
+            this.labelControl31.Location = new System.Drawing.Point(10, 456);
             this.labelControl31.Name = "labelControl31";
             this.labelControl31.Size = new System.Drawing.Size(143, 19);
             this.labelControl31.TabIndex = 27;
@@ -479,7 +475,7 @@
             // 
             this.labelControl29.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl29.Appearance.Options.UseFont = true;
-            this.labelControl29.Location = new System.Drawing.Point(712, 325);
+            this.labelControl29.Location = new System.Drawing.Point(713, 381);
             this.labelControl29.Name = "labelControl29";
             this.labelControl29.Size = new System.Drawing.Size(148, 19);
             this.labelControl29.TabIndex = 25;
@@ -489,7 +485,7 @@
             // 
             this.labelControl27.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl27.Appearance.Options.UseFont = true;
-            this.labelControl27.Location = new System.Drawing.Point(246, 325);
+            this.labelControl27.Location = new System.Drawing.Point(247, 381);
             this.labelControl27.Name = "labelControl27";
             this.labelControl27.Size = new System.Drawing.Size(137, 19);
             this.labelControl27.TabIndex = 23;
@@ -499,7 +495,7 @@
             // 
             this.labelControl25.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl25.Appearance.Options.UseFont = true;
-            this.labelControl25.Location = new System.Drawing.Point(10, 325);
+            this.labelControl25.Location = new System.Drawing.Point(11, 381);
             this.labelControl25.Name = "labelControl25";
             this.labelControl25.Size = new System.Drawing.Size(106, 19);
             this.labelControl25.TabIndex = 21;
@@ -509,7 +505,7 @@
             // 
             this.labelControl21.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl21.Appearance.Options.UseFont = true;
-            this.labelControl21.Location = new System.Drawing.Point(479, 264);
+            this.labelControl21.Location = new System.Drawing.Point(480, 302);
             this.labelControl21.Name = "labelControl21";
             this.labelControl21.Size = new System.Drawing.Size(112, 19);
             this.labelControl21.TabIndex = 17;
@@ -519,7 +515,7 @@
             // 
             this.labelControl19.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl19.Appearance.Options.UseFont = true;
-            this.labelControl19.Location = new System.Drawing.Point(10, 264);
+            this.labelControl19.Location = new System.Drawing.Point(11, 302);
             this.labelControl19.Name = "labelControl19";
             this.labelControl19.Size = new System.Drawing.Size(66, 19);
             this.labelControl19.TabIndex = 15;
@@ -535,7 +531,7 @@
             this.labColor.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
             this.labColor.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
             this.labColor.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.Simple;
-            this.labColor.Location = new System.Drawing.Point(10, 211);
+            this.labColor.Location = new System.Drawing.Point(11, 235);
             this.labColor.Name = "labColor";
             this.labColor.Size = new System.Drawing.Size(929, 47);
             this.labColor.TabIndex = 14;
@@ -546,7 +542,7 @@
             // 
             this.labelControl17.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl17.Appearance.Options.UseFont = true;
-            this.labelControl17.Location = new System.Drawing.Point(10, 186);
+            this.labelControl17.Location = new System.Drawing.Point(11, 210);
             this.labelControl17.Name = "labelControl17";
             this.labelControl17.Size = new System.Drawing.Size(38, 19);
             this.labelControl17.TabIndex = 13;
@@ -580,7 +576,7 @@
             // 
             this.labelControl13.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl13.Appearance.Options.UseFont = true;
-            this.labelControl13.Location = new System.Drawing.Point(246, 264);
+            this.labelControl13.Location = new System.Drawing.Point(247, 302);
             this.labelControl13.Name = "labelControl13";
             this.labelControl13.Size = new System.Drawing.Size(116, 19);
             this.labelControl13.TabIndex = 9;
@@ -644,7 +640,7 @@
             this.labProductName.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
             this.labProductName.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
             this.labProductName.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.Simple;
-            this.labProductName.Location = new System.Drawing.Point(10, 108);
+            this.labProductName.Location = new System.Drawing.Point(11, 119);
             this.labProductName.Name = "labProductName";
             this.labProductName.Size = new System.Drawing.Size(929, 72);
             this.labProductName.TabIndex = 4;
@@ -655,7 +651,7 @@
             // 
             this.labelControl10.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl10.Appearance.Options.UseFont = true;
-            this.labelControl10.Location = new System.Drawing.Point(10, 83);
+            this.labelControl10.Location = new System.Drawing.Point(11, 94);
             this.labelControl10.Name = "labelControl10";
             this.labelControl10.Size = new System.Drawing.Size(100, 19);
             this.labelControl10.TabIndex = 3;
@@ -689,22 +685,24 @@
             // 
             this.groupControl1.AppearanceCaption.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(45)))), ((int)(((byte)(66)))));
             this.groupControl1.AppearanceCaption.Font = new System.Drawing.Font("Tahoma", 15F, System.Drawing.FontStyle.Bold);
-            this.groupControl1.AppearanceCaption.ForeColor = DevExpress.LookAndFeel.DXSkinColors.ForeColors.Information;
-            this.groupControl1.AppearanceCaption.Options.UseBorderColor = true;
+            this.groupControl1.AppearanceCaption.ForeColor = DevExpress.LookAndFeel.DXSkinColors.ForeColors.WindowText;
             this.groupControl1.AppearanceCaption.Options.UseFont = true;
             this.groupControl1.AppearanceCaption.Options.UseForeColor = true;
+            this.groupControl1.Controls.Add(this.labErrInfoPrint);
+            this.groupControl1.Controls.Add(this.labErrInfoScale);
             this.groupControl1.Controls.Add(this.labQrPrint);
             this.groupControl1.Controls.Add(this.labelControl6);
             this.groupControl1.Controls.Add(this.labQrScale);
             this.groupControl1.Controls.Add(this.labelControl4);
+            this.groupControl1.Controls.Add(this.labErrInfoMetal);
             this.groupControl1.Controls.Add(this.labQrMetal);
             this.groupControl1.Controls.Add(this.labelControl1);
             this.groupControl1.GroupStyle = DevExpress.Utils.GroupStyle.Light;
             this.groupControl1.Location = new System.Drawing.Point(12, 3);
             this.groupControl1.Name = "groupControl1";
-            this.groupControl1.Size = new System.Drawing.Size(950, 156);
+            this.groupControl1.Size = new System.Drawing.Size(950, 284);
             this.groupControl1.TabIndex = 2;
-            this.groupControl1.Text = "Stations QR Code";
+            this.groupControl1.Text = "STATION CHECK";
             // 
             // labQrPrint
             // 
@@ -713,7 +711,7 @@
             this.labQrPrint.Appearance.Options.UseBackColor = true;
             this.labQrPrint.Appearance.Options.UseFont = true;
             this.labQrPrint.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this.labQrPrint.Location = new System.Drawing.Point(139, 118);
+            this.labQrPrint.Location = new System.Drawing.Point(139, 214);
             this.labQrPrint.Name = "labQrPrint";
             this.labQrPrint.Size = new System.Drawing.Size(800, 24);
             this.labQrPrint.TabIndex = 6;
@@ -723,7 +721,7 @@
             // 
             this.labelControl6.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl6.Appearance.Options.UseFont = true;
-            this.labelControl6.Location = new System.Drawing.Point(5, 120);
+            this.labelControl6.Location = new System.Drawing.Point(10, 217);
             this.labelControl6.Name = "labelControl6";
             this.labelControl6.Size = new System.Drawing.Size(82, 19);
             this.labelControl6.TabIndex = 5;
@@ -736,7 +734,7 @@
             this.labQrScale.Appearance.Options.UseBackColor = true;
             this.labQrScale.Appearance.Options.UseFont = true;
             this.labQrScale.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this.labQrScale.Location = new System.Drawing.Point(139, 74);
+            this.labQrScale.Location = new System.Drawing.Point(145, 128);
             this.labQrScale.Name = "labQrScale";
             this.labQrScale.Size = new System.Drawing.Size(800, 24);
             this.labQrScale.TabIndex = 4;
@@ -746,7 +744,7 @@
             // 
             this.labelControl4.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl4.Appearance.Options.UseFont = true;
-            this.labelControl4.Location = new System.Drawing.Point(5, 76);
+            this.labelControl4.Location = new System.Drawing.Point(11, 131);
             this.labelControl4.Name = "labelControl4";
             this.labelControl4.Size = new System.Drawing.Size(36, 19);
             this.labelControl4.TabIndex = 3;
@@ -759,7 +757,7 @@
             this.labQrMetal.Appearance.Options.UseBackColor = true;
             this.labQrMetal.Appearance.Options.UseFont = true;
             this.labQrMetal.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this.labQrMetal.Location = new System.Drawing.Point(139, 31);
+            this.labQrMetal.Location = new System.Drawing.Point(139, 42);
             this.labQrMetal.Name = "labQrMetal";
             this.labQrMetal.Size = new System.Drawing.Size(800, 24);
             this.labQrMetal.TabIndex = 2;
@@ -769,7 +767,7 @@
             // 
             this.labelControl1.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl1.Appearance.Options.UseFont = true;
-            this.labelControl1.Location = new System.Drawing.Point(5, 33);
+            this.labelControl1.Location = new System.Drawing.Point(5, 45);
             this.labelControl1.Name = "labelControl1";
             this.labelControl1.Size = new System.Drawing.Size(92, 19);
             this.labelControl1.TabIndex = 0;
@@ -779,10 +777,11 @@
             // 
             this._groupControlWeightChecking.AppearanceCaption.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(45)))), ((int)(((byte)(66)))));
             this._groupControlWeightChecking.AppearanceCaption.Font = new System.Drawing.Font("Tahoma", 15F, System.Drawing.FontStyle.Bold);
-            this._groupControlWeightChecking.AppearanceCaption.ForeColor = DevExpress.LookAndFeel.DXSkinColors.ForeColors.Information;
+            this._groupControlWeightChecking.AppearanceCaption.ForeColor = DevExpress.LookAndFeel.DXSkinColors.ForeColors.WindowText;
             this._groupControlWeightChecking.AppearanceCaption.Options.UseBorderColor = true;
             this._groupControlWeightChecking.AppearanceCaption.Options.UseFont = true;
             this._groupControlWeightChecking.AppearanceCaption.Options.UseForeColor = true;
+            this._groupControlWeightChecking.Controls.Add(this.labelControl2);
             this._groupControlWeightChecking.Controls.Add(this.labelControl42);
             this._groupControlWeightChecking.Controls.Add(this.labResult);
             this._groupControlWeightChecking.Controls.Add(this.labelControl38);
@@ -808,27 +807,27 @@
             this._groupControlWeightChecking.Name = "_groupControlWeightChecking";
             this._groupControlWeightChecking.Size = new System.Drawing.Size(932, 831);
             this._groupControlWeightChecking.TabIndex = 1;
-            this._groupControlWeightChecking.Text = "Weight Checking";
+            this._groupControlWeightChecking.Text = "WEIGHT CHECK";
             // 
             // labelControl42
             // 
-            this.labelControl42.Appearance.BackColor = System.Drawing.Color.White;
-            this.labelControl42.Appearance.Font = new System.Drawing.Font("Tahoma", 20F);
+            this.labelControl42.Appearance.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.labelControl42.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
             this.labelControl42.Appearance.Options.UseBackColor = true;
             this.labelControl42.Appearance.Options.UseFont = true;
             this.labelControl42.Appearance.Options.UseTextOptions = true;
             this.labelControl42.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
             this.labelControl42.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this.labelControl42.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.Simple;
-            this.labelControl42.Location = new System.Drawing.Point(12, 728);
+            this.labelControl42.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this.labelControl42.Location = new System.Drawing.Point(12, 798);
             this.labelControl42.Name = "labelControl42";
-            this.labelControl42.Size = new System.Drawing.Size(604, 88);
+            this.labelControl42.Size = new System.Drawing.Size(915, 28);
             this.labelControl42.TabIndex = 42;
             this.labelControl42.Text = "Everything OK.";
             // 
             // labResult
             // 
-            this.labResult.Appearance.BackColor = System.Drawing.Color.Lime;
+            this.labResult.Appearance.BackColor = System.Drawing.Color.Green;
             this.labResult.Appearance.Font = new System.Drawing.Font("Tahoma", 40F);
             this.labResult.Appearance.Options.UseBackColor = true;
             this.labResult.Appearance.Options.UseFont = true;
@@ -837,9 +836,9 @@
             this.labResult.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
             this.labResult.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
             this.labResult.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.Simple;
-            this.labResult.Location = new System.Drawing.Point(622, 728);
+            this.labResult.Location = new System.Drawing.Point(388, 721);
             this.labResult.Name = "labResult";
-            this.labResult.Size = new System.Drawing.Size(299, 88);
+            this.labResult.Size = new System.Drawing.Size(398, 71);
             this.labResult.TabIndex = 52;
             this.labResult.Text = "OK";
             // 
@@ -886,6 +885,7 @@
             this.labNetRealWeight.Properties.MaskSettings.Set("MaskManagerType", typeof(DevExpress.Data.Mask.NumericMaskManager));
             this.labNetRealWeight.Properties.MaskSettings.Set("MaskManagerSignature", "allowNull=False");
             this.labNetRealWeight.Properties.MaskSettings.Set("mask", "n2");
+            this.labNetRealWeight.Properties.ReadOnly = true;
             this.labNetRealWeight.Properties.UseMaskAsDisplayFormat = true;
             this.labNetRealWeight.Size = new System.Drawing.Size(398, 88);
             this.labNetRealWeight.TabIndex = 50;
@@ -933,6 +933,7 @@
             this.labRealWeight.Properties.MaskSettings.Set("MaskManagerType", typeof(DevExpress.Data.Mask.NumericMaskManager));
             this.labRealWeight.Properties.MaskSettings.Set("MaskManagerSignature", "allowNull=False");
             this.labRealWeight.Properties.MaskSettings.Set("mask", "n2");
+            this.labRealWeight.Properties.ReadOnly = true;
             this.labRealWeight.Properties.UseMaskAsDisplayFormat = true;
             this.labRealWeight.Size = new System.Drawing.Size(398, 88);
             this.labRealWeight.TabIndex = 47;
@@ -978,6 +979,7 @@
             this.labScaleValue.Properties.MaskSettings.Set("MaskManagerType", typeof(DevExpress.Data.Mask.NumericMaskManager));
             this.labScaleValue.Properties.MaskSettings.Set("MaskManagerSignature", "allowNull=False");
             this.labScaleValue.Properties.MaskSettings.Set("mask", "n2");
+            this.labScaleValue.Properties.ReadOnly = true;
             this.labScaleValue.Properties.UseMaskAsDisplayFormat = true;
             this.labScaleValue.Size = new System.Drawing.Size(398, 88);
             this.labScaleValue.TabIndex = 44;
@@ -1010,6 +1012,7 @@
             this.labDeviationPairs.Properties.MaskSettings.Set("MaskManagerType", typeof(DevExpress.Data.Mask.NumericMaskManager));
             this.labDeviationPairs.Properties.MaskSettings.Set("MaskManagerSignature", "allowNull=False");
             this.labDeviationPairs.Properties.MaskSettings.Set("mask", "n2");
+            this.labDeviationPairs.Properties.ReadOnly = true;
             this.labDeviationPairs.Properties.UseMaskAsDisplayFormat = true;
             this.labDeviationPairs.Size = new System.Drawing.Size(398, 88);
             this.labDeviationPairs.TabIndex = 38;
@@ -1030,6 +1033,7 @@
             this.labCalculatedPairs.Properties.MaskSettings.Set("MaskManagerType", typeof(DevExpress.Data.Mask.NumericMaskManager));
             this.labCalculatedPairs.Properties.MaskSettings.Set("MaskManagerSignature", "allowNull=False");
             this.labCalculatedPairs.Properties.MaskSettings.Set("mask", "n2");
+            this.labCalculatedPairs.Properties.ReadOnly = true;
             this.labCalculatedPairs.Properties.UseMaskAsDisplayFormat = true;
             this.labCalculatedPairs.Size = new System.Drawing.Size(398, 88);
             this.labCalculatedPairs.TabIndex = 35;
@@ -1090,6 +1094,7 @@
             this.labDeviation.Properties.MaskSettings.Set("MaskManagerType", typeof(DevExpress.Data.Mask.NumericMaskManager));
             this.labDeviation.Properties.MaskSettings.Set("MaskManagerSignature", "allowNull=False");
             this.labDeviation.Properties.MaskSettings.Set("mask", "n2");
+            this.labDeviation.Properties.ReadOnly = true;
             this.labDeviation.Properties.UseMaskAsDisplayFormat = true;
             this.labDeviation.Size = new System.Drawing.Size(398, 88);
             this.labDeviation.TabIndex = 41;
@@ -1119,116 +1124,84 @@
             this.labelControl18.TabIndex = 39;
             this.labelControl18.Text = "P/L/R";
             // 
-            // groupControl3
-            // 
-            this.groupControl3.AppearanceCaption.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(45)))), ((int)(((byte)(66)))));
-            this.groupControl3.AppearanceCaption.Font = new System.Drawing.Font("Tahoma", 15F, System.Drawing.FontStyle.Bold);
-            this.groupControl3.AppearanceCaption.ForeColor = DevExpress.LookAndFeel.DXSkinColors.ForeColors.Information;
-            this.groupControl3.AppearanceCaption.Options.UseBorderColor = true;
-            this.groupControl3.AppearanceCaption.Options.UseFont = true;
-            this.groupControl3.AppearanceCaption.Options.UseForeColor = true;
-            this.groupControl3.Controls.Add(this.labErrInfoPrint);
-            this.groupControl3.Controls.Add(this.labErrInfoScale);
-            this.groupControl3.Controls.Add(this.labErrInfoMetal);
-            this.groupControl3.Controls.Add(this.labelControl37);
-            this.groupControl3.Controls.Add(this.labelControl39);
-            this.groupControl3.Controls.Add(this.labelControl41);
-            this.groupControl3.GroupStyle = DevExpress.Utils.GroupStyle.Light;
-            this.groupControl3.Location = new System.Drawing.Point(12, 622);
-            this.groupControl3.Name = "groupControl3";
-            this.groupControl3.Size = new System.Drawing.Size(950, 212);
-            this.groupControl3.TabIndex = 7;
-            this.groupControl3.Text = "Logs";
-            // 
             // labErrInfoPrint
             // 
-            this.labErrInfoPrint.Appearance.BackColor = System.Drawing.Color.Lime;
+            this.labErrInfoPrint.Appearance.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.labErrInfoPrint.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
+            this.labErrInfoPrint.Appearance.ForeColor = System.Drawing.Color.Green;
             this.labErrInfoPrint.Appearance.Options.UseBackColor = true;
             this.labErrInfoPrint.Appearance.Options.UseFont = true;
+            this.labErrInfoPrint.Appearance.Options.UseForeColor = true;
             this.labErrInfoPrint.Appearance.Options.UseTextOptions = true;
             this.labErrInfoPrint.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
             this.labErrInfoPrint.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this.labErrInfoPrint.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.Simple;
-            this.labErrInfoPrint.Location = new System.Drawing.Point(127, 144);
+            this.labErrInfoPrint.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this.labErrInfoPrint.Location = new System.Drawing.Point(139, 244);
             this.labErrInfoPrint.Name = "labErrInfoPrint";
-            this.labErrInfoPrint.Size = new System.Drawing.Size(810, 53);
+            this.labErrInfoPrint.Size = new System.Drawing.Size(800, 29);
             this.labErrInfoPrint.TabIndex = 38;
             this.labErrInfoPrint.Text = "Printing";
             // 
             // labErrInfoScale
             // 
-            this.labErrInfoScale.Appearance.BackColor = System.Drawing.Color.Red;
+            this.labErrInfoScale.Appearance.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.labErrInfoScale.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
+            this.labErrInfoScale.Appearance.ForeColor = System.Drawing.Color.Red;
             this.labErrInfoScale.Appearance.Options.UseBackColor = true;
             this.labErrInfoScale.Appearance.Options.UseFont = true;
+            this.labErrInfoScale.Appearance.Options.UseForeColor = true;
             this.labErrInfoScale.Appearance.Options.UseTextOptions = true;
             this.labErrInfoScale.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
             this.labErrInfoScale.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this.labErrInfoScale.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.Simple;
-            this.labErrInfoScale.Location = new System.Drawing.Point(127, 85);
+            this.labErrInfoScale.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this.labErrInfoScale.Location = new System.Drawing.Point(139, 157);
             this.labErrInfoScale.Name = "labErrInfoScale";
-            this.labErrInfoScale.Size = new System.Drawing.Size(810, 53);
+            this.labErrInfoScale.Size = new System.Drawing.Size(800, 29);
             this.labErrInfoScale.TabIndex = 37;
             this.labErrInfoScale.Text = "The box was rejected due to fail weight.";
             // 
             // labErrInfoMetal
             // 
-            this.labErrInfoMetal.Appearance.BackColor = System.Drawing.Color.Red;
+            this.labErrInfoMetal.Appearance.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.labErrInfoMetal.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
+            this.labErrInfoMetal.Appearance.ForeColor = System.Drawing.Color.Red;
             this.labErrInfoMetal.Appearance.Options.UseBackColor = true;
             this.labErrInfoMetal.Appearance.Options.UseFont = true;
+            this.labErrInfoMetal.Appearance.Options.UseForeColor = true;
             this.labErrInfoMetal.Appearance.Options.UseTextOptions = true;
             this.labErrInfoMetal.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
             this.labErrInfoMetal.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this.labErrInfoMetal.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.Simple;
-            this.labErrInfoMetal.Location = new System.Drawing.Point(127, 26);
+            this.labErrInfoMetal.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this.labErrInfoMetal.Location = new System.Drawing.Point(139, 69);
             this.labErrInfoMetal.Name = "labErrInfoMetal";
-            this.labErrInfoMetal.Size = new System.Drawing.Size(810, 53);
+            this.labErrInfoMetal.Size = new System.Drawing.Size(800, 29);
             this.labErrInfoMetal.TabIndex = 33;
             this.labErrInfoMetal.Text = "Could not read QR Code ";
             // 
-            // labelControl37
+            // labelControl2
             // 
-            this.labelControl37.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
-            this.labelControl37.Appearance.Options.UseFont = true;
-            this.labelControl37.Location = new System.Drawing.Point(15, 161);
-            this.labelControl37.Name = "labelControl37";
-            this.labelControl37.Size = new System.Drawing.Size(82, 19);
-            this.labelControl37.TabIndex = 5;
-            this.labelControl37.Text = "Distribution";
-            // 
-            // labelControl39
-            // 
-            this.labelControl39.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
-            this.labelControl39.Appearance.Options.UseFont = true;
-            this.labelControl39.Location = new System.Drawing.Point(12, 102);
-            this.labelControl39.Name = "labelControl39";
-            this.labelControl39.Size = new System.Drawing.Size(36, 19);
-            this.labelControl39.TabIndex = 3;
-            this.labelControl39.Text = "Scale";
-            // 
-            // labelControl41
-            // 
-            this.labelControl41.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
-            this.labelControl41.Appearance.Options.UseFont = true;
-            this.labelControl41.Location = new System.Drawing.Point(13, 43);
-            this.labelControl41.Name = "labelControl41";
-            this.labelControl41.Size = new System.Drawing.Size(92, 19);
-            this.labelControl41.TabIndex = 0;
-            this.labelControl41.Text = "Identification";
+            this.labelControl2.Appearance.Font = new System.Drawing.Font("Tahoma", 40F);
+            this.labelControl2.Appearance.Options.UseFont = true;
+            this.labelControl2.Appearance.Options.UseTextOptions = true;
+            this.labelControl2.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
+            this.labelControl2.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
+            this.labelControl2.Location = new System.Drawing.Point(12, 721);
+            this.labelControl2.Name = "labelControl2";
+            this.labelControl2.Size = new System.Drawing.Size(267, 71);
+            this.labelControl2.TabIndex = 53;
+            this.labelControl2.Text = "Result";
             // 
             // frmScaleNewUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1918, 846);
-            this.Controls.Add(this.groupControl3);
             this.Controls.Add(this.groupControl2);
             this.Controls.Add(this._groupControlWeightChecking);
             this.Controls.Add(this.groupControl1);
+            this.IconOptions.Image = ((System.Drawing.Image)(resources.GetObject("frmScaleNewUI.IconOptions.Image")));
             this.Name = "frmScaleNewUI";
-            this.Text = "SSFG - Checking Weight";
+            this.Text = "fFT - SSFG Station";
             ((System.ComponentModel.ISupportInitialize)(this.groupControl2)).EndInit();
             this.groupControl2.ResumeLayout(false);
             this.groupControl2.PerformLayout();
@@ -1255,9 +1228,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.labDeviationPairs.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.labCalculatedPairs.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.labDeviation.Properties)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.groupControl3)).EndInit();
-            this.groupControl3.ResumeLayout(false);
-            this.groupControl3.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1295,11 +1265,7 @@
         private DevExpress.XtraEditors.LabelControl labelControl15;
         private DevExpress.XtraEditors.LabelControl labelControl34;
         private DevExpress.XtraEditors.LabelControl labelControl35;
-        private DevExpress.XtraEditors.GroupControl groupControl3;
         private DevExpress.XtraEditors.LabelControl labErrInfoMetal;
-        private DevExpress.XtraEditors.LabelControl labelControl37;
-        private DevExpress.XtraEditors.LabelControl labelControl39;
-        private DevExpress.XtraEditors.LabelControl labelControl41;
         private DevExpress.XtraEditors.LabelControl labErrInfoPrint;
         private DevExpress.XtraEditors.LabelControl labErrInfoScale;
         private DevExpress.XtraEditors.TextEdit labCalculatedPairs;
@@ -1335,5 +1301,6 @@
         private DevExpress.XtraEditors.TextEdit labAveWeight;
         private DevExpress.XtraEditors.TextEdit labUpperTolerance;
         private DevExpress.XtraEditors.TextEdit labLowerTolerance;
+        private DevExpress.XtraEditors.LabelControl labelControl2;
     }
 }

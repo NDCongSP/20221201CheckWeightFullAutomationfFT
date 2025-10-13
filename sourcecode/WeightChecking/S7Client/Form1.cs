@@ -49,7 +49,7 @@ namespace S7Client
 
             //s7Client.ConnectTo()
 
-            if (myPLC.S7Ethernet.Client.KetNoi(textBox5.Text, 102) == "GOOD")
+            if (myPLC.S7Ethernet.Client.KetNoi(textBox5.Text) == "GOOD")
             {
                 label20.BackColor = Color.Green;
             }

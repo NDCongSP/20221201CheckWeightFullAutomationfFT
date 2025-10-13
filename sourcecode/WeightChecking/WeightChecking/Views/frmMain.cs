@@ -222,7 +222,7 @@ namespace WeightChecking
                 #region Ket noi modbus RTU PLC: Scale, Metal scan
                 if (GlobalVariables.ConfigJson.IsScale)
                 {
-                    GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
+                    GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ConfigJson.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
 
                     Debug.WriteLine($"PLC Status: {GlobalVariables.ModbusStatus}");
 
@@ -280,6 +280,7 @@ namespace WeightChecking
 
                 #region Ket noi conveyor
                 GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.ConfigJson.IpConveyor);
+                //GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi("10.40.0.112");
                 Console.WriteLine($"Conveyor Status: {GlobalVariables.ConveyorStatus}");
 
                 if (GlobalVariables.ConveyorStatus == "GOOD")
@@ -1426,7 +1427,7 @@ namespace WeightChecking
                             _countDisconnectPlc = 0;
                             GlobalVariables.MyDriver.ModbusRTUMaster.NgatKetNoi();
 
-                            GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
+                            GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ConfigJson.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
 
                             Debug.WriteLine($"Ket noi lai modbus RTU. Result: {GlobalVariables.ModbusStatus}");
                         }

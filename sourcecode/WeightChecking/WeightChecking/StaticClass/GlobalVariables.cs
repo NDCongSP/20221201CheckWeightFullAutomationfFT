@@ -48,7 +48,7 @@ namespace WeightChecking
         public static PLCPi MyDriver = new PLCPi();
         public static byte[] ReadHoldingArr { get; set; }
         public static bool ModbusStatus { get; set; }
-        public static string ComPortScale { get; set; }//com kết nối PLC Delta ngay bàn cân, để đọc khố lượng cân và điều khiển đèn tháp
+        //public static string ComPortScale { get; set; }//com kết nối PLC Delta ngay bàn cân, để đọc khố lượng cân và điều khiển đèn tháp
 
         //public static bool IsScale { get; set; } = false;
         //public static bool IsCounter { get; set; } = false;

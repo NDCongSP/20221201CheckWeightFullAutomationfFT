@@ -417,7 +417,7 @@ namespace WeightChecking
 
             #region 20250310 update to use scanner Cognex
             _driverTelnet.HostName = GlobalVariables.ConfigJson.IpCognexCamScale;
-            //_driverTelnet.Port = 23;
+            _driverTelnet.Port = 23;
 
             _driverTelnet.DataEvent.EventHandleValueChange += DataEvent_EventHandleValueChange;
             _driverTelnet.DataEvent.EventHandleStatusChange += DataEvent_EventHandleStatusChange;
