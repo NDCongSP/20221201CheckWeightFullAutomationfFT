@@ -24,6 +24,7 @@ THÔNG TIN ĐỊA CHỈ MAPPING
     - 4600 (Word): Sansor In
     - 4601 (Word): Sensor Out
     - 4602 (Word): Điều khiển đèn tháp. 0--off; 1-Đèn xanh; 2-đèn đỏ
+    - D508 (WORD): ms - delay sau khi cân xong 1 khoảng thời gian mới chạy tiếp
 2. PLC Conveyor:
     - Sử dụng vùng nhớ DB1
     - DB1[0]: Sorting conveyor. default 0- metalscan; 1- cant't read barcode (reject); 2- no metal scan. Dưới PLC sau khi nhận tín hiệu thực hiện xong thì tự reset về 0
@@ -36,3 +37,6 @@ THÔNG TIN ĐỊA CHỈ MAPPING
     - DB1[7]: Sensor middle metal. nằm trên sỏtingConveyor
     - DB1[8]: sensor print left(FG)
     - DB1[9]: sensor print right (to Supplier)
+
+LƯU Ý:
+khi kiểm tra cân OK, thì PLC bàn cân phải có độ trễ để chờ truyền data xuống cho máy in, sau khoảng thời gian chờ đó thì băng tải mới chạy tiếp để thùng đi qua máy in, mục đích để đảm bảo dữ liệu in được truyền xuống máy in thành công, trước khi thùng đi qua để in cho nó chính xác
