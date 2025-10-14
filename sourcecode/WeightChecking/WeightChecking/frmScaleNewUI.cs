@@ -5,6 +5,7 @@ using DevExpress.XtraEditors;
 using DevExpress.XtraExport.Xls;
 using DevExpress.XtraPrinting;
 using DevExpress.XtraReports.UI;
+using DevExpress.XtraRichEdit.Import.Doc;
 using DevExpress.XtraRichEdit.Model;
 using DevExpress.XtraSplashScreen;
 using Newtonsoft.Json;
@@ -223,6 +224,15 @@ namespace WeightChecking
                     //    _ckQRTask.Start();
                     //}
                 }
+
+                if (o.NewValue == 1)
+                {
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        labQrMetal.Text = string.Empty;
+                        labErrInfoMetal.Text = string.Empty;
+                    });
+                }
             };
 
             GlobalVariables.MyEvent.EventHandleSensorBeforeWeightScan += (s, o) =>
@@ -232,6 +242,12 @@ namespace WeightChecking
                 //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
                 if (o.NewValue == 1)
                 {
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        labQrScale.Text = string.Empty;
+                        labErrInfoScale.Text = string.Empty;
+                    });
+
                     //bật biến báo đọc đc QR code từ label
                     _readQrStatus[1] = true;
 
@@ -256,6 +272,11 @@ namespace WeightChecking
                     _scannerIsBussy[1] = false;
                     //tắt biến báo đọc đc QR code từ label
                     _readQrStatus[1] = false;
+                }
+                else
+                {
+                    //reset các control để qua cân mẻ mới
+                    ResetControl();
                 }
 
                 Debug.WriteLine($"Event Sensor after scale: {o.NewValue}|ScannerBussy{_scannerIsBussy[1]}");
@@ -343,6 +364,7 @@ namespace WeightChecking
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
                                     labErrInfoMetal.Text = $"{GlobalVariables.AutoPostingStatus2}";
+                                    labErrInfoMetal.ForeColor = Color.Red;
                                 });
                             }
                             #endregion
@@ -378,6 +400,7 @@ namespace WeightChecking
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
                                     labErrInfoMetal.Text = $"{GlobalVariables.AutoPostingStatus2}";
+                                    labErrInfoMetal.ForeColor = Color.Green;
                                 });
                             }
                             #endregion
@@ -465,7 +488,11 @@ namespace WeightChecking
             }
             else
             {
-                GlobalVariables.InvokeIfRequired(this, () => { labErrInfoScale.Text = "The sensor clears the busy flag, it is not active."; });
+                GlobalVariables.InvokeIfRequired(this, () =>
+                {
+                    labErrInfoScale.Text = "The sensor clears the busy flag, it is not active.";
+                    labErrInfoScale.ForeColor = Color.Red;
+                });
             }
         }
 
@@ -505,6 +532,7 @@ namespace WeightChecking
                 labQuantity.Text = "0";
                 labColor.Text = string.Empty;
                 labSize.Text = string.Empty;
+                _labLableId.Text = string.Empty;
                 labAveWeight.Text = "0";
                 labLowerTolerance.Text = "0";
                 //labLowerToleranceWeight.Text = "0";
@@ -513,12 +541,22 @@ namespace WeightChecking
                 labAccessoriesWeight.Text = "0";
                 labGrossWeight.Text = "0";
 
-                labResult.Text = "Pass/Fail";
+                labResult.Text = "";
                 labResult.BackColor = Color.Gray;
                 labResult.ForeColor = Color.White;
 
+                _labErrMessage.Text = string.Empty;
+
                 labCalculatedPairs.Text = "0";
                 labDeviationPairs.Text = "0";
+                labDeviation.Text = "0";
+
+                _labUnitCalculatQty.Text = "-";
+                _labUnitDeviation.Text = "-";
+
+                labNetRealWeight.Text = "0";
+                _toggleSwitchMetal.EditValue = false;
+                _toggleSwitchPrinting.EditValue = false;
             });
         }
 
@@ -537,7 +575,7 @@ namespace WeightChecking
 
                 #region Xử lý data ban đầu theo QR code
                 _scanDataMetal.CreatedBy = GlobalVariables.UserLoginInfo.Id;
-                _scanDataMetal.Station = GlobalVariables.ConfigJson.Station ;
+                _scanDataMetal.Station = GlobalVariables.ConfigJson.Station;
 
                 bool specialCaseMetal = false;//dùng có các trường hợp hàng PU, trên WL decpration là 0, nhưng QC phân ra printing 0-1. beforePrinting thì get theo
                                               //printing=0; afterPrinting thì get theo printing=1. 6112012228
@@ -567,6 +605,7 @@ namespace WeightChecking
                         GlobalVariables.InvokeIfRequired(this, () =>
                         {
                             labErrInfoMetal.Text = "OC không đúng định dạng";
+                            labErrInfoMetal.ForeColor = Color.Red;
                         });
 
                         //ghi lệnh reject do ko quet đc tem
@@ -658,6 +697,7 @@ namespace WeightChecking
                         GlobalVariables.InvokeIfRequired(this, () =>
                         {
                             labErrInfoMetal.Text = "OC không đúng định dạng.";
+                            labErrInfoMetal.ForeColor = Color.Red;
                         });
 
                         //ghi lệnh reject do ko quet đc tem
@@ -798,6 +838,7 @@ namespace WeightChecking
                         GlobalVariables.InvokeIfRequired(this, () =>
                         {
                             labErrInfoMetal.Text = GlobalVariables.AutoPostingStatus1;
+                            labErrInfoMetal.ForeColor = Color.Green;
                         });
                     }
                     #endregion
@@ -855,6 +896,7 @@ namespace WeightChecking
                                     GlobalVariables.InvokeIfRequired(this, () =>
                                     {
                                         labErrInfoMetal.Text = GlobalVariables.AutoPostingStatus1;
+                                        labErrInfoMetal.ForeColor = Color.Green;
                                     });
                                 }
                                 #endregion
@@ -864,6 +906,7 @@ namespace WeightChecking
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
                                     labErrInfoMetal.Text = "Thùng này đã check OK.";
+                                    labErrInfoMetal.ForeColor = Color.Red;
                                 });
 
                                 _metalScannerStatus = 1;
@@ -977,6 +1020,7 @@ namespace WeightChecking
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
                                     labErrInfoMetal.Text = "Hàng kiểm kim loại.";
+                                    labErrInfoMetal.ForeColor = Color.Green;
                                 });
 
                                 _metalScannerStatus = 0;
@@ -989,6 +1033,7 @@ namespace WeightChecking
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
                                     labErrInfoMetal.Text = "Hàng không kiểm kim loại.";
+                                    labErrInfoMetal.ForeColor = Color.Green;
                                 });
 
                                 // gui data xuong PLC
@@ -1004,6 +1049,7 @@ namespace WeightChecking
                             GlobalVariables.InvokeIfRequired(this, () =>
                             {
                                 labErrInfoMetal.Text = "Không có khối lượng đôi. Weight/Prs.";
+                                labErrInfoMetal.ForeColor = Color.Red;
                             });
 
                             _metalScannerStatus = 1;//bao reject cho PLC
@@ -1049,6 +1095,7 @@ namespace WeightChecking
                         GlobalVariables.InvokeIfRequired(this, () =>
                         {
                             labErrInfoMetal.Text = "ProductItem chưa có trên hệ thống.";
+                            labErrInfoMetal.ForeColor = Color.Red;
                         });
 
                         _metalScannerStatus = 1;//bao reject cho PLC
@@ -1094,6 +1141,7 @@ namespace WeightChecking
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
                     labErrInfoMetal.Text = "System fail.";
+                    labErrInfoMetal.ForeColor = Color.Red;
                 });
 
                 using (var connection = GlobalVariables.GetDbConnection())
@@ -1194,6 +1242,7 @@ namespace WeightChecking
                         GlobalVariables.InvokeIfRequired(this, () =>
                         {
                             labErrInfoScale.Text = "OC không đúng định dạng.";
+                            labErrInfoScale.ForeColor = Color.Red;
                         });
 
                         //ghi lệnh reject do ko quet đc tem
@@ -1281,14 +1330,11 @@ namespace WeightChecking
                     else
                     {
                         Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        if (labErrInfoScale.InvokeRequired)
+                        GlobalVariables.InvokeIfRequired(this, () =>
                         {
-                            labErrInfoScale.Invoke(new Action(() =>
-                            {
-                                labErrInfoScale.Text = "OC không đúng định dạng.";
-                            }));
-                        }
-                        else labErrInfoScale.Text = "OC không đúng định dạng.";
+                            labErrInfoScale.Text = "OC không đúng định dạng.";
+                            labErrInfoScale.ForeColor = Color.Red;
+                        });
 
                         //ghi lệnh reject do ko quet đc tem
                         GlobalVariables.MyEvent.WeightPusher = 1;
@@ -1528,21 +1574,19 @@ namespace WeightChecking
 
                                     ResetControl();
 
-                                    if (this.InvokeRequired)
+
+                                    GlobalVariables.InvokeIfRequired(this, () =>
                                     {
-                                        this.Invoke(new Action(() =>
-                                        {
-                                            labResult.Text = "Fail";
-                                            labResult.BackColor = Color.Red;
-                                            labErrInfoScale.Text = "Quantity box error.";
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        labResult.Text = "Fail";
+                                        labResult.Text = "NG";
                                         labResult.BackColor = Color.Red;
+                                        _labErrMessage.Text = "Quantity box error.";
+                                        labNetRealWeight.ForeColor = Color.Red;
+                                        labDeviationPairs.ForeColor = Color.Red;
+                                        labDeviation.ForeColor = Color.Red;
+                                        //hiển thị cho trạng thái log
                                         labErrInfoScale.Text = "Quantity box error.";
-                                    }
+                                        labErrInfoScale.ForeColor = Color.Red;
+                                    });
 
                                     //log vao bang reject
                                     para = null;
@@ -1686,6 +1730,7 @@ namespace WeightChecking
                                 labQuantity.Text = _scanDataWeight.Quantity.ToString();
                                 labColor.Text = res.Color;
                                 labSize.Text = res.SizeName;
+                                _labLableId.Text = _scanDataWeight.IdLabel;
                                 labAveWeight.Text = _scanDataWeight.AveWeight1Prs.ToString();
                                 labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
                                 labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
@@ -1764,10 +1809,16 @@ namespace WeightChecking
                                         //hien thi mau label
                                         GlobalVariables.InvokeIfRequired(this, () =>
                                         {
-                                            labResult.Text = "Pass";
+                                            labResult.Text = "OK";
                                             labResult.BackColor = Color.Green;
                                             labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Khối lượng OK. In tem.";
+                                            _labErrMessage.Text = "Khối lượng OK. In tem.";
+                                            labNetRealWeight.ForeColor = Color.Green;
+                                            labDeviationPairs.ForeColor = Color.Green;
+                                            labDeviation.ForeColor = Color.Green;
+                                            //hiển thị cho trạng thái log
+                                            labErrInfoScale.Text = "The wright OK, Printing the label.";
+                                            labErrInfoScale.ForeColor = Color.Green;
                                         });
 
                                         //para = null;
@@ -1847,6 +1898,7 @@ namespace WeightChecking
                                             GlobalVariables.InvokeIfRequired(this, () =>
                                             {
                                                 labErrInfoScale.Text = GlobalVariables.AutoPostingStatus3;
+                                                labErrInfoScale.ForeColor = Color.Green;
                                             });
                                         }
                                     }
@@ -1862,23 +1914,17 @@ namespace WeightChecking
                                         GlobalVariables.MyEvent.StatusLightPLC = 1;
                                         //hien thi mau label
 
-                                        if (this.InvokeRequired)
+                                        GlobalVariables.InvokeIfRequired(this, () =>
                                         {
-                                            this.Invoke(new Action(() =>
-                                            {
-                                                labResult.Text = "Fail";
-                                                labResult.BackColor = Color.Red;
-                                                labResult.ForeColor = Color.White;
-                                                labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi.";
-                                            }));
-                                        }
-                                        else
-                                        {
-                                            labResult.Text = "Fail";
+                                            labResult.Text = "NG";
                                             labResult.BackColor = Color.Red;
                                             labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Thùng này đã ghi nhận OK rồi.";
-                                        }
+                                            _labErrMessage.Text = "The box already passed.";
+
+                                            //hiển thị cho trạng thái log
+                                            labErrInfoScale.Text = "The box already passed.";
+                                            labErrInfoScale.ForeColor = Color.Red;
+                                        });
 
                                         //para = null;
                                         //para = new DynamicParameters();
@@ -1911,6 +1957,7 @@ namespace WeightChecking
                                         GlobalVariables.InvokeIfRequired(this, () =>
                                         {
                                             labErrInfoScale.Text = GlobalVariables.AutoPostingStatus3;
+                                            labErrInfoScale.ForeColor = Color.Red;
                                         });
                                     }
                                     #endregion
@@ -1939,10 +1986,16 @@ namespace WeightChecking
 
                                         GlobalVariables.InvokeIfRequired(this, () =>
                                         {
-                                            labResult.Text = "Fail";
+                                            labResult.Text = "NG";
                                             labResult.BackColor = Color.Red;
                                             labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Khối lượng lỗi.";
+                                            _labErrMessage.Text = "Khối lượng lỗi.";
+                                            labNetRealWeight.ForeColor = Color.Red;
+                                            labDeviationPairs.ForeColor = Color.Red;
+                                            labDeviation.ForeColor = Color.Red;
+                                            //hiển thị cho trạng thái log
+                                            labErrInfoScale.Text = "The weight fail.";
+                                            labErrInfoScale.ForeColor = Color.Red;
                                         });
 
                                         //log vao bang reject
@@ -2023,10 +2076,14 @@ namespace WeightChecking
 
                                         GlobalVariables.InvokeIfRequired(this, () =>
                                         {
-                                            labResult.Text = "Fail";
+                                            labResult.Text = "NG";
                                             labResult.BackColor = Color.Red;
                                             labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng lỗi rồi.";
+                                            _labErrMessage.Text = "Thùng này đã ghi nhận khối lượng lỗi rồi.";
+
+                                            //hiển thị cho trạng thái log
+                                            labErrInfoScale.Text = "The box already log with the fail weight.";
+                                            labErrInfoScale.ForeColor = Color.Red;
                                         });
 
                                         //log vao bang reject
@@ -2062,10 +2119,14 @@ namespace WeightChecking
                                         //hien thi mau label
                                         GlobalVariables.InvokeIfRequired(this, () =>
                                         {
-                                            labResult.Text = "Fail";
+                                            labResult.Text = "NG";
                                             labResult.BackColor = Color.Red;
                                             labResult.ForeColor = Color.White;
-                                            labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng OK rồi.";
+                                            _labErrMessage.Text = "Thùng này đã ghi nhận khối lượng OK rồi.";
+
+                                            //hiển thị cho trạng thái log
+                                            labErrInfoScale.Text = "The box already passed.";
+                                            labErrInfoScale.ForeColor = Color.Red;
                                         });
 
                                         //ResetControl();
@@ -2103,10 +2164,14 @@ namespace WeightChecking
 
                                     GlobalVariables.InvokeIfRequired(this, () =>
                                     {
-                                        labResult.Text = "HC_Pass";
+                                        labResult.Text = "OK";
                                         labResult.BackColor = Color.Green;
                                         labResult.ForeColor = Color.White;
-                                        labErrInfoScale.Text = "Hàng heel counter OK. Không kiểm tra khối lượng.";
+                                        _labErrMessage.Text = "Hàng heel counter OK. Không kiểm tra khối lượng.";
+
+                                        //hiển thị cho trạng thái log
+                                        labErrInfoScale.Text = "The HC is OK. Don't check the weight.";
+                                        labErrInfoScale.ForeColor = Color.Green;
                                     });
 
                                     //para = null;
@@ -2163,10 +2228,14 @@ namespace WeightChecking
 
                                     GlobalVariables.InvokeIfRequired(this, () =>
                                     {
-                                        labErrInfoScale.Text = "Thùng heel counter này đã ghi nhận OK rồi.";
-                                        labResult.Text = "HC_Fail";
+                                        _labErrMessage.Text = "Thùng heel counter này đã ghi nhận OK rồi.";
+                                        labResult.Text = "NG";
                                         labResult.BackColor = Color.Red;
                                         labResult.ForeColor = Color.White;
+
+                                        //hiển thị cho trạng thái log
+                                        labErrInfoScale.Text = "The HC box already passed.";
+                                        labErrInfoScale.ForeColor = Color.Red;
                                     });
 
                                     //para = null;
@@ -2270,9 +2339,14 @@ namespace WeightChecking
 
                             GlobalVariables.InvokeIfRequired(this, () =>
                             {
-                                labResult.Text = "Fail";
+                                labResult.Text = "NG";
                                 labResult.BackColor = Color.Red;
-                                labErrInfoScale.Text = "Không có khối lượng đôi. Weight/Prs.";
+                                labelControl1.ForeColor = Color.White;
+                                _labErrMessage.Text = "Không có khối lượng đôi. Weight/Prs.";
+
+                                //hiển thị cho trạng thái log
+                                labErrInfoScale.Text = "The weight/pairs was missing.";
+                                labErrInfoScale.ForeColor = Color.Red;
                             });
 
                             //log vao bang reject
@@ -2318,9 +2392,14 @@ namespace WeightChecking
 
                         GlobalVariables.InvokeIfRequired(this, () =>
                         {
-                            labResult.Text = "Fail";
+                            labResult.Text = "NG";
                             labResult.BackColor = Color.Red;
-                            labErrInfoScale.Text = "ProductItem không có trong hệ thống.";
+                            labelControl1.ForeColor = Color.White;
+                            _labErrMessage.Text = "ProductItem không có trong hệ thống.";
+
+                            //hiển thị cho trạng thái log
+                            labErrInfoScale.Text = "The product item FG didn't exist in the system.";
+                            labErrInfoScale.ForeColor = Color.Red;
                         });
 
                         //log vao bang reject
@@ -2365,6 +2444,8 @@ namespace WeightChecking
                     labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
                     //labLowerToleranceWeight.Text = nwSub.ToString("#.###");
                     //labUpperToleranceWeight.Text = nwPlus.ToString("#.###");
+                    _labUnitCalculatQty.Text = _plr;
+                    _labUnitDeviation.Text = _plr;
                 });
                 #endregion
 
@@ -2381,10 +2462,14 @@ namespace WeightChecking
                 //hien thi mau label
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
-                    labResult.Text = "Fail";
+                    labResult.Text = "NGl";
                     labResult.BackColor = Color.Red;
                     labResult.ForeColor = Color.White;
+                    _labErrMessage.Text = "System fail.";
+
+                    //hiển thị cho trạng thái log
                     labErrInfoScale.Text = "System fail.";
+                    labErrInfoScale.ForeColor = Color.Red;
                 });
 
                 using (var connection = GlobalVariables.GetDbConnection())
@@ -2461,15 +2546,11 @@ namespace WeightChecking
                     else
                     {
                         Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                        if (labErrInfoPrint.InvokeRequired)
+                        GlobalVariables.InvokeIfRequired(this, () =>
                         {
-                            labErrInfoPrint.Invoke(new Action(() =>
-                            {
-                                labErrInfoPrint.Text = "OC không đúng định dạng.";
-                            }));
-                        }
-                        else labErrInfoPrint.Text = "OC không đúng định dạng.";
+                            labErrInfoPrint.Text = "OC không đúng định dạng.";
+                            labErrInfoPrint.ForeColor = Color.Red;
+                        });
 
                         //ghi lệnh reject do ko quet đc tem
                         GlobalVariables.MyEvent.PrintPusher = 0;
@@ -2495,14 +2576,11 @@ namespace WeightChecking
                     {
                         Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                        if (labErrInfoPrint.InvokeRequired)
+                        GlobalVariables.InvokeIfRequired(this, () =>
                         {
-                            labErrInfoPrint.Invoke(new Action(() =>
-                            {
-                                labErrInfoPrint.Text = "OC không đúng định dạng.";
-                            }));
-                        }
-                        else labErrInfoPrint.Text = "OC không đúng định dạng.";
+                            labErrInfoPrint.Text = "OC không đúng định dạng.";
+                            labErrInfoPrint.ForeColor = Color.Red;
+                        });
 
                         //ghi lệnh reject do ko quet đc tem
                         GlobalVariables.MyEvent.PrintPusher = 0;
@@ -2547,27 +2625,16 @@ namespace WeightChecking
                         {
                             Debug.WriteLine($"ProductNumber: {res.ProductNumber} là hàng sơn.");
 
-                            if (labQrPrint.InvokeRequired)
+                            GlobalVariables.InvokeIfRequired(this, () =>
                             {
-                                labQrPrint.Invoke(new Action(() =>
-                                {
-                                    labErrInfoPrint.Text = "Hàng Sơn.";
-                                }));
-                            }
-                            else
-                            {
-                                labErrInfoPrint.Text = "Hàng Sơn.";
-                            }
+                                labErrInfoPrint.Text = "Hàng đi sơn.";
+                                labErrInfoPrint.ForeColor = Color.Green;
+                            });
 
                             GlobalVariables.MyEvent.PrintPusher = 1;
 
                             // xử lý insert RackStorage cho hàng sơn (nếu là hàng đi sơn thì vào kho 10)
                             //GlobalVariables.AutoPostingStatus = AutoPostingHelper.AutoTransfer(_scanDataPrint.ProductNumber, barcodeString, 1185, 10, connection);
-
-                            GlobalVariables.InvokeIfRequired(this, () =>
-                            {
-                                labErrInfoPrint.Text = "Hàng đi sơn.";
-                            });
                         }
                         else// không phải hàng sơn thì transfer vào kho 2
                         {
@@ -2582,6 +2649,7 @@ namespace WeightChecking
                             GlobalVariables.InvokeIfRequired(this, () =>
                             {
                                 labErrInfoPrint.Text = "Hàng FG.";
+                                labErrInfoPrint.ForeColor = Color.Green;
                             });
                         }
                     }
@@ -2591,17 +2659,11 @@ namespace WeightChecking
             catch (Exception ex)
             {
                 //hien thi mau label
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        labErrInfoPrint.Text = "System fail.";
-                    }));
-                }
-                else
+                GlobalVariables.InvokeIfRequired(this, () =>
                 {
                     labErrInfoPrint.Text = "System fail.";
-                }
+                    labErrInfoPrint.ForeColor = Color.Red;
+                });
 
                 using (var connection = GlobalVariables.GetDbConnection())
                 {
@@ -3049,23 +3111,17 @@ namespace WeightChecking
                     GlobalVariables.MyEvent.StatusLightPLC = 1;
                     //hien thi mau label
 
-                    if (this.InvokeRequired)
+                    GlobalVariables.InvokeIfRequired(this, () =>
                     {
-                        this.Invoke(new Action(() =>
-                        {
-                            labResult.Text = "Fail Printing";
-                            labResult.BackColor = Color.Red;
-                            labResult.ForeColor = Color.White;
-                            labErrInfoScale.Text = "IN KHÔNG THÀNH CÔNG.";
-                        }));
-                    }
-                    else
-                    {
-                        labResult.Text = "Fail Printing";
+                        labResult.Text = "NG";
                         labResult.BackColor = Color.Red;
                         labResult.ForeColor = Color.White;
-                        labErrInfoScale.Text = "IN KHÔNG THÀNH CÔNG.";
-                    }
+                        _labErrMessage.Text = "Fail Printing. IN KHÔNG THÀNH CÔNG.";
+
+                        //hiển thị cho trạng thái log
+                        labErrInfoScale.Text = "Fail printing.";
+                        labErrInfoScale.ForeColor = Color.Red;
+                    });
 
                     using (var connection = GlobalVariables.GetDbConnection())
                     {
@@ -3093,24 +3149,17 @@ namespace WeightChecking
                     //bat den đỏ 
                     GlobalVariables.MyEvent.StatusLightPLC = 1;
                     //hien thi mau label
-
-                    if (this.InvokeRequired)
+                    GlobalVariables.InvokeIfRequired(this, () =>
                     {
-                        this.Invoke(new Action(() =>
-                        {
-                            labResult.Text = "Fail Printing";
-                            labResult.BackColor = Color.Red;
-                            labResult.ForeColor = Color.White;
-                            labErrInfoScale.Text = "IN KHÔNG THÀNH CÔNG.";
-                        }));
-                    }
-                    else
-                    {
-                        labResult.Text = "Fail Printing";
+                        labResult.Text = "NG";
                         labResult.BackColor = Color.Red;
                         labResult.ForeColor = Color.White;
-                        labErrInfoScale.Text = "IN KHÔNG THÀNH CÔNG.";
-                    }
+                        _labErrMessage.Text = "Fail Printing. IN KHÔNG THÀNH CÔNG.";
+
+                        //hiển thị cho trạng thái log
+                        labErrInfoScale.Text = "Fail printing.";
+                        labErrInfoScale.ForeColor = Color.Red;
+                    });
 
                     using (var connection = GlobalVariables.GetDbConnection())
                     {
@@ -3174,23 +3223,14 @@ namespace WeightChecking
                 GlobalVariables.MyEvent.StatusLightPLC = 1;
                 //hien thi mau label
 
-                if (this.InvokeRequired)
+                GlobalVariables.InvokeIfRequired(this, () =>
                 {
-                    this.Invoke(new Action(() =>
-                    {
-                        labResult.Text = "EXCEPTION Printing";
-                        labResult.BackColor = Color.Red;
-                        labResult.ForeColor = Color.White;
-                        labErrInfoScale.Text = "EXCEPTION of printing.";
-                    }));
-                }
-                else
-                {
-                    labResult.Text = "EXCEPTION Printing";
+                    labResult.Text = "NG";
                     labResult.BackColor = Color.Red;
                     labResult.ForeColor = Color.White;
                     labErrInfoScale.Text = "EXCEPTION of printing.";
-                }
+                    labErrInfoScale.ForeColor = Color.Red;
+                });
             }
             finally
             {
@@ -3326,24 +3366,17 @@ namespace WeightChecking
                 //bat den đỏ 
                 GlobalVariables.MyEvent.StatusLightPLC = 1;
                 //hien thi mau label
-
-                if (this.InvokeRequired)
+                GlobalVariables.InvokeIfRequired(this, () =>
                 {
-                    this.Invoke(new Action(() =>
-                    {
-                        labResult.Text = "Fail Printing";
-                        labResult.BackColor = Color.Red;
-                        labResult.ForeColor = Color.White;
-                        labErrInfoScale.Text = "System fail. Lỗi khi đang truyền dữ liệu xuống máy in.";
-                    }));
-                }
-                else
-                {
-                    labResult.Text = "Fail Printing";
+                    labResult.Text = "NG";
                     labResult.BackColor = Color.Red;
                     labResult.ForeColor = Color.White;
-                    labErrInfoScale.Text = "System fail. Lỗi khi đang truyền dữ liệu xuống máy in.";
-                }
+                    _labErrMessage.Text = "System fail.Fail Printing. Lỗi khi đang truyền dữ liệu xuống máy in.";
+
+                    //hiển thị cho trạng thái log
+                    labErrInfoScale.Text = "System fail.Fail Printing. Lỗi khi đang truyền dữ liệu xuống máy in.";
+                    labErrInfoScale.ForeColor = Color.Red;
+                });
 
                 using (var connection = GlobalVariables.GetDbConnection())
                 {
@@ -3520,19 +3553,12 @@ namespace WeightChecking
             {
                 Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram metal");
 
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        labErrInfoMetal.Text = "Không đọc được QR code, Kiểm tra lại tem.";
-                        labQrMetal.Text = string.Empty;
-                    }));
-                }
-                else
+                GlobalVariables.InvokeIfRequired(this, () =>
                 {
                     labErrInfoMetal.Text = "Không đọc được QR code, Kiểm tra lại tem.";
+                    labErrInfoMetal.ForeColor = Color.Red;
                     labQrMetal.Text = string.Empty;
-                }
+                });
 
                 //hết thời gian đọc QR code mà chưa đọc được
                 //gui data xuong PLC báo reject metalPusher
@@ -3590,11 +3616,15 @@ namespace WeightChecking
 
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
-                    labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem.";
                     labQrScale.Text = string.Empty;
-                    labResult.Text = "Fail";
+                    labResult.Text = "NG";
                     labResult.BackColor = Color.Red;
                     labResult.ForeColor = Color.White;
+                    _labErrMessage.Text = "Không đọc được QR code, Kiểm tra lại tem.";
+
+                    //hiển thị cho trạng thái log
+                    labErrInfoScale.Text = "Không đọc được QR code, Kiểm tra lại tem.";
+                    labErrInfoScale.ForeColor = Color.Red;
                 });
 
                 //hết thời gian đọc QR code mà chưa đọc được
@@ -3699,23 +3729,17 @@ namespace WeightChecking
                             //bat den đỏ 
                             GlobalVariables.MyEvent.StatusLightPLC = 1;
 
-                            if (this.InvokeRequired)
+                            GlobalVariables.InvokeIfRequired(this, () =>
                             {
-                                this.Invoke(new Action(() =>
-                                {
-                                    labResult.Text = "Fail Printing";
-                                    labResult.BackColor = Color.Red;
-                                    labResult.ForeColor = Color.White;
-                                    labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
-                                }));
-                            }
-                            else
-                            {
-                                labResult.Text = "Fail Printing";
+                                labResult.Text = "NG";
                                 labResult.BackColor = Color.Red;
                                 labResult.ForeColor = Color.White;
-                                labErrInfoScale.Text = "System fail. Lỗi không ghi dữ liệu vào DB được.";
-                            }
+                                _labErrMessage.Text = "System fail. Fail Printing. Lỗi không ghi dữ liệu vào DB được.";
+
+                                //hiển thị cho trạng thái log
+                                labErrInfoScale.Text = "System fail. Fail Printing. Lỗi không ghi dữ liệu vào DB được.";
+                                labErrInfoScale.ForeColor = Color.Red;
+                            });
 
                             Log.Error(ex, $"Lỗi không insert vào DB được.{ex.ToString()}");
                         }

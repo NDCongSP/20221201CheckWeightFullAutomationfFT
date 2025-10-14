@@ -467,6 +467,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="framas_mini__black__oEw_icon.ico" />
+    <None Include="Resources\framas %28white%29.png" />
+    <None Include="Resources\framas %28black%29.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
