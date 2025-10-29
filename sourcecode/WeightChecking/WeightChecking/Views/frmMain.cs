@@ -58,6 +58,10 @@ namespace WeightChecking
 
             Load += frmMain_Load;
 
+            //_frmScaleNewUI = new frmScaleNewUI();
+            //tabbedView1.AddDocument(_frmScaleNewUI);
+            //tabbedView1.ActivateDocument(_frmScaleNewUI);
+
             FormClosing += MainForm_FormClosing;
         }
 

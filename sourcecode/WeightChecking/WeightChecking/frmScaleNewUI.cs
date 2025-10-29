@@ -555,8 +555,8 @@ namespace WeightChecking
                 _labUnitDeviation.Text = "-";
 
                 labNetRealWeight.Text = "0";
-                _toggleSwitchMetal.EditValue = false;
-                _toggleSwitchPrinting.EditValue = false;
+                _labPrinting.Text = "NO";
+                _labCheckMetal.Text = "NO";
             });
         }
 
@@ -1611,7 +1611,7 @@ namespace WeightChecking
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
-                                    _toggleSwitchPrinting.EditValue = _scanDataWeight.Decoration == 0 ? false : true;
+                                    _labPrinting.Text = _scanDataWeight.Decoration == 0 ? "NO" : "YES";
                                 });
                             }
                             else //if (_scanDataWeight.Decoration == 1 && _scanDataWeight.OcNo.Contains("PR"))//hàng trước sơn. chỉ có trạm SSFG01 mới nhảy vào đây
@@ -1633,7 +1633,7 @@ namespace WeightChecking
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
-                                    _toggleSwitchPrinting.EditValue = _scanDataWeight.Decoration == 0 ? false : true;
+                                    _labPrinting.Text = _scanDataWeight.Decoration == 0 ? "NO" : "YES";
                                     labBoxType.Text = "Plastic";
                                 });
                             }
@@ -1644,7 +1644,7 @@ namespace WeightChecking
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
-                                    _toggleSwitchMetal.EditValue = false;
+                                    _labCheckMetal.Text = "NO";
                                 });
                             }
                             else
@@ -1655,7 +1655,7 @@ namespace WeightChecking
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
-                                    _toggleSwitchMetal.EditValue = true;
+                                    _labCheckMetal.Text = "YES";
                                 });
                             }
 
@@ -3449,6 +3449,11 @@ namespace WeightChecking
             {
                 System.Threading.Thread.Sleep(500);
             }
+        }
+
+        private void labErrInfoMetal_Click(object sender, EventArgs e)
+        {
+
         }
 
         private void btn_GetSpeed_Click(object sender, EventArgs e)
