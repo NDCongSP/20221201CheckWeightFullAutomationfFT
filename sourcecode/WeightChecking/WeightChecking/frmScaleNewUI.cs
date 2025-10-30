@@ -77,6 +77,8 @@ namespace WeightChecking
             InitializeComponent();
 
             Load += FrmScale_Load;
+
+            labResult.Focus();
         }
 
         private void FrmScale_Load(object sender, EventArgs e)
