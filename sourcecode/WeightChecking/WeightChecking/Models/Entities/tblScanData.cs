@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-    public class tblScanDataModel
+    [Table("tblScanData")]
+    public class tblScanData
     {
         [Browsable(false)]
+        [Key]
         public Guid Id { get; set; }
         public string BarcodeString { get; set; } = null;
         public string IdLabel { get; set; } = null;

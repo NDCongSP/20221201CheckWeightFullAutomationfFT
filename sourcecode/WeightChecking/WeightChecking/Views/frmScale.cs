@@ -46,9 +46,9 @@ namespace WeightChecking
 
         //tạo các biến để lưu giá trị theo QR code tại từng trạm
         //private tblScanDataModel _scanData = new tblScanDataModel();
-        private tblScanDataModel _scanDataMetal = new tblScanDataModel();
-        private tblScanDataModel _scanDataWeight = new tblScanDataModel();
-        private tblScanDataModel _scanDataPrint = new tblScanDataModel();
+        private tblScanData _scanDataMetal = new tblScanData();
+        private tblScanData _scanDataWeight = new tblScanData();
+        private tblScanData _scanDataPrint = new tblScanData();
 
         private string _idLabel = null;
         private string _plr = null;// kiểu đóng thùng, P-đôi; L/R-left righ
@@ -805,7 +805,7 @@ namespace WeightChecking
                     para.Add("oc", _scanDataMetal.OcNo);
                     para.Add("boxNo", _scanDataMetal.BoxNo);
 
-                    var checkBox = connection.Query<tblScanDataModel>("sp_tblScanDataGetByOcBoxNo", para, commandType: CommandType.StoredProcedure).ToList();
+                    var checkBox = connection.Query<tblScanData>("sp_tblScanDataGetByOcBoxNo", para, commandType: CommandType.StoredProcedure).ToList();
 
                     if (checkBox != null && checkBox.Count > 0)
                     {
@@ -1141,7 +1141,7 @@ namespace WeightChecking
                 SendDynamicString(" ", " ", " ");
                 //reset model để lưu cho thùng mới
                 _scanDataWeight = null;
-                _scanDataWeight = new tblScanDataModel();
+                _scanDataWeight = new tblScanData();
                 _approvePrint = false;
                 GlobalVariables.IdLabel = string.Empty;
 
@@ -1360,7 +1360,7 @@ namespace WeightChecking
                     //var checkInfo = connection.Query<tblScanDataCheckModel>("sp_tblScanDataCheck", para, commandType: CommandType.StoredProcedure).ToList();
 
                     para.Add("_QrCode", _scanDataWeight.BarcodeString);
-                    var checkInfo = connection.Query<tblScanDataModel>("sp_tblScanDataGetByQrCode", para, commandType: CommandType.StoredProcedure).ToList();
+                    var checkInfo = connection.Query<tblScanData>("sp_tblScanDataGetByQrCode", para, commandType: CommandType.StoredProcedure).ToList();
                     foreach (var item in checkInfo)
                     {
                         if (
@@ -2786,7 +2786,7 @@ namespace WeightChecking
 
                         //reset model;
                         _scanDataMetal = null;
-                        _scanDataMetal = new tblScanDataModel();
+                        _scanDataMetal = new tblScanData();
 
                         BarcodeScanner1Handle(1, _barcodeString1);
 
@@ -2854,7 +2854,7 @@ namespace WeightChecking
 
                         //reset model;
                         _scanDataPrint = null;
-                        _scanDataPrint = new tblScanDataModel();
+                        _scanDataPrint = new tblScanData();
 
                         BarcodeScanner3Handle(3, _barcodeString3);
 
@@ -2866,7 +2866,7 @@ namespace WeightChecking
 
                         //reset model;
                         _scanDataPrint = null;
-                        _scanDataPrint = new tblScanDataModel();
+                        _scanDataPrint = new tblScanData();
                     }
                 }
             }
@@ -3064,7 +3064,7 @@ namespace WeightChecking
 
                     //reset model;
                     _scanDataWeight = null;
-                    _scanDataWeight = new tblScanDataModel();
+                    _scanDataWeight = new tblScanData();
                     //xoa string
                     //SendDynamicString(" ", " ", " ");
                 }
@@ -3584,7 +3584,7 @@ namespace WeightChecking
                 _metalScannerStatus = 1;
 
                 _scanDataMetal = null;
-                _scanDataMetal = new tblScanDataModel();
+                _scanDataMetal = new tblScanData();
                 //log vao bang reject
                 using (var connection = GlobalVariables.GetDbConnection())
                 {

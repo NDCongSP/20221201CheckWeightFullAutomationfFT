@@ -71,7 +71,6 @@ namespace WeightChecking
             this.btnSubmit.Size = new System.Drawing.Size(744, 60);
             this.btnSubmit.TabIndex = 4;
             this.btnSubmit.Text = "Login";
-            this.btnSubmit.Click += new System.EventHandler(this.btnSubmit_Click);
             // 
             // chkRemember
             // 

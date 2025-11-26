@@ -1,0 +1,83 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace WeightChecking
+{
+    [Table("tblCoreDataCodeItemSize")]
+    public class tblCoreDataCodeItemSize
+    {
+        [Key]
+        public Guid Id { get; set; }
+
+        public string CodeItemSize { get; set; }
+
+        public string MainItemName { get; set; }
+
+        public int? MetalScan { get; set; }
+
+        public string Color { get; set; }
+
+        public int? Printing { get; set; }
+
+        public DateTime? Date { get; set; }
+
+        public string Size { get; set; }
+
+        public double? AveWeight1Prs { get; set; }
+
+        public double? BoxQtyBx1 { get; set; }
+
+        public double? BoxQtyBx2 { get; set; }
+
+        public double? BoxQtyBx3 { get; set; }
+
+        public double? BoxQtyBx4 { get; set; }
+
+        public double? BoxWeightBx1 { get; set; }
+
+        public double? BoxWeightBx2 { get; set; }
+
+        public double? BoxWeightBx3 { get; set; }
+
+        public double? BoxWeightBx4 { get; set; }
+
+        public double? PartitionQty { get; set; }
+
+        public double? PlasicBag1Qty { get; set; }
+
+        public double? PlasicBag2Qty { get; set; }
+
+        public double? WrapSheetQty { get; set; }
+
+        public double? FoamSheetQty { get; set; }
+
+        public double? PartitionWeight { get; set; }
+
+        public double? PlasicBag1Weight { get; set; }
+
+        public double? PlasicBag2Weight { get; set; }
+
+        public double? WrapSheetWeight { get; set; }
+
+        public double? FoamSheetWeight { get; set; }
+
+        public double? PlasicBoxWeight { get; set; }
+
+        public double? LowerToleranceOfCartonBox { get; set; }
+
+        public double? UpperToleranceOfCartonBox { get; set; }
+
+        public double? LowerToleranceOfPlasticBox { get; set; }
+
+        public double? UpperToleranceOfPlasticBox { get; set; }
+
+        public DateTime? CreatedDate { get; set; }
+
+        public bool? IsActived { get; set; }
+    }
+}

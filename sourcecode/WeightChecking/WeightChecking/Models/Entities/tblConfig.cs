@@ -1,5 +1,4 @@
-﻿using DevExpress.XtraBars.Docking2010.Views.WindowsUI;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;

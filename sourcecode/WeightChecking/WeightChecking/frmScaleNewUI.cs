@@ -22,6 +22,7 @@ using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,6 +34,19 @@ namespace WeightChecking
 {
     public partial class frmScaleNewUI : DevExpress.XtraEditors.XtraForm
     {
+
+        // Import để cho phép kéo form
+        [DllImport("user32.dll")]
+        public static extern bool ReleaseCapture();
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+        private Panel titleBar;
+        private Button btnClose;
+        private Button btnMaximize;
+        private Button btnMinimize;
+
+
         private ScaleHelper _scaleHelper;
         private Task _ckTask, _ckQRTask, _ckQrWeightScanTask;//task kiểm tra tại các trạm scanner để check xem có đoc đc QR code ko
         private bool _isStartCountTimer = false;
@@ -47,9 +61,9 @@ namespace WeightChecking
 
         //tạo các biến để lưu giá trị theo QR code tại từng trạm
         //private tblScanDataModel _scanData = new tblScanDataModel();
-        private tblScanDataModel _scanDataMetal = new tblScanDataModel();
-        private tblScanDataModel _scanDataWeight = new tblScanDataModel();
-        private tblScanDataModel _scanDataPrint = new tblScanDataModel();
+        private tblScanData _scanDataMetal = new tblScanData();
+        private tblScanData _scanDataWeight = new tblScanData();
+        private tblScanData _scanDataPrint = new tblScanData();
 
         private string _idLabel = null;
         private string _plr = null;// kiểu đóng thùng, P-đôi; L/R-left righ
@@ -76,10 +90,119 @@ namespace WeightChecking
         {
             InitializeComponent();
 
+
+            // Cấu hình form
+            this.Text = "Custom Title Bar";
+            this.FormBorderStyle = FormBorderStyle.None; // Bỏ header mặc định
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Size = new Size(1920, 1080);
+
+            // Tạo panel làm thanh tiêu đề
+            titleBar = new Panel();
+            titleBar.Dock = DockStyle.Top;
+            titleBar.Height = 40;
+            titleBar.BackColor = Color.Black;
+            titleBar.MouseDown += TitleBar_MouseDown;
+            this.Controls.Add(titleBar);
+
+            // Nút Close
+            btnClose = new Button();
+            btnClose.Text = "X";
+            btnClose.ForeColor = Color.White;
+            btnClose.BackColor = Color.Black;
+            btnClose.FlatStyle = FlatStyle.Flat;
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.Size = new Size(40, 40);
+            btnClose.Location = new Point(this.Width - 40, 0);
+            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnClose.Click += BtnClose_Click;
+            titleBar.Controls.Add(btnClose);
+
+            // Nút Maximize
+            btnMaximize = new Button();
+            btnMaximize.Text = "▢";
+            btnMaximize.ForeColor = Color.White;
+            btnMaximize.BackColor = Color.Black;
+            btnMaximize.FlatStyle = FlatStyle.Flat;
+            btnMaximize.FlatAppearance.BorderSize = 0;
+            btnMaximize.Size = new Size(40, 40);
+            btnMaximize.Location = new Point(this.Width - 80, 0);
+            btnMaximize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnMaximize.Click += BtnMaximize_Click;
+            titleBar.Controls.Add(btnMaximize);
+
+            // Nút Minimize
+            btnMinimize = new Button();
+            btnMinimize.Text = "_";
+            btnMinimize.ForeColor = Color.White;
+            btnMinimize.BackColor = Color.Black;
+            btnMinimize.FlatStyle = FlatStyle.Flat;
+            btnMinimize.FlatAppearance.BorderSize = 0;
+            btnMinimize.Size = new Size(40, 40);
+            btnMinimize.Location = new Point(this.Width - 120, 0);
+            btnMinimize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnMinimize.Click += BtnMinimize_Click;
+            titleBar.Controls.Add(btnMinimize);
+
+
+            // Đảm bảo tất cả có cùng Height = 30 và Y = 5
+            btnClose.Size = btnMaximize.Size = btnMinimize.Size = new Size(30, 30);
+
+
+            // Anchor cho cả 3 nút
+            btnClose.Anchor = btnMaximize.Anchor = btnMinimize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+            // Logo
+            PictureBox logo = new PictureBox();
+            logo.Image = Properties.Resources.framas__white_; // logo từ Resources
+            logo.SizeMode = PictureBoxSizeMode.Zoom;
+            logo.Size = new Size(100, 30); // kích thước logo
+            logo.Location = new Point(10, 5); // vị trí bên trái
+            titleBar.Controls.Add(logo);
+
+            // Text
+            Label titleText = new Label();
+            titleText.Text = "fFT - SSFG Station";
+            titleText.ForeColor = Color.White;
+            titleText.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+            titleText.AutoSize = true;
+            titleText.Location = new Point(120, 10); // ngay sau logo
+            titleBar.Controls.Add(titleText);
+
+
             Load += FrmScale_Load;
 
             labResult.Focus();
         }
+
+
+        // Cho phép kéo form bằng panel
+        private void TitleBar_MouseDown(object sender, MouseEventArgs e)
+        {
+            ReleaseCapture();
+            SendMessage(this.Handle, 0x112, 0xf012, 0);
+        }
+
+
+
+        private void BtnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void BtnMaximize_Click(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Normal)
+                this.WindowState = FormWindowState.Maximized;
+            else
+                this.WindowState = FormWindowState.Normal;
+        }
+
+        private void BtnMinimize_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
 
         private void FrmScale_Load(object sender, EventArgs e)
         {
@@ -453,7 +576,35 @@ namespace WeightChecking
 
             #endregion
 
+            this.ActiveControl = null;
+            this.ActiveControl = labResult;
+
             GlobalVariables.AppStatus = "READY";
+
+            //tạo 1 task chạy độc lập để get data từ Hydra
+            // Fire-and-forget background task
+            _ = TaskImplementAsync();
+        }
+
+        private async Task TaskImplementAsync()
+        {
+            while (true)
+            {
+                try
+                {
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        _labStatus.Text = GlobalVariables.AppStatus;
+                        _labDateTime.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                    });
+                }
+                catch (Exception ex)
+                {
+                    
+                }
+
+                await Task.Delay(300);
+            }
         }
 
         private void DataEvent_EventHandleStatusChange(object sender, StatusChangeEventArgs e)
@@ -553,8 +704,8 @@ namespace WeightChecking
                 labDeviationPairs.Text = "0";
                 labDeviation.Text = "0";
 
-                _labUnitCalculatQty.Text = "-";
-                _labUnitDeviation.Text = "-";
+                _labUnitCalculatQty.Text = "Calculated Qty (-)";
+                _labUnitDeviation.Text = "Deviation (-)";
 
                 labNetRealWeight.Text = "0";
                 _labPrinting.Text = "NO";
@@ -849,7 +1000,7 @@ namespace WeightChecking
                     para.Add("oc", _scanDataMetal.OcNo);
                     para.Add("boxNo", _scanDataMetal.BoxNo);
 
-                    var checkBox = connection.Query<tblScanDataModel>("sp_tblScanDataGetByOcBoxNo", para, commandType: CommandType.StoredProcedure).ToList();
+                    var checkBox = connection.Query<tblScanData>("sp_tblScanDataGetByOcBoxNo", para, commandType: CommandType.StoredProcedure).ToList();
 
                     if (checkBox != null && checkBox.Count > 0)
                     {
@@ -1192,7 +1343,7 @@ namespace WeightChecking
                 SendDynamicString(" ", " ", " ");
                 //reset model để lưu cho thùng mới
                 _scanDataWeight = null;
-                _scanDataWeight = new tblScanDataModel();
+                _scanDataWeight = new tblScanData();
                 _approvePrint = false;
                 GlobalVariables.IdLabel = string.Empty;
 
@@ -1409,7 +1560,7 @@ namespace WeightChecking
                     //var checkInfo = connection.Query<tblScanDataCheckModel>("sp_tblScanDataCheck", para, commandType: CommandType.StoredProcedure).ToList();
 
                     para.Add("_QrCode", _scanDataWeight.BarcodeString);
-                    var checkInfo = connection.Query<tblScanDataModel>("sp_tblScanDataGetByQrCode", para, commandType: CommandType.StoredProcedure).ToList();
+                    var checkInfo = connection.Query<tblScanData>("sp_tblScanDataGetByQrCode", para, commandType: CommandType.StoredProcedure).ToList();
                     foreach (var item in checkInfo)
                     {
                         if (
@@ -2446,8 +2597,8 @@ namespace WeightChecking
                     labNetRealWeight.Text = _scanDataWeight.NetWeight.ToString();
                     //labLowerToleranceWeight.Text = nwSub.ToString("#.###");
                     //labUpperToleranceWeight.Text = nwPlus.ToString("#.###");
-                    _labUnitCalculatQty.Text = _plr;
-                    _labUnitDeviation.Text = _plr;
+                    _labUnitCalculatQty.Text = $"Calculated Qty ({_plr})";
+                    _labUnitDeviation.Text = $"Deviation ({_plr})";
                 });
                 #endregion
 
@@ -2805,7 +2956,7 @@ namespace WeightChecking
 
                         //reset model;
                         _scanDataMetal = null;
-                        _scanDataMetal = new tblScanDataModel();
+                        _scanDataMetal = new tblScanData();
 
                         BarcodeScanner1Handle(1, _barcodeString1);
 
@@ -2873,7 +3024,7 @@ namespace WeightChecking
 
                         //reset model;
                         _scanDataPrint = null;
-                        _scanDataPrint = new tblScanDataModel();
+                        _scanDataPrint = new tblScanData();
 
                         BarcodeScanner3Handle(3, _barcodeString3);
 
@@ -2885,7 +3036,7 @@ namespace WeightChecking
 
                         //reset model;
                         _scanDataPrint = null;
-                        _scanDataPrint = new tblScanDataModel();
+                        _scanDataPrint = new tblScanData();
                     }
                 }
             }
@@ -3083,7 +3234,7 @@ namespace WeightChecking
 
                     //reset model;
                     _scanDataWeight = null;
-                    _scanDataWeight = new tblScanDataModel();
+                    _scanDataWeight = new tblScanData();
                     //xoa string
                     //SendDynamicString(" ", " ", " ");
                 }
@@ -3458,6 +3609,11 @@ namespace WeightChecking
 
         }
 
+        private void labelControl40_Click(object sender, EventArgs e)
+        {
+
+        }
+
         private void btn_GetSpeed_Click(object sender, EventArgs e)
         {
             try
@@ -3572,7 +3728,7 @@ namespace WeightChecking
                 _metalScannerStatus = 1;
 
                 _scanDataMetal = null;
-                _scanDataMetal = new tblScanDataModel();
+                _scanDataMetal = new tblScanData();
                 //log vao bang reject
                 using (var connection = GlobalVariables.GetDbConnection())
                 {

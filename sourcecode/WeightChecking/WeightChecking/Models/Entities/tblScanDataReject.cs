@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-    public class ScanDataRejectModel
+    [Table("tblScanDataReject")]
+    public class tblScanDataReject
     {
         public string BarcodeString { get; set; }
         public string IdLabel { get; set; }
@@ -24,6 +27,7 @@ namespace WeightChecking
         public string ProductName { get; set; }
 
         [Browsable(false)]
+        [Key]
         public Guid ID { get; set; }
         [Browsable(false)]
         public string CreatedMachine { get; set; }

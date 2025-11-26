@@ -289,9 +289,14 @@
     <Compile Include="frmScaleNewUI.Designer.cs">
       <DependentUpon>frmScaleNewUI.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\Entities\tblApprovedPrintLabel.cs" />
     <Compile Include="Models\Entities\tblConfig.cs" />
+    <Compile Include="Models\Entities\tblCoreDataCodeItemSize.cs" />
+    <Compile Include="Models\Entities\tblIncomingIDC.cs" />
+    <Compile Include="Models\Entities\tblItemMissingInfo.cs" />
+    <Compile Include="Models\Entities\tblLog.cs" />
+    <Compile Include="Models\Entities\tblMetalScanResult.cs" />
     <Compile Include="Models\FT050Model.cs" />
-    <Compile Include="Models\MetalScanResultModel.cs" />
     <Compile Include="Views\frmDeleteBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -303,7 +308,7 @@
     <Compile Include="Models\ApprovedReportModel.cs" />
     <Compile Include="Models\OcUsingModel.cs" />
     <Compile Include="Models\ScanDataRejectReportModel.cs" />
-    <Compile Include="Models\ScanDataRejectModel.cs" />
+    <Compile Include="Models\Entities\tblScanDataReject.cs" />
     <Compile Include="Models\ScanDataReport1Model.cs" />
     <Compile Include="Models\ScanDataReportModel.cs" />
     <Compile Include="Models\tblScanDataCheckModel.cs" />
@@ -328,7 +333,6 @@
       <DependentUpon>frmReports.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\ProductInfoModel.cs" />
-    <Compile Include="Models\tblCoreDataCodeItemSizeModel.cs" />
     <Compile Include="Views\frmUpdateTolerance.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -349,9 +353,9 @@
       <DependentUpon>frmMasterData.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\RememberInfo.cs" />
-    <Compile Include="Models\tblScanDataModel.cs" />
-    <Compile Include="Models\tblUsers.cs" />
-    <Compile Include="Models\tblWinlineProductsInfoModel.cs" />
+    <Compile Include="Models\Entities\tblScanData.cs" />
+    <Compile Include="Models\Entities\tblUser.cs" />
+    <Compile Include="Models\Entities\tblWinlineProductsInfo.cs" />
     <Compile Include="StaticClass\EncodeMD5.cs" />
     <Compile Include="StaticClass\ScaleHelper.cs" />
     <Compile Include="Views\frmScale.cs">

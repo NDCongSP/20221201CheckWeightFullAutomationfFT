@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace WeightChecking
             InitializeComponent();
 
             Load += Login_Load;
-            
+
             labStatus.Text = Application.ProductVersion;
         }
 
@@ -37,13 +38,15 @@ namespace WeightChecking
                 this.txtPass.Text = GlobalVariables.RememberInfo.Pass;
                 this.chkRemember.Checked = GlobalVariables.RememberInfo.Remember;
             }
-           
+
             this.txtUseName.Focus();
             this.chkRemember.CheckedChanged += (s, o) =>
             {
                 CheckEdit ck = (CheckEdit)s;
                 GlobalVariables.RememberInfo.Remember = ck.Checked;
             };
+
+            btnSubmit.Click += async (s, o) => await btnSubmit_Click(s, o);
 
             _timer.Enabled = true;
             _timer.Tick += _timer_Tick;
@@ -57,7 +60,7 @@ namespace WeightChecking
             s.Enabled = true;
         }
 
-        private void btnSubmit_Click(object sender, EventArgs e)
+        private async Task btnSubmit_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrEmpty(txtUseName.Text) && !string.IsNullOrEmpty(txtPass.Text))
             {
@@ -66,52 +69,62 @@ namespace WeightChecking
                     var para = new DynamicParameters();
                     para.Add("@userName", txtUseName.Text);
 
-                    GlobalVariables.UserLoginInfo = connection.Query<tblUsers>("sp_UsersLogin", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
-
-                    if (GlobalVariables.UserLoginInfo != null)
+                    using (var dbContext = new ApplicationDbEntities(GlobalVariables.ConnectionString))
                     {
-                        if (BC.Verify(txtPass.Text, GlobalVariables.UserLoginInfo.Password))
-                        {
-                            //log thong tin dang nhap vao rememberInfo
-                            if (GlobalVariables.RememberInfo.Remember)
-                            {
-                                GlobalVariables.RememberInfo.UserName = EncodeMD5.EncryptString(txtUseName.Text, "ITFramasBDVN");
-                                GlobalVariables.RememberInfo.Pass = EncodeMD5.EncryptString(txtPass.Text, "ITFramasBDVN");
+                        GlobalVariables.UserLoginInfo = await dbContext.TblUsers.FirstOrDefaultAsync(u => u.UserName == txtUseName.Text);
+                    }
 
-                                string json = JsonConvert.SerializeObject(GlobalVariables.RememberInfo);
+                    if (GlobalVariables.UserLoginInfo == null)
+                    {
+                        XtraMessageBox.Show($"User name '{txtUseName.Text}' was not found.", "WARNING", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
 
-                                File.WriteAllText(@"./RememberInfo.json", json);
-                            }
-                            else
-                            {
-                                GlobalVariables.RememberInfo.UserName = null;
-                                GlobalVariables.RememberInfo.Pass = null;
-                                GlobalVariables.RememberInfo.Remember = false;
+                    if (!BC.Verify(txtPass.Text, GlobalVariables.UserLoginInfo.Password))
+                    {
+                        XtraMessageBox.Show("Password is not correct.", "WARNING", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
 
-                                string json = JsonConvert.SerializeObject(GlobalVariables.RememberInfo);
+                    //log thong tin dang nhap vao rememberInfo
+                    if (GlobalVariables.RememberInfo.Remember)
+                    {
+                        GlobalVariables.RememberInfo.UserName = EncodeMD5.EncryptString(txtUseName.Text, "ITFramasBDVN");
+                        GlobalVariables.RememberInfo.Pass = EncodeMD5.EncryptString(txtPass.Text, "ITFramasBDVN");
 
-                                File.WriteAllText(@"./RememberInfo.json", json);
-                            }
+                        string json = JsonConvert.SerializeObject(GlobalVariables.RememberInfo);
 
-                            //frmMain nf = new frmMain();
-                            //nf.ShowDialog();
-
-                            this.Hide();
-                            var frmMain = new frmMain();
-                            dialogResult = frmMain.ShowDialog();
-                            if (dialogResult == DialogResult.OK)
-                            {
-                                this.Close();
-                            }
-                        }
-                        else
-                        {
-                            XtraMessageBox.Show("Mật khẩu không chính xác.", "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        }
+                        File.WriteAllText(@"./RememberInfo.json", json);
                     }
                     else
                     {
-                        XtraMessageBox.Show("Thông tin đăng nhập không chính xác.", "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        GlobalVariables.RememberInfo.UserName = null;
+                        GlobalVariables.RememberInfo.Pass = null;
+                        GlobalVariables.RememberInfo.Remember = false;
+
+                        string json = JsonConvert.SerializeObject(GlobalVariables.RememberInfo);
+
+                        File.WriteAllText(@"./RememberInfo.json", json);
+                    }
+
+                    //frmMain nf = new frmMain();
+                    //nf.ShowDialog();
+
+                    this.Hide();
+                    if (GlobalVariables.UserLoginInfo.Role == RolesEnum.Operator)
+                    {
+                        var frmMain = new frmScaleNewUI();
+                        dialogResult = frmMain.ShowDialog();
+                    }
+                    else
+                    {
+                        var frmMain = new frmMain();
+                        dialogResult = frmMain.ShowDialog();
+                    }
+
+                    //if (dialogResult == DialogResult.OK)
+                    {
+                        this.Close();
                     }
                 }
             }

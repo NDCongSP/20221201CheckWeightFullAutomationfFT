@@ -111,7 +111,7 @@ namespace WeightChecking
                     parametters.Add("Station", Station);
 
                     #region Scan Data
-                    var res = connection.Query<tblScanDataModel>("sp_tblScanDataGets", parametters, commandType: CommandType.StoredProcedure).ToList();
+                    var res = connection.Query<tblScanData>("sp_tblScanDataGets", parametters, commandType: CommandType.StoredProcedure).ToList();
 
                     if (grcReports.InvokeRequired)
                     {
@@ -176,7 +176,7 @@ namespace WeightChecking
                     #endregion
 
                     #region Scan data reject
-                    var resScanDataReject = connection.Query<ScanDataRejectModel>("sp_tblScanDataRejectSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
+                    var resScanDataReject = connection.Query<tblScanDataReject>("sp_tblScanDataRejectSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
 
                     this?.Invoke((MethodInvoker)delegate
                     {
@@ -191,7 +191,7 @@ namespace WeightChecking
                     #endregion
 
                     #region Metal scan
-                    var resMetalScan = connection.Query<MetalScanResultModel>("sp_tblMetalScanResultSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
+                    var resMetalScan = connection.Query<tblMetalScanResult>("sp_tblMetalScanResultSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
 
                     this?.Invoke((MethodInvoker)delegate
                     {

@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace WeightChecking
 {
-    public class MetalScanResultModel
+    [Table("tblMetalScanResult")]
+    public class tblMetalScanResult
     {
-        [Browsable(false)]
+        [Key]
         public Guid Id { get; set; }
 
         public string BarcodeString { get; set; }
+
+        public string ProductItemCode { get; set; }
 
         public string IdLabel { get; set; }
 
@@ -21,15 +24,14 @@ namespace WeightChecking
 
         public string BoxNo { get; set; }
 
-        public double Qty { get; set; }
+        public double? Qty { get; set; }
 
         public bool MetalCheckResult { get; set; }
-        public string ProductItemCode { get; set; }
 
-        public DateTime CreatedDate { get; set; }
+        public DateTime? CreatedDate { get; set; }
 
         public string CreatedMachine { get; set; }
 
-        public int IsActived { get; set; }
+        public int? IsActived { get; set; }
     }
 }

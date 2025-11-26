@@ -43,7 +43,7 @@ namespace WeightChecking
         //public static int ScaleDelay = 300;
         //public static int UnitScale { get; set; } = 0;
 
-        public static tblUsers UserLoginInfo { get; set; } = new tblUsers();
+        public static tblUser UserLoginInfo { get; set; } = null;
 
         public static PLCPi MyDriver = new PLCPi();
         public static byte[] ReadHoldingArr { get; set; }

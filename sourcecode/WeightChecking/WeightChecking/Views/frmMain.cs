@@ -587,8 +587,8 @@ namespace WeightChecking
                             var resMissInfo = connection.Query<MissProItemModel>("sp_MissingInfoGets", parametters, commandType: CommandType.StoredProcedure).ToList();
 
                             var resScanDataRejectReport = new List<ScanDataRejectReportModel>();
-                            var resScanDataReject = connection.Query<ScanDataRejectModel>("sp_tblScanDataRejectSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
-                            var resMetalScanResult = connection.Query<MetalScanResultModel>("sp_tblMetalScanResultSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
+                            var resScanDataReject = connection.Query<tblScanDataReject>("sp_tblScanDataRejectSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
+                            var resMetalScanResult = connection.Query<tblMetalScanResult>("sp_tblMetalScanResultSelectFromTo", parametters, commandType: CommandType.StoredProcedure).ToList();
 
                             using (Workbook wb = new Workbook())
                             {
@@ -1190,7 +1190,7 @@ namespace WeightChecking
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
                     SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
-                    List<tblCoreDataCodeItemSizeModel> coreData = new List<tblCoreDataCodeItemSizeModel>();
+                    List<tblCoreDataCodeItemSize> coreData = new List<tblCoreDataCodeItemSize>();
 
                     #region Get data from template excel
                     using (Workbook wb = new Workbook())
@@ -1212,14 +1212,14 @@ namespace WeightChecking
                                 Row _row = ws.Rows[i];
                                 if (!string.IsNullOrEmpty(_row[$"A{i}"].Value.TextValue))
                                 {
-                                    coreData.Add(new tblCoreDataCodeItemSizeModel()
+                                    coreData.Add(new tblCoreDataCodeItemSize()
                                     {
                                         CodeItemSize = _row[$"A{i}"].Value.TextValue,
                                         MainItemName = _row[$"B{i}"].Value.TextValue,
                                         MetalScan = (int)_row[$"C{i}"].Value.NumericValue,
                                         Color = _row[$"D{i}"].Value.TextValue,
                                         Printing = (int)_row[$"E{i}"].Value.NumericValue,
-                                        Date = _row[$"F{i}"].Value.DateTimeValue.ToString(),
+                                        Date = _row[$"F{i}"].Value.DateTimeValue,
                                         Size = _row[$"G{i}"].Value.TextValue,
                                         AveWeight1Prs = _row[$"M{i}"].Value.NumericValue,
                                         BoxQtyBx1 = _row[$"O{i}"].Value.NumericValue,

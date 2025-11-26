@@ -19,7 +19,7 @@ namespace WeightChecking
         string _code = null;
         Timer _timer = new Timer();
         int _checkCount = 0;//đếm số lần scan QR code. ban đầu vào scan QR code label, sau đó scan QR code approve. rồi mới cho in lại tem
-        tblScanDataModel _scanData = new tblScanDataModel();
+        tblScanData _scanData = new tblScanData();
         double _scaleValue = 0;
         Guid _qrApproved;
         int _actualDeviation = 0;
@@ -228,7 +228,7 @@ namespace WeightChecking
                     var para = new DynamicParameters();
                     para.Add("Id", _qrApproved);
 
-                    var res = connection.Query<tblUsers>("sp_tblUserGet", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
+                    var res = connection.Query<tblUser>("sp_tblUserGet", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
                     if (res != null)
                     {
                         if (res.Approved == 1)
@@ -241,7 +241,7 @@ namespace WeightChecking
                             para = new DynamicParameters();
                             para.Add("QRLabel", _scanData.BarcodeString);
 
-                            var scandataDetail = connection.Query<tblScanDataModel>("sp_tblScanDataGetForApprovedPrint", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
+                            var scandataDetail = connection.Query<tblScanData>("sp_tblScanDataGetForApprovedPrint", para, commandType: CommandType.StoredProcedure).FirstOrDefault();
                             #endregion
 
                             if (scandataDetail != null)

@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-  public  class tblWinlineProductsInfoModel
+    [Table("tblWinlineProductsInfo")]
+    public  class tblWinlineProductsInfo
     {
+        [Key]
         public Guid Id { get; set; }
         public string Code_infoSize { get; set; }
         public string ProductNunmber { get; set; }
