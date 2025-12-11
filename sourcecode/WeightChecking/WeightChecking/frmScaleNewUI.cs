@@ -1,4 +1,5 @@
-﻿using CognexLibrary_NETFramework;
+﻿using AutoUpdaterDotNET;
+using CognexLibrary_NETFramework;
 using CoreScanner;
 using Dapper;
 using DevExpress.XtraEditors;
@@ -45,6 +46,7 @@ namespace WeightChecking
         private Button btnClose;
         private Button btnMaximize;
         private Button btnMinimize;
+        private Button btnUpdateVersion;
 
 
         private ScaleHelper _scaleHelper;
@@ -85,12 +87,32 @@ namespace WeightChecking
         //20250510 upgrade system to use scanner cogned DM290-X at station check weight
         private static CognexLibrary_NETFramework.DriverTelnet _driverTelnet = new CognexLibrary_NETFramework.DriverTelnet();
 
+        private bool isUpdateClicked = false;
+        byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] _writeHoldingRegisterArr = { 0, 1 };
+        int _countDisconnectPlc = 0;
+        private System.Threading.Tasks.Task _tskModbus, _tskProfinet;
+
+        private bool _resetCounter = false;
+
+        string _stationReport = "All";
+
+        int _metalScan = 0, _metalPusher = 0, _weightPusher = 0, _printPusher = 0;
+
+        private CancellationTokenSource _readModbus;
+        private Task _readModbusTask;
+
+        private CancellationTokenSource _readProfinet;
+        private Task _readProfinetTask;
+
+        private CancellationTokenSource _timer;
+        private Task _timerTask;
 
         public frmScaleNewUI()
         {
             InitializeComponent();
 
-
+            #region add header
             // Cấu hình form
             this.Text = "Custom Title Bar";
             this.FormBorderStyle = FormBorderStyle.None; // Bỏ header mặc định
@@ -107,7 +129,7 @@ namespace WeightChecking
 
             // Nút Close
             btnClose = new Button();
-            btnClose.Text = "X";
+            btnClose.Text = "";
             btnClose.ForeColor = Color.White;
             btnClose.BackColor = Color.Black;
             btnClose.FlatStyle = FlatStyle.Flat;
@@ -115,12 +137,17 @@ namespace WeightChecking
             btnClose.Size = new Size(40, 40);
             btnClose.Location = new Point(this.Width - 40, 0);
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            // 1) Gán icon từ Resources (đặt tên hình là "updateVersion" như trong Resource)
+            btnClose.Image = Properties.Resources.close_white_30;  // PNG từ Resources
+            btnClose.ImageAlign = ContentAlignment.MiddleCenter;  // căn giữa
+            btnClose.Padding = new Padding(0);                    // tránh lệch
+            btnClose.TextImageRelation = TextImageRelation.Overlay; // chỉ icon
             btnClose.Click += BtnClose_Click;
             titleBar.Controls.Add(btnClose);
 
             // Nút Maximize
             btnMaximize = new Button();
-            btnMaximize.Text = "▢";
+            btnMaximize.Text = "";
             btnMaximize.ForeColor = Color.White;
             btnMaximize.BackColor = Color.Black;
             btnMaximize.FlatStyle = FlatStyle.Flat;
@@ -128,12 +155,17 @@ namespace WeightChecking
             btnMaximize.Size = new Size(40, 40);
             btnMaximize.Location = new Point(this.Width - 80, 0);
             btnMaximize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            // 1) Gán icon từ Resources (đặt tên hình là "updateVersion" như trong Resource)
+            btnMaximize.Image = Properties.Resources.maximize_white_30;  // PNG từ Resources
+            btnMaximize.ImageAlign = ContentAlignment.MiddleCenter;  // căn giữa
+            btnMaximize.Padding = new Padding(0);                    // tránh lệch
+            btnMaximize.TextImageRelation = TextImageRelation.Overlay; // chỉ icon
             btnMaximize.Click += BtnMaximize_Click;
             titleBar.Controls.Add(btnMaximize);
 
             // Nút Minimize
             btnMinimize = new Button();
-            btnMinimize.Text = "_";
+            btnMinimize.Text = "";
             btnMinimize.ForeColor = Color.White;
             btnMinimize.BackColor = Color.Black;
             btnMinimize.FlatStyle = FlatStyle.Flat;
@@ -141,16 +173,59 @@ namespace WeightChecking
             btnMinimize.Size = new Size(40, 40);
             btnMinimize.Location = new Point(this.Width - 120, 0);
             btnMinimize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            // 1) Gán icon từ Resources (đặt tên hình là "updateVersion" như trong Resource)
+            btnMinimize.Image = Properties.Resources.minimize_white_30;  // PNG từ Resources
+            btnMinimize.ImageAlign = ContentAlignment.MiddleCenter;  // căn giữa
+            btnMinimize.Padding = new Padding(0);                    // tránh lệch
+            btnMinimize.TextImageRelation = TextImageRelation.Overlay; // chỉ icon
             btnMinimize.Click += BtnMinimize_Click;
             titleBar.Controls.Add(btnMinimize);
 
 
+            // Nút update version
+            btnUpdateVersion = new Button();
+            btnUpdateVersion.Text = "";                      // Không cần chữ, chỉ hiển thị icon
+            btnUpdateVersion.ForeColor = Color.White;
+            btnUpdateVersion.BackColor = Color.Black;
+            btnUpdateVersion.FlatStyle = FlatStyle.Flat;
+            btnUpdateVersion.FlatAppearance.BorderSize = 0;
+            btnUpdateVersion.Size = new Size(40, 40);
+            btnUpdateVersion.Location = new Point(this.Width - 160, 0);
+            btnUpdateVersion.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnUpdateVersion.Cursor = Cursors.Hand;
+
+            // 1) Gán icon từ Resources (đặt tên hình là "updateVersion" như trong Resource)
+            btnUpdateVersion.Image = Properties.Resources.arrow_upward_white_30;  // PNG từ Resources
+            btnUpdateVersion.ImageAlign = ContentAlignment.MiddleCenter;  // căn giữa
+            btnUpdateVersion.Padding = new Padding(0);                    // tránh lệch
+            btnUpdateVersion.TextImageRelation = TextImageRelation.Overlay; // chỉ icon
+
+            // Tùy chọn: scale icon nếu quá lớn/nhỏ (WinForms Button không có ImageLayout)
+            // => bạn có thể dùng phiên bản icon 24x24 hoặc 32x32 trong file PNG để vừa với nút 40x40.
+
+            // 2) Tooltip khi hover
+            var tip = new ToolTip();
+            tip.AutoPopDelay = 5000;     // hiển thị tối đa 5 giây
+            tip.InitialDelay = 300;      // trễ 300ms
+            tip.ReshowDelay = 100;       // xuất hiện lại nhanh
+            tip.ShowAlways = true;       // luôn hiển thị tooltip
+            tip.SetToolTip(btnUpdateVersion, "Click to update version");  // nội dung tooltip
+
+            // Tùy chọn: hiệu ứng hover (đổi nền cho dễ nhìn)
+            btnUpdateVersion.MouseEnter += (s, e) => btnUpdateVersion.BackColor = Color.FromArgb(30, 30, 30);
+            btnUpdateVersion.MouseLeave += (s, e) => btnUpdateVersion.BackColor = Color.Black;
+
+            // Sự kiện Click (giữ nguyên như bạn đã có)
+            btnUpdateVersion.Click += BtnUpdateVersion_Click; ; // hoặc sự kiện update version thực tế của bạn
+            titleBar.Controls.Add(btnUpdateVersion);
+
+
             // Đảm bảo tất cả có cùng Height = 30 và Y = 5
-            btnClose.Size = btnMaximize.Size = btnMinimize.Size = new Size(30, 30);
+            btnClose.Size = btnMaximize.Size = btnMinimize.Size = btnUpdateVersion.Size = new Size(30, 30);
 
 
             // Anchor cho cả 3 nút
-            btnClose.Anchor = btnMaximize.Anchor = btnMinimize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnClose.Anchor = btnMaximize.Anchor = btnMinimize.Anchor = btnUpdateVersion.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
             // Logo
             PictureBox logo = new PictureBox();
@@ -162,16 +237,16 @@ namespace WeightChecking
 
             // Text
             Label titleText = new Label();
-            titleText.Text = "fFT - SSFG Station";
+            titleText.Text = $"fFT - SSFG Station";
             titleText.ForeColor = Color.White;
             titleText.Font = new Font("Segoe UI", 12, FontStyle.Bold);
             titleText.AutoSize = true;
             titleText.Location = new Point(120, 10); // ngay sau logo
             titleBar.Controls.Add(titleText);
-
+            #endregion
 
             Load += FrmScale_Load;
-
+            FormClosing += FrmScale_FormClosing;
             labResult.Focus();
         }
 
@@ -183,7 +258,25 @@ namespace WeightChecking
             SendMessage(this.Handle, 0x112, 0xf012, 0);
         }
 
-
+        private void BtnUpdateVersion_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                isUpdateClicked = true;
+                string UUrl = GlobalVariables.ConfigJson.UpdatePath;
+                SplashScreenManager.ShowForm(typeof(WaitForm1));
+                System.Threading.Thread.Sleep(3000);
+                AutoUpdater.Start(UUrl);
+            }
+            catch (Exception ex)
+            {
+                XtraMessageBox.Show($"{ex.Message}", "Error");
+            }
+            finally
+            {
+                SplashScreenManager.CloseForm(false);
+            }
+        }
 
         private void BtnClose_Click(object sender, EventArgs e)
         {
@@ -206,6 +299,7 @@ namespace WeightChecking
 
         private void FrmScale_Load(object sender, EventArgs e)
         {
+            #region Fake data to debug
             //layoutControlGroup3.Visibility = DevExpress.XtraLayout.Utils.LayoutVisibility.Never;
 
             //BarcodeScanner1Handle(1, "A129059,6818442301-ON01-2651,10,6,P,6/8,1900070,1/1|2,683388.2024,0,0,18");
@@ -221,6 +315,7 @@ namespace WeightChecking
             //BarcodeScanner2Handle(2, "A10704344,6812012208-2667-E057,45,4,P,6/13,1900082,2/3|2,248212.2023,,,");
             //GlobalVariables.MyEvent.MetalCheckResult = 0;
             //GlobalVariables.MyEvent.SensorAfterMetalScan = 1;
+            #endregion
 
             #region Test get LotNo Brooks
             //using (var connection = GlobalVariables.GetDbConnection())
@@ -241,37 +336,6 @@ namespace WeightChecking
             #endregion
 
             #region đăng ký sự kiện từ cac PLC
-            GlobalVariables.MyEvent.EventHandlerRefreshMasterData += (s, o) =>
-            {
-                //#region hien thi cac thong so dem
-                //if (this.InvokeRequired)
-                //{
-                //    this.Invoke(new Action(() =>
-                //    {
-                //        labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                //        labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                //        labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                //        labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                //        labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                //        labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                //        labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                //        labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-                //    }));
-                //}
-                //else
-                //{
-                //    labGoodBox.Text = (GlobalVariables.RememberInfo.GoodBoxNoPrinting + GlobalVariables.RememberInfo.GoodBoxPrinting).ToString();
-                //    labGoodNoPrint.Text = GlobalVariables.RememberInfo.GoodBoxNoPrinting.ToString();
-                //    labGoodPrint.Text = GlobalVariables.RememberInfo.GoodBoxPrinting.ToString();
-                //    labFailBox.Text = (GlobalVariables.RememberInfo.FailBoxNoPrinting + GlobalVariables.RememberInfo.FailBoxPrinting).ToString();
-                //    labFailNoPrint.Text = GlobalVariables.RememberInfo.FailBoxNoPrinting.ToString();
-                //    labFailPrint.Text = GlobalVariables.RememberInfo.FailBoxPrinting.ToString();
-                //    labMetalScanBox.Text = GlobalVariables.RememberInfo.MetalScan.ToString();
-                //    labMetalScanCount.Text = GlobalVariables.RememberInfo.CountMetalScan.ToString();
-                //}
-                //#endregion
-            };
-
             //sự kiện lấy số cân hiện tại cảu đầu cân (real time)
             GlobalVariables.MyEvent.EventHandleScaleValue += (s, o) =>
             {
@@ -553,6 +617,158 @@ namespace WeightChecking
             };
             #endregion
 
+            if (!GlobalVariables.ConfigJson.IsTest)
+            {
+                #region Ket noi modbus RTU PLC: Scale, Metal scan
+                if (GlobalVariables.ConfigJson.IsScale)
+                {
+                    GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ConfigJson.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
+
+                    Debug.WriteLine($"PLC Status: {GlobalVariables.ModbusStatus}");
+
+                    if (GlobalVariables.ModbusStatus)
+                    {
+                        //ghi thông số delay trước khi chạy vào máy in
+                        //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
+                        //D511 -11FF = 4607
+                        //thanh ghi D508 cua PLC Delta DPV14SS2 co dia chi la 4604
+
+                        //byte[] mangGhi = new byte[2];
+                        //GlobalVariables.MyDriver.SetWord(mangGhi, 0, 2000);
+
+                        //GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4604, 1, mangGhi);
+
+                        //if (GlobalVariables.ModbusStatus)
+                        //{
+                        //    MessageBox.Show("Ghi gia tri thanh cong");
+                        //}
+
+                        //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
+                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 8, ref _readHoldingRegisterArr);
+
+                        //GlobalVariables.RememberInfo.CountMetalScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                        ////update gia tri count vao sự kiện để trong frmScal  nó update lên giao diện
+                        //GlobalVariables.MyEvent.CountValue = GlobalVariables.RememberInfo.CountMetalScan;
+
+                        //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                        GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
+                        GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
+                        GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
+                        GlobalVariables.MyEvent.SensorBeforeWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 8);
+                        GlobalVariables.MyEvent.SensorAfterWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
+
+                        //var delayConveyor = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 14);
+
+                        //đăng ký sự kiện bật tắt đèn tháp báo cân pass/fail
+                        GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
+
+                        //ghi giá trị tắt đèn tháp xuống PLC
+                        //GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+                        GlobalVariables.MyEvent.StatusLightPLC = 0;
+
+                        //run thread đọc modbus, để đọc các giá trị cân
+                        _readModbus = new CancellationTokenSource();
+                        _readModbusTask = Task.Run(() => TaskReadModbusAsync(_readModbus.Token));
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Không thể kết nối được cân (Modbus RTU).{Environment.NewLine}Tắt phần mềm, kiểm tra lại kết nối với PLC rồi mở lại phần mềm.",
+                                        "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                #endregion
+
+                #region Ket noi conveyor
+                GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.ConfigJson.IpConveyor);
+                //GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi("10.40.0.112");
+                Console.WriteLine($"Conveyor Status: {GlobalVariables.ConveyorStatus}");
+
+                if (GlobalVariables.ConveyorStatus == "GOOD")
+                {
+                    GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 3, GlobalVariables.DataWriteDb1);
+
+                    var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 10);
+
+                    if (resultData.TrangThai == "GOOD")
+                    {
+                        GlobalVariables.ConveyorStatus = resultData.TrangThai;
+                        //vùng nhớ chứa trạng thái của sensor là DB1[3], truoc vị trí metal scan, để tính thời gian quét QR code. 1-On;0-off
+                        GlobalVariables.MyEvent.SensorBeforeMetalScan = resultData.MangGiaTri[3];
+                        //sensor đặt ngay sau máy quét kim loại, báo là thùng hàng đã qua metal scan. 1-On;0-off
+                        GlobalVariables.MyEvent.SensorAfterMetalScan = resultData.MangGiaTri[5];
+                        //vùng nhớ báo kết quả check metal. 0-pass; 1-Fail
+                        GlobalVariables.MyEvent.MetalCheckResult = resultData.MangGiaTri[4];
+                        //vùng nhớ báo tin hiệu sensor ngay vị trí bàn nâng chuyển 3 hướng sau vị trí metal scanner
+                        GlobalVariables.MyEvent.SensorMiddleMetal = resultData.MangGiaTri[7];
+
+                        //Vùng nhớ báo tín hiệu sensor 2 vị trí sau scannerPrint
+                        GlobalVariables.MyEvent.SensorAfterPrintScannerFG = resultData.MangGiaTri[8];
+                        GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting = resultData.MangGiaTri[9];
+                    }
+
+                    //run thread đọc profinet
+                    _readProfinet = new CancellationTokenSource();
+                    _readProfinetTask = Task.Run(() => TaskReadProfinetAsync(_readProfinet.Token));
+                }
+                else
+                {
+                    MessageBox.Show($"Không thể kết nối được băng tải.{Environment.NewLine}Tắt phần mềm, kiểm tra lại kết nối với PLC rồi mở lại phần mềm.",
+                                    "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+                ////run thread đọc modbus, để đọc các giá trị cân
+                //_tskModbus = new System.Threading.Tasks.Task(() => ReadModbus());
+                //_tskModbus.Start();
+
+                //đăng ký các sự kiện ghi giá trị điều khiển Pusher
+                //vùng nhớ dataBlock 1(DB1.DB0 byte). before metal scan
+                GlobalVariables.MyEvent.EventHandlerMetalPusher += (s, o) =>
+                {
+                    //if (o.NewValue != 0)
+                    {
+                        GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 1, new byte[] { (byte)o.NewValue });
+                    }
+                    Debug.WriteLine($"Event ghi DB metal pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                    //GlobalVariables.MyEvent.MetalPusher = 0;
+                };
+                //vùng nhớ dataBlock 1(DB1.DB1 byte). weight pusher
+                GlobalVariables.MyEvent.EventHandlerWeightPusher += (s, o) =>
+                {
+                    if (o.NewValue == 1)
+                    {
+                        GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, new byte[] { 1 });
+                        Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                        //GlobalVariables.MyEvent.WeightPusher = 0;
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                    }
+                };
+                //vùng nhớ dataBlock 1(DB1.DB2 byte). printing pusher
+                GlobalVariables.MyEvent.EventHandlerPrintPusher += (s, o) =>
+                {
+                    if (o.NewValue != 0)
+                    {
+                        GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 2, 1, new byte[] { (byte)o.NewValue });
+                    }
+                    Debug.WriteLine($"Event ghi DB Print pusher {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                    GlobalVariables.MyEvent.PrintPusher = 0;
+                };
+                //vungf nho DB1.DB6/ dieu khien pusher reject quét kim loại lỗi
+                GlobalVariables.MyEvent.EventHandleMetalePusher1 += (s, o) =>
+                {
+                    if (o.NewValue != 0)
+                    {
+                        GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 6, 1, new byte[] { (byte)o.NewValue });
+                    }
+                    Debug.WriteLine($"Event ghi DB Metal pusher 1 {o.NewValue}. status {GlobalVariables.ConveyorStatus}");
+                    GlobalVariables.MyEvent.MetalPusher1 = 0;
+                };
+
+                #endregion
+            }
+
             //khởi tạo scanner
             InitializeScaner();
 
@@ -582,29 +798,8 @@ namespace WeightChecking
             GlobalVariables.AppStatus = "READY";
 
             //tạo 1 task chạy độc lập để get data từ Hydra
-            // Fire-and-forget background task
-            _ = TaskImplementAsync();
-        }
-
-        private async Task TaskImplementAsync()
-        {
-            while (true)
-            {
-                try
-                {
-                    GlobalVariables.InvokeIfRequired(this, () =>
-                    {
-                        _labStatus.Text = GlobalVariables.AppStatus;
-                        _labDateTime.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                    });
-                }
-                catch (Exception ex)
-                {
-                    
-                }
-
-                await Task.Delay(300);
-            }
+            _timer = new CancellationTokenSource();
+            _timerTask = Task.Run(() => TaskTimerAsync(_timer.Token));
         }
 
         private void DataEvent_EventHandleStatusChange(object sender, StatusChangeEventArgs e)
@@ -649,28 +844,58 @@ namespace WeightChecking
             }
         }
 
-        private void frmScale_FormClosing(object sender, FormClosingEventArgs e)
+        private void FrmScale_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //huy đối tượng máy in
-            SerialPortClose();
-
-            if (_ckQRTask != null)
+            try
             {
-                _ckQRTask.Wait();
-                _ckQRTask.Dispose();
+                //huy đối tượng máy in
+                SerialPortClose();
+
+                if (_ckQRTask != null)
+                {
+                    _ckQRTask.Wait();
+                    _ckQRTask.Dispose();
+                }
+
+                _driverTelnet.DataEvent.EventHandleValueChange -= DataEvent_EventHandleValueChange;
+                _driverTelnet.DataEvent.EventHandleStatusChange -= DataEvent_EventHandleStatusChange;
+
+                _driverTelnet.IsDisconect = true;
+                _driverTelnet?.DisconnectDevices();
+                //huy doi tuong can
+                //_scaleHelper.StopScale = true;
+                //_ckTask.Wait();
+                //_ckTask.Dispose();
+                //_scaleHelper.Dispose();
+                GlobalVariables.ScaleStatus = "Disconnect";
+
+                _readModbus?.Cancel();
+                _readModbusTask?.Wait(1000); // đợi nhẹ, tránh treo UI
+
+                _readProfinet?.Cancel();
+                _readProfinetTask?.Wait(1000);
+
+                _timer?.Cancel();
+                _timerTask?.Wait(1000);
             }
+            catch
+            {
 
-            _driverTelnet.DataEvent.EventHandleValueChange -= DataEvent_EventHandleValueChange;
-            _driverTelnet.DataEvent.EventHandleStatusChange -= DataEvent_EventHandleStatusChange;
+            }
+            finally
+            {
+                _readModbus?.Dispose();
+                _readModbus = null;
+                _readModbusTask = null;
 
-            _driverTelnet.IsDisconect = true;
-            _driverTelnet?.DisconnectDevices();
-            //huy doi tuong can
-            //_scaleHelper.StopScale = true;
-            //_ckTask.Wait();
-            //_ckTask.Dispose();
-            //_scaleHelper.Dispose();
-            GlobalVariables.ScaleStatus = "Disconnect";
+                _readProfinet?.Dispose();
+                _readProfinet = null;
+                _readProfinetTask = null;
+
+                _timer?.Dispose();
+                _timer = null;
+                _timerTask = null;
+            }
         }
 
         private void ResetControl()
@@ -3631,6 +3856,11 @@ namespace WeightChecking
             }
         }
 
+        private void labSize_Click(object sender, EventArgs e)
+        {
+
+        }
+
         private void btnGetDelay_Click(object sender, EventArgs e)
         {
             try
@@ -3821,6 +4051,167 @@ namespace WeightChecking
             }
             //_readQrStatus[1] = false;//xóa biến này cho lần đọc kế tiếp
         }
+
+        private async Task TaskTimerAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        _labStatus.Text = $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} " +
+                              $"| {GlobalVariables.UserLoginInfo.UserName} | Cognex cam: {GlobalVariables.CognexCam_2Status}" +
+                              $" | ConveyorStatus: {GlobalVariables.ConveyorStatus}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
+                              $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
+                              $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
+                              $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
+                              $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}"
+                              + $" | PrintStatus: {GlobalVariables.PrintConnectionStatus} | AP1: {GlobalVariables.AutoPostingStatus1}|APM:{GlobalVariables.AutoPostingStatus2} | APW: {GlobalVariables.AutoPostingStatus3}"; ;
+                        _labDateTime.Text = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
+                    });
+
+                    await Task.Delay(300, token); // nhịp kiểm tra, đủ nhẹ nhàng
+                }
+                catch (OperationCanceledException)
+                {
+                    // token.Cancel() => thoát vòng lặp
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    // Không để task chết âm thầm
+                    Log.Error(ex, "TaskTimerAsync loop error.");
+                    await Task.Delay(500, token); // tạm nghỉ rồi thử lại
+                }
+            }
+        }
+
+        public async Task TaskReadModbusAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    #region Đọc các giá trị từ PLC Cân
+                    if (GlobalVariables.ConfigJson.IsScale)
+                    {
+                        if (GlobalVariables.ModbusStatus)
+                        {
+                            //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
+                            GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 7, ref _readHoldingRegisterArr);
+
+                            //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                            GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
+                            GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
+                            GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
+                            GlobalVariables.MyEvent.SensorBeforeWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 8);
+                            GlobalVariables.MyEvent.SensorAfterWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
+                        }
+                        else
+                        {
+                            _countDisconnectPlc += 1;
+                            Debug.WriteLine($"Dem mat ket noi modbus RTU:{_countDisconnectPlc}");
+                            if (_countDisconnectPlc >= 3)
+                            {
+                                _countDisconnectPlc = 0;
+                                GlobalVariables.MyDriver.ModbusRTUMaster.NgatKetNoi();
+
+                                GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ConfigJson.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
+
+                                Debug.WriteLine($"Ket noi lai modbus RTU. Result: {GlobalVariables.ModbusStatus}");
+                            }
+                        }
+                    }
+                    #endregion
+
+                    await Task.Delay(100, token); // nhịp kiểm tra, đủ nhẹ nhàng
+                }
+                catch (OperationCanceledException)
+                {
+                    // token.Cancel() => thoát vòng lặp
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    // Không để task chết âm thầm
+                    Log.Error(ex, "TaskReadModbusAsync loop error.");
+                    await Task.Delay(500, token); // tạm nghỉ rồi thử lại
+                }
+            }
+        }
+
+        public async Task TaskReadProfinetAsync(CancellationToken token)
+        {
+            bool weightPushFlag = false;
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    #region Đọc các giá trị từ PLC conveyor s7-1200, profinet
+                    if (GlobalVariables.ConveyorStatus == "GOOD")
+                    {
+                        var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 10);
+
+                        GlobalVariables.ConveyorStatus = resultData.TrangThai;
+
+                        if (resultData.TrangThai == "GOOD")
+                        {
+                            GlobalVariables.ConveyorStatus = resultData.TrangThai;
+
+                            _metalScan = resultData.MangGiaTri[0];
+                            _weightPusher = resultData.MangGiaTri[1];
+                            _printPusher = resultData.MangGiaTri[2];
+                            _metalPusher = resultData.MangGiaTri[6];
+
+                            //if (_weightPusher == 0 && weightPushFlag == false)
+                            //{
+                            //    weightPushFlag = true;
+                            //    GlobalVariables.MyEvent.WeightPusher = _weightPusher;
+                            //}
+                            //else if (_weightPusher == 0 && weightPushFlag == false)
+                            //{
+                            //    weightPushFlag = false;
+                            //}
+
+                            //vùng nhớ chứa trạng thái của sensor là DB1[3], truoc vị trí metal scan, để tính thời gian quét QR code. 1-On;0-off
+                            GlobalVariables.MyEvent.SensorBeforeMetalScan = resultData.MangGiaTri[3];
+                            //sensor đặt ngay sau máy quét kim loại, báo là thùng hàng đã qua metal scan. 1-On;0-off
+                            GlobalVariables.MyEvent.SensorAfterMetalScan = resultData.MangGiaTri[5];
+                            //vùng nhớ báo kết quả check metal. 0-pass; 1-Fail
+                            GlobalVariables.MyEvent.MetalCheckResult = resultData.MangGiaTri[4];
+                            //vùng nhớ báo tin hiệu sensor ngay vị trí bàn nâng chuyển 3 hướng sau vị trí metal scanner
+                            GlobalVariables.MyEvent.SensorMiddleMetal = resultData.MangGiaTri[7];
+
+                            //Vùng nhớ báo tín hiệu sensor 2 vị trí sau scannerPrint
+                            GlobalVariables.MyEvent.SensorAfterPrintScannerFG = resultData.MangGiaTri[8];
+                            GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting = resultData.MangGiaTri[9];
+                        }
+                    }
+                    else
+                    {
+                        GlobalVariables.MyDriver.S7Ethernet.Client.NgatKetNoi();
+
+                        GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.ConfigJson.IpConveyor);
+                    }
+                    #endregion
+
+                    await Task.Delay(100, token); // nhịp kiểm tra, đủ nhẹ nhàng
+                }
+                catch (OperationCanceledException)
+                {
+                    // token.Cancel() => thoát vòng lặp
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    // Không để task chết âm thầm
+                    Log.Error(ex, "TaskReadProfinetAsync loop error.");
+                    await Task.Delay(500, token); // tạm nghỉ rồi thử lại
+                }
+
+            }
+        }
         #endregion
 
         void LogDataScan()
@@ -3916,5 +4307,72 @@ namespace WeightChecking
                 }
             }
         }
+
+        private async void AutoUpdater_CheckForUpdateEvent(UpdateInfoEventArgs args)
+        {
+            if (args.IsUpdateAvailable)
+            {
+                DialogResult dialogResult;
+                dialogResult =
+                        MessageBox.Show(
+                            $@"SSFG App có phiên bản mới {args.CurrentVersion}. SSFG App bản hiện tại là {args.InstalledVersion}. Bạn có muốn lên phiên bản mới không?", @"Thông Báo",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Information);
+
+                if (dialogResult.Equals(DialogResult.Yes) || dialogResult.Equals(DialogResult.OK))
+                {
+                    SplashScreenManager.ShowForm(typeof(WaitForm1));
+                    await System.Threading.Tasks.Task.Delay(3000);
+                    //AutoZipFolder();
+
+                    try
+                    {
+                        if (AutoUpdater.DownloadUpdate(args))
+                        {
+                            SplashScreenManager.CloseForm(false);
+                            Application.Exit();
+                        }
+                        else
+                        {
+                            SplashScreenManager.ShowForm(typeof(WaitForm1));
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        SplashScreenManager.CloseForm(false);
+                        MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+                if (isUpdateClicked)
+                {
+                    MessageBox.Show(@"SSFG App đang chạy phiên bản mới nhất.", @"Thông Báo",
+                   MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        #region Event PLC
+        private void MyEvent_EventHandleStatusLightPLC(object sender, TagValueChangeEventArgs e)
+        {
+            _writeHoldingRegisterArr[1] = (byte)e.NewValue;
+        Loop1:
+            GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+
+            if (!GlobalVariables.ModbusStatus)
+            {
+                goto Loop1;
+            }
+
+            //else//thùng cân fail
+            //{
+            //    _writeHoldingRegisterArr[1] = 1;
+            //    GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+            //}
+        }
+        #endregion
     }
 }

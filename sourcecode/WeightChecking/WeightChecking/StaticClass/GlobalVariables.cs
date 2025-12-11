@@ -131,5 +131,7 @@ namespace WeightChecking
         #endregion
 
         public static ConfigJsonModel ConfigJson { get; set; } = new ConfigJsonModel();
+
+        public static int DelayPrintInterval { get; set; } = 0;
     }
 }

@@ -40,7 +40,7 @@ namespace WeightChecking
 
         Timer _timer = new Timer() { Interval = 1000 };
 
-        byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] _writeHoldingRegisterArr = { 0, 1 };
         int _countDisconnectPlc = 0;
         private System.Threading.Tasks.Task _tskModbus, _tskProfinet;
@@ -978,7 +978,8 @@ namespace WeightChecking
                               $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
                               $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
                               $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}"
-                              + $" | PrintStatus: {GlobalVariables.PrintConnectionStatus} | AP1: {GlobalVariables.AutoPostingStatus1}|APM:{GlobalVariables.AutoPostingStatus2} | APW: {GlobalVariables.AutoPostingStatus3}";
+                              + $" | PrintStatus: {GlobalVariables.PrintConnectionStatus} | AP1: {GlobalVariables.AutoPostingStatus1}|APM:{GlobalVariables.AutoPostingStatus2} | APW: {GlobalVariables.AutoPostingStatus3}" +
+                              $"- Delay Print = {GlobalVariables.DelayPrintInterval} ms";
 
                     barStaticItemVersion.Caption = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
                 });
@@ -1405,6 +1406,11 @@ namespace WeightChecking
 
         public void ReadModbus()
         {
+            //var writeArr = new byte[10];
+            //GlobalVariables.MyDriver.SetWord(writeArr, 0, 2000);
+            //GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4604, 1, writeArr);
+
+       
             while (true)
             {
                 #region Đọc các giá trị từ PLC Cân
@@ -1421,6 +1427,9 @@ namespace WeightChecking
                         GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
                         GlobalVariables.MyEvent.SensorBeforeWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 8);
                         GlobalVariables.MyEvent.SensorAfterWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
+
+                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4604, 7, ref  _readHoldingRegisterArr);
+                        GlobalVariables.DelayPrintInterval = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
                     }
                     else
                     {

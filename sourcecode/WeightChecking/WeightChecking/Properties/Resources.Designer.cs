@@ -63,6 +63,26 @@ namespace WeightChecking.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap arrow_upward_white_30 {
+            get {
+                object obj = ResourceManager.GetObject("arrow_upward_white_30", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap close_white_30 {
+            get {
+                object obj = ResourceManager.GetObject("close_white_30", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap framas__black_ {
             get {
                 object obj = ResourceManager.GetObject("framas (black)", resourceCulture);
@@ -96,6 +116,26 @@ namespace WeightChecking.Properties {
         internal static System.Drawing.Bitmap framas_Wallpaper_02 {
             get {
                 object obj = ResourceManager.GetObject("framas Wallpaper 02", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap maximize_white_30 {
+            get {
+                object obj = ResourceManager.GetObject("maximize_white_30", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap minimize_white_30 {
+            get {
+                object obj = ResourceManager.GetObject("minimize_white_30", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
