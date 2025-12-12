@@ -1429,7 +1429,7 @@ namespace WeightChecking
                         GlobalVariables.MyEvent.SensorAfterWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
 
                         GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4604, 7, ref  _readHoldingRegisterArr);
-                        GlobalVariables.DelayPrintInterval = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                       
                     }
                     else
                     {

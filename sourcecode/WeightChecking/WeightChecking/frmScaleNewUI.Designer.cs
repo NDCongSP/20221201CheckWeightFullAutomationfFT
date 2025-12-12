@@ -30,7 +30,9 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmScaleNewUI));
             this.groupControl2 = new DevExpress.XtraEditors.GroupControl();
+            this._labFGW = new DevExpress.XtraEditors.LabelControl();
             this.labelControl11 = new DevExpress.XtraEditors.LabelControl();
+            this._labQtyStandard = new DevExpress.XtraEditors.LabelControl();
             this._labCheckMetal = new DevExpress.XtraEditors.LabelControl();
             this._labPrinting = new DevExpress.XtraEditors.LabelControl();
             this._labLableId = new DevExpress.XtraEditors.LabelControl();
@@ -48,11 +50,9 @@
             this.labelControl15 = new DevExpress.XtraEditors.LabelControl();
             this.labelControl27 = new DevExpress.XtraEditors.LabelControl();
             this.labelControl25 = new DevExpress.XtraEditors.LabelControl();
-            this.labelControl21 = new DevExpress.XtraEditors.LabelControl();
             this.labelControl19 = new DevExpress.XtraEditors.LabelControl();
             this.labColor = new DevExpress.XtraEditors.LabelControl();
             this.labelControl17 = new DevExpress.XtraEditors.LabelControl();
-            this.labelControl13 = new DevExpress.XtraEditors.LabelControl();
             this.labBoxId = new DevExpress.XtraEditors.LabelControl();
             this.labelControl3 = new DevExpress.XtraEditors.LabelControl();
             this.labOcNo = new DevExpress.XtraEditors.LabelControl();
@@ -81,6 +81,8 @@
             this.labQrMetal = new DevExpress.XtraEditors.LabelControl();
             this.labelControl1 = new DevExpress.XtraEditors.LabelControl();
             this._groupControlWeightChecking = new DevExpress.XtraEditors.GroupControl();
+            this._labUnitCalculatQty = new DevExpress.XtraEditors.LabelControl();
+            this._labUnitDeviation = new DevExpress.XtraEditors.LabelControl();
             this.labelControl20 = new DevExpress.XtraEditors.LabelControl();
             this.labelControl18 = new DevExpress.XtraEditors.LabelControl();
             this.labelControl16 = new DevExpress.XtraEditors.LabelControl();
@@ -98,9 +100,7 @@
             this.labDeviationPairs = new DevExpress.XtraEditors.TextEdit();
             this.labCalculatedPairs = new DevExpress.XtraEditors.TextEdit();
             this.labelControl24 = new DevExpress.XtraEditors.LabelControl();
-            this._labUnitCalculatQty = new DevExpress.XtraEditors.LabelControl();
             this.labDeviation = new DevExpress.XtraEditors.TextEdit();
-            this._labUnitDeviation = new DevExpress.XtraEditors.LabelControl();
             this.label1 = new System.Windows.Forms.Label();
             this._labStatus = new DevExpress.XtraEditors.LabelControl();
             this._labDateTime = new DevExpress.XtraEditors.LabelControl();
@@ -136,7 +136,9 @@
             this.groupControl2.AppearanceCaption.Options.UseFont = true;
             this.groupControl2.AppearanceCaption.Options.UseForeColor = true;
             this.groupControl2.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this.groupControl2.Controls.Add(this._labFGW);
             this.groupControl2.Controls.Add(this.labelControl11);
+            this.groupControl2.Controls.Add(this._labQtyStandard);
             this.groupControl2.Controls.Add(this._labCheckMetal);
             this.groupControl2.Controls.Add(this._labPrinting);
             this.groupControl2.Controls.Add(this._labLableId);
@@ -154,11 +156,9 @@
             this.groupControl2.Controls.Add(this.labelControl15);
             this.groupControl2.Controls.Add(this.labelControl27);
             this.groupControl2.Controls.Add(this.labelControl25);
-            this.groupControl2.Controls.Add(this.labelControl21);
             this.groupControl2.Controls.Add(this.labelControl19);
             this.groupControl2.Controls.Add(this.labColor);
             this.groupControl2.Controls.Add(this.labelControl17);
-            this.groupControl2.Controls.Add(this.labelControl13);
             this.groupControl2.Controls.Add(this.labBoxId);
             this.groupControl2.Controls.Add(this.labelControl3);
             this.groupControl2.Controls.Add(this.labOcNo);
@@ -174,6 +174,16 @@
             this.groupControl2.TabIndex = 7;
             this.groupControl2.Text = "PRODUCT INFORMATION";
             // 
+            // _labFGW
+            // 
+            this._labFGW.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
+            this._labFGW.Appearance.Options.UseFont = true;
+            this._labFGW.Location = new System.Drawing.Point(321, 432);
+            this._labFGW.Name = "_labFGW";
+            this._labFGW.Size = new System.Drawing.Size(103, 19);
+            this._labFGW.TabIndex = 65;
+            this._labFGW.Text = "Weight (g)/prs";
+            // 
             // labelControl11
             // 
             this.labelControl11.Appearance.Font = new System.Drawing.Font("Tahoma", 15F, System.Drawing.FontStyle.Bold);
@@ -183,6 +193,16 @@
             this.labelControl11.Size = new System.Drawing.Size(255, 24);
             this.labelControl11.TabIndex = 40;
             this.labelControl11.Text = "PRODUCT INFORMATION";
+            // 
+            // _labQtyStandard
+            // 
+            this._labQtyStandard.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
+            this._labQtyStandard.Appearance.Options.UseFont = true;
+            this._labQtyStandard.Location = new System.Drawing.Point(166, 432);
+            this._labQtyStandard.Name = "_labQtyStandard";
+            this._labQtyStandard.Size = new System.Drawing.Size(129, 19);
+            this._labQtyStandard.TabIndex = 64;
+            this._labQtyStandard.Text = "Quantity (prs/L/R)";
             // 
             // _labCheckMetal
             // 
@@ -446,16 +466,6 @@
             this.labelControl25.TabIndex = 21;
             this.labelControl25.Text = "Box Weight (g)";
             // 
-            // labelControl21
-            // 
-            this.labelControl21.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
-            this.labelControl21.Appearance.Options.UseFont = true;
-            this.labelControl21.Location = new System.Drawing.Point(321, 432);
-            this.labelControl21.Name = "labelControl21";
-            this.labelControl21.Size = new System.Drawing.Size(112, 19);
-            this.labelControl21.TabIndex = 17;
-            this.labelControl21.Text = "Shot Weight (g)";
-            // 
             // labelControl19
             // 
             this.labelControl19.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
@@ -492,16 +502,6 @@
             this.labelControl17.Size = new System.Drawing.Size(38, 19);
             this.labelControl17.TabIndex = 13;
             this.labelControl17.Text = "Color";
-            // 
-            // labelControl13
-            // 
-            this.labelControl13.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
-            this.labelControl13.Appearance.Options.UseFont = true;
-            this.labelControl13.Location = new System.Drawing.Point(166, 432);
-            this.labelControl13.Name = "labelControl13";
-            this.labelControl13.Size = new System.Drawing.Size(129, 19);
-            this.labelControl13.TabIndex = 9;
-            this.labelControl13.Text = "Quantity (prs/L/R)";
             // 
             // labBoxId
             // 
@@ -921,6 +921,8 @@
             this._groupControlWeightChecking.AppearanceCaption.Options.UseFont = true;
             this._groupControlWeightChecking.AppearanceCaption.Options.UseForeColor = true;
             this._groupControlWeightChecking.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this._groupControlWeightChecking.Controls.Add(this._labUnitCalculatQty);
+            this._groupControlWeightChecking.Controls.Add(this._labUnitDeviation);
             this._groupControlWeightChecking.Controls.Add(this.labelControl20);
             this._groupControlWeightChecking.Controls.Add(this.labelControl18);
             this._groupControlWeightChecking.Controls.Add(this.labelControl16);
@@ -942,12 +944,10 @@
             this._groupControlWeightChecking.Controls.Add(this.labCalculatedPairs);
             this._groupControlWeightChecking.Controls.Add(this.labelControl24);
             this._groupControlWeightChecking.Controls.Add(this.labNetWeight);
-            this._groupControlWeightChecking.Controls.Add(this._labUnitCalculatQty);
             this._groupControlWeightChecking.Controls.Add(this.labelControl33);
             this._groupControlWeightChecking.Controls.Add(this.labelControl31);
             this._groupControlWeightChecking.Controls.Add(this.labelControl46);
             this._groupControlWeightChecking.Controls.Add(this.labDeviation);
-            this._groupControlWeightChecking.Controls.Add(this._labUnitDeviation);
             this._groupControlWeightChecking.Controls.Add(this.labelControl29);
             this._groupControlWeightChecking.GroupStyle = DevExpress.Utils.GroupStyle.Light;
             this._groupControlWeightChecking.Location = new System.Drawing.Point(1061, 43);
@@ -955,6 +955,32 @@
             this._groupControlWeightChecking.Size = new System.Drawing.Size(847, 968);
             this._groupControlWeightChecking.TabIndex = 1;
             this._groupControlWeightChecking.Text = "WEIGHT CHECK";
+            // 
+            // _labUnitCalculatQty
+            // 
+            this._labUnitCalculatQty.Appearance.Font = new System.Drawing.Font("Tahoma", 25F);
+            this._labUnitCalculatQty.Appearance.Options.UseFont = true;
+            this._labUnitCalculatQty.Appearance.Options.UseTextOptions = true;
+            this._labUnitCalculatQty.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
+            this._labUnitCalculatQty.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
+            this._labUnitCalculatQty.Location = new System.Drawing.Point(459, 33);
+            this._labUnitCalculatQty.Name = "_labUnitCalculatQty";
+            this._labUnitCalculatQty.Size = new System.Drawing.Size(360, 54);
+            this._labUnitCalculatQty.TabIndex = 67;
+            this._labUnitCalculatQty.Text = "Calculated Qty (prs)";
+            // 
+            // _labUnitDeviation
+            // 
+            this._labUnitDeviation.Appearance.Font = new System.Drawing.Font("Tahoma", 25F);
+            this._labUnitDeviation.Appearance.Options.UseFont = true;
+            this._labUnitDeviation.Appearance.Options.UseTextOptions = true;
+            this._labUnitDeviation.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
+            this._labUnitDeviation.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
+            this._labUnitDeviation.Location = new System.Drawing.Point(459, 595);
+            this._labUnitDeviation.Name = "_labUnitDeviation";
+            this._labUnitDeviation.Size = new System.Drawing.Size(360, 54);
+            this._labUnitDeviation.TabIndex = 68;
+            this._labUnitDeviation.Text = "Deviation (prs)";
             // 
             // labelControl20
             // 
@@ -1256,19 +1282,6 @@
             this.labelControl24.TabIndex = 40;
             this.labelControl24.Text = "Net Deviation (g)";
             // 
-            // _labUnitCalculatQty
-            // 
-            this._labUnitCalculatQty.Appearance.Font = new System.Drawing.Font("Tahoma", 25F);
-            this._labUnitCalculatQty.Appearance.Options.UseFont = true;
-            this._labUnitCalculatQty.Appearance.Options.UseTextOptions = true;
-            this._labUnitCalculatQty.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
-            this._labUnitCalculatQty.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this._labUnitCalculatQty.Location = new System.Drawing.Point(459, 33);
-            this._labUnitCalculatQty.Name = "_labUnitCalculatQty";
-            this._labUnitCalculatQty.Size = new System.Drawing.Size(360, 54);
-            this._labUnitCalculatQty.TabIndex = 19;
-            this._labUnitCalculatQty.Text = "Calculated Qty (prs)";
-            // 
             // labDeviation
             // 
             this.labDeviation.EditValue = "88.44";
@@ -1293,19 +1306,6 @@
             this.labDeviation.Properties.UseMaskAsDisplayFormat = true;
             this.labDeviation.Size = new System.Drawing.Size(360, 115);
             this.labDeviation.TabIndex = 41;
-            // 
-            // _labUnitDeviation
-            // 
-            this._labUnitDeviation.Appearance.Font = new System.Drawing.Font("Tahoma", 25F);
-            this._labUnitDeviation.Appearance.Options.UseFont = true;
-            this._labUnitDeviation.Appearance.Options.UseTextOptions = true;
-            this._labUnitDeviation.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
-            this._labUnitDeviation.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this._labUnitDeviation.Location = new System.Drawing.Point(459, 595);
-            this._labUnitDeviation.Name = "_labUnitDeviation";
-            this._labUnitDeviation.Size = new System.Drawing.Size(360, 54);
-            this._labUnitDeviation.TabIndex = 37;
-            this._labUnitDeviation.Text = "Deviation (prs)";
             // 
             // label1
             // 
@@ -1413,7 +1413,6 @@
         private DevExpress.XtraEditors.LabelControl labelControl10;
         private DevExpress.XtraEditors.LabelControl labProductCode;
         private DevExpress.XtraEditors.LabelControl labelControl12;
-        private DevExpress.XtraEditors.LabelControl labelControl13;
         private DevExpress.XtraEditors.LabelControl labBoxId;
         private DevExpress.XtraEditors.LabelControl labelControl3;
         private DevExpress.XtraEditors.LabelControl labelControl33;
@@ -1421,8 +1420,6 @@
         private DevExpress.XtraEditors.LabelControl labelControl29;
         private DevExpress.XtraEditors.LabelControl labelControl27;
         private DevExpress.XtraEditors.LabelControl labelControl25;
-        private DevExpress.XtraEditors.LabelControl _labUnitCalculatQty;
-        private DevExpress.XtraEditors.LabelControl labelControl21;
         private DevExpress.XtraEditors.LabelControl labelControl19;
         private DevExpress.XtraEditors.LabelControl labColor;
         private DevExpress.XtraEditors.LabelControl labelControl17;
@@ -1445,7 +1442,6 @@
         private DevExpress.XtraEditors.TextEdit labScaleValue;
         private DevExpress.XtraEditors.LabelControl labelControl24;
         private DevExpress.XtraEditors.TextEdit labDeviation;
-        private DevExpress.XtraEditors.LabelControl _labUnitDeviation;
         private DevExpress.XtraEditors.TextEdit labDeviationPairs;
         private DevExpress.XtraEditors.LabelControl _labErrMessage;
         private DevExpress.XtraEditors.TextEdit labNetWeight;
@@ -1473,5 +1469,9 @@
         private DevExpress.XtraEditors.LabelControl labelControl18;
         private DevExpress.XtraEditors.LabelControl labelControl16;
         private DevExpress.XtraEditors.LabelControl labelControl5;
+        private DevExpress.XtraEditors.LabelControl _labFGW;
+        private DevExpress.XtraEditors.LabelControl _labQtyStandard;
+        private DevExpress.XtraEditors.LabelControl _labUnitCalculatQty;
+        private DevExpress.XtraEditors.LabelControl _labUnitDeviation;
     }
 }
