@@ -81,5 +81,8 @@ namespace WeightChecking
 
         [Description("Enable to scale.")]
         public bool IsScale { get; set; } = true;
+
+        [Description("The delay time (in milliseconds) to print label after passed the weight checking.")]
+        public int PrintDelayTimer { get; set; } = 3000;
     }
 }
