@@ -634,7 +634,7 @@ namespace WeightChecking
                         //thanh ghi D508 cua PLC Delta DPV14SS2 co dia chi la 4604
 
                         byte[] mangGhi =  { 0, 0 };
-                        GlobalVariables.MyDriver.SetWord(mangGhi, 0, (ushort) GlobalVariables.ConfigJson.PrintDelayTimer);
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 0, GlobalVariables.ConfigJson.PrintDelayTimer);
 
                         GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4604, 1, mangGhi);
 
