@@ -275,7 +275,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationDbEntities.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\ApplicationDbEntities.cs" />
     <Compile Include="Class\AnserU2Print.cs" />
     <Compile Include="Class\CommonDefs.cs" />
     <Compile Include="Enums\EnumFactory.cs" />
@@ -289,13 +289,15 @@
     <Compile Include="frmScaleNewUI.Designer.cs">
       <DependentUpon>frmScaleNewUI.cs</DependentUpon>
     </Compile>
-    <Compile Include="Models\Entities\tblApprovedPrintLabel.cs" />
-    <Compile Include="Models\Entities\tblConfig.cs" />
-    <Compile Include="Models\Entities\tblCoreDataCodeItemSize.cs" />
-    <Compile Include="Models\Entities\tblIncomingIDC.cs" />
-    <Compile Include="Models\Entities\tblItemMissingInfo.cs" />
-    <Compile Include="Models\Entities\tblLog.cs" />
-    <Compile Include="Models\Entities\tblMetalScanResult.cs" />
+    <Compile Include="Models\Entities\ApplicationDbContextDogeWH.cs" />
+    <Compile Include="Models\Entities\ApplicationDbContextWL.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblApprovedPrintLabel.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblConfig.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblCoreDataCodeItemSize.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblIncomingIDC.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblItemMissingInfo.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblLog.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblMetalScanResult.cs" />
     <Compile Include="Models\FT050Model.cs" />
     <Compile Include="Views\frmDeleteBox.cs">
       <SubType>Form</SubType>
@@ -308,7 +310,7 @@
     <Compile Include="Models\ApprovedReportModel.cs" />
     <Compile Include="Models\OcUsingModel.cs" />
     <Compile Include="Models\ScanDataRejectReportModel.cs" />
-    <Compile Include="Models\Entities\tblScanDataReject.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblScanDataReject.cs" />
     <Compile Include="Models\ScanDataReport1Model.cs" />
     <Compile Include="Models\ScanDataReportModel.cs" />
     <Compile Include="Models\tblScanDataCheckModel.cs" />
@@ -353,9 +355,9 @@
       <DependentUpon>frmMasterData.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\RememberInfo.cs" />
-    <Compile Include="Models\Entities\tblScanData.cs" />
-    <Compile Include="Models\Entities\tblUser.cs" />
-    <Compile Include="Models\Entities\tblWinlineProductsInfo.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblScanData.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblUser.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblWinlineProductsInfo.cs" />
     <Compile Include="StaticClass\EncodeMD5.cs" />
     <Compile Include="StaticClass\ScaleHelper.cs" />
     <Compile Include="Views\frmScale.cs">
