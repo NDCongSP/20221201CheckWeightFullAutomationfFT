@@ -314,7 +314,7 @@
     <Compile Include="Models\ScanDataReport1Model.cs" />
     <Compile Include="Models\ScanDataReportModel.cs" />
     <Compile Include="Models\tblScanDataCheckModel.cs" />
-    <Compile Include="Models\tblSpecialCaseModel.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblSpecialCaseModel.cs" />
     <Compile Include="rptLabelFail.cs">
       <SubType>Component</SubType>
     </Compile>

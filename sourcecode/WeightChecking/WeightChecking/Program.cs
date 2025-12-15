@@ -1,19 +1,21 @@
-﻿using DevExpress.LookAndFeel;
+﻿using AutoUpdaterDotNET;
+using Dapper;
+using DevExpress.LookAndFeel;
 using DevExpress.Skins;
 using DevExpress.UserSkins;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
+using DevExpress.XtraSplashScreen;
 using Newtonsoft.Json;
-using System.Reflection;
-using System.IO;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
-using DevExpress.XtraSplashScreen;
-using AutoUpdaterDotNET;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
-using Dapper;
+using System.Windows.Forms;
+using WeightChecking.Models.Entities;
 
 namespace WeightChecking
 {
@@ -41,25 +43,6 @@ namespace WeightChecking
                 GlobalVariables.ConfigJson.ConStringTest = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringTest, "ITFramasBDVN");
             }
 
-            //GlobalVariables.IsTest = Properties.Settings.Default.IsTest;
-
-            //if (!GlobalVariables.IsTest)
-            //{
-            //    GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");
-            //}
-            //else
-            //{
-            //    GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conStringTest, "ITFramasBDVN");
-            //}
-
-            //GlobalVariables.AfterPrinting = Properties.Settings.Default.AfterPrinting;//0-trước in; 1-sau in
-            //GlobalVariables.PrintComPort = Properties.Settings.Default.PrintComPort;
-            //GlobalVariables.ScannerIdMetal = Properties.Settings.Default.ScannerIdMetal;
-            //GlobalVariables.ScannerIdWeight = Properties.Settings.Default.ScannerIdWeight;
-            //GlobalVariables.ScannerIdPrint = Properties.Settings.Default.ScannerIdPrint;
-            //GlobalVariables.TimeCheckQrMetal = Properties.Settings.Default.TimeCheckQrMetal;
-            //GlobalVariables.TimeCheckQrScale = Properties.Settings.Default.TimeCheckQrScale;
-            //GlobalVariables.UpdatePath = Properties.Settings.Default.UpdatePath;
             GlobalVariables.CognexCam_2Status = Properties.Settings.Default.IpCognexCam_2;
 
 
@@ -76,9 +59,12 @@ namespace WeightChecking
             #endregion
 
             #region Get danh sách tất cả các OC đang sử dụng
-            using (var connection = GlobalVariables.GetDbConnectionWinline())
+            using (var dbContext = new ApplicationDbContextWL(GlobalVariables.ConfigJson.ConStringWL))
             {
-                GlobalVariables.OcUsingList = connection.Query<OcUsingModel>("sp_IdcGetListOcName").ToList();
+                //GlobalVariables.OcUsingList = connection.Query<OcUsingModel>("sp_IdcGetListOcName").ToList();
+                var ocWL = dbContext.Database.SqlQuery<OcUsingModel>("sp_IdcGetListOcName").ToList();
+
+                GlobalVariables.OcUsingList.AddRange(ocWL);
             }
             #endregion
 
