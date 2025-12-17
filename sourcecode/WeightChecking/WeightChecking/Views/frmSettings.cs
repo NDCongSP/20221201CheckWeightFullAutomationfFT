@@ -30,7 +30,7 @@ namespace WeightChecking
 
         private void FrmSettings_Load(object sender, EventArgs e)
         {
-            using (var db = new ApplicationDbEntities(GlobalVariables.ConnectionString))
+            using (var db = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
             {
                 _tblConfig = db.TblConfigs.FirstOrDefault();
                 if (_tblConfig != null)
@@ -70,7 +70,7 @@ namespace WeightChecking
             _tblConfig.Location = EnumFactory.framas3;
             _tblConfig.ConfigJson = Newtonsoft.Json.JsonConvert.SerializeObject(_configJson);
 
-            using (var dbContext = new ApplicationDbEntities(GlobalVariables.ConnectionString))
+            using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
             {
                 dbContext.TblConfigs.AddOrUpdate(_tblConfig);
                 dbContext.SaveChanges();

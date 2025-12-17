@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<ISO15745Profile xmlns="http://www.profibus.com/GSDML/2003/11/DeviceProfile" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.profibus.com/GSDML/2003/11/DeviceProfile ..\xsd\GSDML-DeviceProfile-V2.32.xsd">
+  <ProfileHeader>
+    <ProfileIdentification>PROFINET Device Profile</ProfileIdentification>
+    <ProfileRevision>1.00</ProfileRevision>
+    <ProfileName>Device Profile for PROFINET Devices</ProfileName>
+    <ProfileSource>PROFIBUS Nutzerorganisation e. V. (PNO)</ProfileSource>
+    <ProfileClassID>Device</ProfileClassID>
+    <ISO15745Reference>
+      <ISO15745Part>4</ISO15745Part>
+      <ISO15745Edition>1</ISO15745Edition>
+      <ProfileTechnology>GSDML</ProfileTechnology>
+    </ISO15745Reference>
+  </ProfileHeader>
+  
+  <ProfileBody>
+    <DeviceIdentity DeviceID="0x0002" VendorID="0x0262">
+      <InfoText TextId="IDT_D_Identity_Info"/>
+      <VendorName Value="Interroll Engineering GmbH"/>
+    </DeviceIdentity>
+    
+    <DeviceFunction>
+      <Family MainFamily="Controllers" ProductFamily="Conveyor Controllers"/>
+    </DeviceFunction>
+  
+    <ApplicationProcess>
+      <DeviceAccessPointList>
+        <DeviceAccessPointItem ID="IDD_1" AddressAssignment="DCP;LOCAL" DNS_CompatibleName="multicontrol" DeviceAccessSupported="true" FixedInSlots="0" ImplementationType="netX" MinDeviceInterval="32" ModuleIdentNumber="0x00001101" MultipleWriteSupported="true" NameOfStationNotTransferable="true" ObjectUUID_LocalIndex="1" PNIO_Version="V2.31" PhysicalSlots="0..3" SharedDeviceSupported="false" SharedInputSupported="false" ResetToFactoryModes="2" LLDP_NoD_Supported="true" CheckDeviceID_Allowed="true"><!-- TBD: Set CheckDeviceID_Allowed -->
+          <ModuleInfo>
+            <Name TextId="IDT_D_DAP1_Name"/>
+            <InfoText TextId="IDT_D_DAP1_Info"/>
+            <VendorName Value="Interroll Engineering GmbH"/>
+            <OrderNumber Value="1101834"/>
+            <HardwareRelease Value="1.??"/>
+            <SoftwareRelease Value="2.??"/>
+          </ModuleInfo>
+          <CertificationInfo NetloadClass="I" ApplicationClass="" ConformanceClass="B"/>
+          <SubslotList>
+            <SubslotItem SubslotNumber="32768" TextId="IDT_D_Slot_32768"/>
+            <SubslotItem SubslotNumber="32769" TextId="IDT_D_Slot_32769"/>
+            <SubslotItem SubslotNumber="32770" TextId="IDT_D_Slot_32770"/>
+          </SubslotList>
+          
+          <IOConfigData MaxInputLength="128" MaxOutputLength="128"/>
+          
+          <UseableModules>
+            <ModuleItemRef FixedInSlots="1" ModuleItemTarget="IDM_Input"/>
+            <ModuleItemRef FixedInSlots="2" ModuleItemTarget="IDM_Acyclic"/>
+            <ModuleItemRef FixedInSlots="3" ModuleItemTarget="IDM_Output"/>
+          </UseableModules>
+
+          <VirtualSubmoduleList>
+            <VirtualSubmoduleItem ID="IDS_DAP1" SubmoduleIdentNumber="0x00001100" Writeable_IM_Records="1 2 3 4" MayIssueProcessAlarm="false">
+              <IOData/>
+              <ModuleInfo CategoryRef="IDC_DAP">
+                <Name TextId="IDT_S_DAP1_Name"/>
+                <InfoText TextId="IDT_S_DAP1_Info"/>
+              </ModuleInfo>
+            </VirtualSubmoduleItem>
+          </VirtualSubmoduleList>
+
+          <SystemDefinedSubmoduleList>
+            <InterfaceSubmoduleItem ID="IDS_Interface" DCP_HelloSupported="false" NetworkComponentDiagnosisSupported="true" SubmoduleIdentNumber="0x00001101" SubslotNumber="32768" IsochroneModeSupported="false"  SupportedMibs="MIB2" SupportedProtocols="SNMP;LLDP" SupportedRT_Classes="RT_CLASS_1" TextId="IDT_Interface_Name" PTP_BoundarySupported="true" DCP_BoundarySupported="true" DelayMeasurementSupported="true">
+              <ApplicationRelations StartupMode="Legacy;Advanced" NumberOfAdditionalInputCR="0" NumberOfAdditionalMulticastProviderCR="0" NumberOfAdditionalOutputCR="0" NumberOfMulticastConsumerCR="0" PullModuleAlarmSupported="false" NumberOfAR="2">
+                <TimingProperties ReductionRatio="1 2 4 8 16 32 64 128 256 512" SendClock="32 64 128"/>
+              </ApplicationRelations>
+              <MediaRedundancy SupportedRole="Client"/>
+            </InterfaceSubmoduleItem>
+            
+            <PortSubmoduleItem ID="IDS_Port_1" LinkStateDiagnosisCapability="Up+Down" MAUTypes="16" MaxPortRxDelay="340" MaxPortTxDelay="92" SubmoduleIdentNumber="0x00001102" SubslotNumber="32769" TextId="IDT_Port1_Name" IsDefaultRingport="true">
+            <MAUTypeList>
+              <MAUTypeItem Value="16" AdjustSupported="true"/>
+            </MAUTypeList>
+            </PortSubmoduleItem>
+                  
+            <PortSubmoduleItem ID="IDS_Port_2" LinkStateDiagnosisCapability="Up+Down" MAUTypes="16" MaxPortRxDelay="340" MaxPortTxDelay="92" SubmoduleIdentNumber="0x00001103" SubslotNumber="32770" TextId="IDT_Port2_Name" IsDefaultRingport="true">
+            <MAUTypeList>
+              <MAUTypeItem Value="16" AdjustSupported="true"/>
+            </MAUTypeList>
+            </PortSubmoduleItem>
+          </SystemDefinedSubmoduleList> 
+
+          <Graphics>
+            <GraphicItemRef Type="DeviceSymbol" GraphicItemTarget="1"/>
+          </Graphics>
+        </DeviceAccessPointItem>
+      </DeviceAccessPointList>
+
+      <ModuleList>
+        <ModuleItem ID="IDM_Input" ModuleIdentNumber="0x00000011" PhysicalSubslots="1">
+          <ModuleInfo CategoryRef="IDC_Input">
+            <Name TextId="IDT_M_Input_Name"/>
+            <InfoText TextId="IDT_M_Input_Info"/>
+          </ModuleInfo>
+
+          <UseableSubmodules>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Input_UniversalFull"    AllowedInSubslots="1" UsedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Input_UniversalCompact" AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Input_ControlMode"      AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Input_IoMode"           AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Input_IoModeTiny"       AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Input_CANOpen"          AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Input_CANOpen_PRO"      AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Input_UniversalFull_BI" AllowedInSubslots="1"/>
+          </UseableSubmodules>
+        </ModuleItem>
+
+        <ModuleItem ID="IDM_Acyclic" ModuleIdentNumber="0x000000ff">
+          <ModuleInfo CategoryRef="IDC_Acyclic">
+            <Name TextId="IDT_M_Acyclic_Name"/>
+            <InfoText TextId="IDT_M_Acyclic_Info"/>
+          </ModuleInfo>
+
+          <VirtualSubmoduleList>
+            <VirtualSubmoduleItem ID="IDS_Acyclic" SubmoduleIdentNumber="0x000000ff" MayIssueProcessAlarm="false">
+              <IOData/>
+              <ModuleInfo>
+                <Name TextId="IDT_S_Acyclic_Name"/>
+                <InfoText TextId="IDT_S_Acyclic_Info"/>
+              </ModuleInfo>
+            </VirtualSubmoduleItem>
+          </VirtualSubmoduleList>
+        </ModuleItem>
+
+        <ModuleItem ID="IDM_Output" ModuleIdentNumber="0x00000022" PhysicalSubslots="1">
+          <ModuleInfo CategoryRef="IDC_Output">
+            <Name TextId="IDT_M_Output_Name"/>
+            <InfoText TextId="IDT_M_Output_Info"/>
+          </ModuleInfo>
+
+          <UseableSubmodules>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Output_UniversalFull"    AllowedInSubslots="1" UsedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Output_UniversalCompact" AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Output_ControlMode"      AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Output_IoMode"           AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Output_IoModeTiny"       AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Output_CANOpen"          AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Output_CANOpen_PRO"      AllowedInSubslots="1"/>
+            <SubmoduleItemRef SubmoduleItemTarget="IDS_Output_UniversalFull_BI" AllowedInSubslots="1"/>
+          </UseableSubmodules>
+        </ModuleItem>
+      </ModuleList>
+
+      <SubmoduleList>
+        <SubmoduleItem ID="IDS_Input_UniversalFull" SubmoduleIdentNumber="0x00000111" MayIssueProcessAlarm="false">
+          <IOData>
+            <Input>
+              <DataItem DataType="OctetString" Length="36" TextId="IDT_S_Input_UniversalFull_DataItem"/>
+            </Input>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_InputVariant">
+            <Name TextId="IDT_S_Input_UniversalFull_Name"/>
+            <InfoText TextId="IDT_S_Input_UniversalFull_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+        <SubmoduleItem ID="IDS_Input_UniversalCompact" SubmoduleIdentNumber="0x00000112" MayIssueProcessAlarm="false">
+          <IOData>
+            <Input>
+              <DataItem DataType="OctetString" Length="14" TextId="IDT_S_Input_UniversalCompact_DataItem"/>
+            </Input>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_InputVariant">
+            <Name TextId="IDT_S_Input_UniversalCompact_Name"/>
+            <InfoText TextId="IDT_S_Input_UniversalCompact_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+        <SubmoduleItem ID="IDS_Input_ControlMode" SubmoduleIdentNumber="0x00000113" MayIssueProcessAlarm="false">
+          <IOData>
+            <Input>
+              <DataItem DataType="OctetString" Length="10" TextId="IDT_S_Input_ControlMode_DataItem"/>
+            </Input>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_InputVariant">
+            <Name TextId="IDT_S_Input_ControlMode_Name"/>
+            <InfoText TextId="IDT_S_Input_ControlMode_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+        <SubmoduleItem ID="IDS_Input_IoMode" SubmoduleIdentNumber="0x00000114" MayIssueProcessAlarm="false">
+          <IOData>
+            <Input>
+              <DataItem DataType="OctetString" Length="9" TextId="IDT_S_Input_IoMode_DataItem"/>
+            </Input>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_InputVariant">
+            <Name TextId="IDT_S_Input_IoMode_Name"/>
+            <InfoText TextId="IDT_S_Input_IoMode_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+        <SubmoduleItem ID="IDS_Input_IoModeTiny" SubmoduleIdentNumber="0x00000115" MayIssueProcessAlarm="false">
+          <IOData>
+            <Input>
+              <DataItem DataType="OctetString" Length="5" TextId="IDT_S_Input_IoModeTiny_DataItem"/>
+            </Input>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_InputVariant">
+            <Name TextId="IDT_S_Input_IoModeTiny_Name"/>
+            <InfoText TextId="IDT_S_Input_IoModeTiny_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+		
+		<SubmoduleItem ID="IDS_Input_CANOpen" SubmoduleIdentNumber="0x00000116" MayIssueProcessAlarm="false">
+          <IOData>
+            <Input>
+              <DataItem DataType="OctetString" Length="72" TextId="IDT_S_Input_CANOpen_DataItem"/>
+            </Input>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_InputVariant">
+            <Name TextId="IDT_S_Input_CANOpen_Name"/>
+            <InfoText TextId="IDT_S_Input_CANOpen_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+		<SubmoduleItem ID="IDS_Input_CANOpen_PRO" SubmoduleIdentNumber="0x00000117" MayIssueProcessAlarm="false">
+          <IOData>
+            <Input>
+              <DataItem DataType="OctetString" Length="78" TextId="IDT_S_Input_CANOpen_DataItem"/>
+            </Input>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_InputVariant">
+            <Name TextId="IDT_S_Input_CANOpen_PRO_Name"/>
+            <InfoText TextId="IDT_S_Input_CANOpen_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+        <SubmoduleItem ID="IDS_Input_UniversalFull_BI" SubmoduleIdentNumber="0x00000118" MayIssueProcessAlarm="false">
+          <IOData>
+            <Input>
+              <DataItem DataType="OctetString" Length="35" TextId="IDT_S_Input_UniversalFull_DataItem"/>
+            </Input>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_InputVariant">
+            <Name TextId="IDT_S_Input_UniversalFull_BI_Name"/>
+            <InfoText TextId="IDT_S_Input_UniversalFull_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+
+        <SubmoduleItem ID="IDS_Output_UniversalFull" SubmoduleIdentNumber="0x00000221" MayIssueProcessAlarm="false">
+          <IOData>
+            <Output>
+              <DataItem DataType="OctetString" Length="10" TextId="IDT_S_Output_UniversalFull_DataItem"/>
+            </Output>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_OutputVariant">
+            <Name TextId="IDT_S_Output_UniversalFull_Name"/>
+            <InfoText TextId="IDT_S_Output_UniversalFull_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+        <SubmoduleItem ID="IDS_Output_UniversalCompact" SubmoduleIdentNumber="0x00000222" MayIssueProcessAlarm="false">
+          <IOData>
+            <Output>
+              <DataItem DataType="OctetString" Length="9" TextId="IDT_S_Output_UniversalCompact_DataItem"/>
+            </Output>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_OutputVariant">
+            <Name TextId="IDT_S_Output_UniversalCompact_Name"/>
+            <InfoText TextId="IDT_S_Output_UniversalCompact_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+        <SubmoduleItem ID="IDS_Output_ControlMode" SubmoduleIdentNumber="0x00000223" MayIssueProcessAlarm="false">
+          <IOData>
+            <Output>
+              <DataItem DataType="OctetString" Length="4" TextId="IDT_S_Output_ControlMode_DataItem"/>
+            </Output>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_OutputVariant">
+            <Name TextId="IDT_S_Output_ControlMode_Name"/>
+            <InfoText TextId="IDT_S_Output_ControlMode_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+        <SubmoduleItem ID="IDS_Output_IoMode" SubmoduleIdentNumber="0x00000224" MayIssueProcessAlarm="false">
+          <IOData>
+            <Output>
+              <DataItem DataType="OctetString" Length="5" TextId="IDT_S_Output_IoMode_DataItem"/>
+            </Output>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_OutputVariant">
+            <Name TextId="IDT_S_Output_IoMode_Name"/>
+            <InfoText TextId="IDT_S_Output_IoMode_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+        <SubmoduleItem ID="IDS_Output_IoModeTiny" SubmoduleIdentNumber="0x00000225" MayIssueProcessAlarm="false">
+          <IOData>
+            <Output>
+              <DataItem DataType="OctetString" Length="3" TextId="IDT_S_Output_IoModeTiny_DataItem"/>
+            </Output>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_OutputVariant">
+            <Name TextId="IDT_S_Output_IoModeTiny_Name"/>
+            <InfoText TextId="IDT_S_Output_IoModeTiny_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+      
+      <SubmoduleItem ID="IDS_Output_CANOpen" SubmoduleIdentNumber="0x00000226" MayIssueProcessAlarm="false">
+          <IOData>
+            <Output>
+              <DataItem DataType="OctetString" Length="46" TextId="IDT_S_Output_CANOpen_DataItem"/>
+            </Output>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_OutputVariant">
+            <Name TextId="IDT_S_Output_CANOpen_Name"/>
+            <InfoText TextId="IDT_S_Output_CANOpen_Info"/>
+          </ModuleInfo>
+        </SubmoduleItem>
+
+      <SubmoduleItem ID="IDS_Output_CANOpen_PRO" SubmoduleIdentNumber="0x00000227" MayIssueProcessAlarm="false">
+          <IOData>
+            <Output>
+              <DataItem DataType="OctetString" Length="47" TextId="IDT_S_Output_CANOpen_DataItem"/>
+            </Output>
+          </IOData>
+          <ModuleInfo CategoryRef="IDC_OutputVariant">
+            <Name TextId="IDT_S_Output_CANOpen_PRO_Name"/>
+            <InfoText TextId="IDT_S_Output_CANOpen_Info"/>
+          </ModuleInfo>
+      </SubmoduleItem>
+
+      <SubmoduleItem ID="IDS_Output_UniversalFull_BI" SubmoduleIdentNumber="0x00000228" MayIssueProcessAlarm="false">
+         <IOData>
+            <Output>
+              <DataItem DataType="OctetString" Length="11" TextId="IDT_S_Output_UniversalFull_DataItem"/>
+            </Output>
+         </IOData>
+         <ModuleInfo CategoryRef="IDC_OutputVariant">
+            <Name TextId="IDT_S_Output_UniversalFull_BI_Name"/>
+            <InfoText TextId="IDT_S_Output_UniversalFull_Info"/>
+         </ModuleInfo>
+      </SubmoduleItem>
+      
+      </SubmoduleList>
+      
+      <GraphicsList>
+        <GraphicItem ID="1" GraphicFile="GSDML-0262-0002-MULTICONTROL"/>
+      </GraphicsList>
+      
+      <CategoryList>
+        <CategoryItem ID="IDC_DAP"             TextId="IDT_C_DAP"/>
+        <CategoryItem ID="IDC_Acyclic"         TextId="IDT_C_Acyclic"/>
+        <CategoryItem ID="IDC_Input"           TextId="IDT_C_Input"/>
+        <CategoryItem ID="IDC_Output"          TextId="IDT_C_Output"/>
+        <CategoryItem ID="IDC_InputVariant"    TextId="IDT_C_InputVariant"/>
+        <CategoryItem ID="IDC_OutputVariant"   TextId="IDT_C_OutputVariant"/>
+      </CategoryList>
+      
+      <ExternalTextList>
+        <PrimaryLanguage>
+          <Text TextId="IDT_C_DAP"                              Value="Device Access Point Modules"/>
+          <Text TextId="IDT_C_Acyclic"                          Value="Acyclic Services Modules"/>
+          <Text TextId="IDT_C_Input"                            Value="Input Modules"/>
+          <Text TextId="IDT_C_Output"                           Value="Output Modules"/>
+          <Text TextId="IDT_C_InputVariant"                     Value="Input Variants"/>
+          <Text TextId="IDT_C_OutputVariant"                    Value="Output Variants"/>
+          <Text TextId="IDT_D_Identity_Info"                    Value="MultiControl PROFINET"/>
+          <Text TextId="IDT_D_DAP1_Name"                        Value="MultiControl PROFINET"/>
+          <Text TextId="IDT_D_DAP1_Info"                        Value="Multi Protocol / Multi Function Conveyor Controller"/>
+          <Text TextId="IDT_D_Slot_32768"                       Value="X1"/>
+          <Text TextId="IDT_D_Slot_32769"                       Value="X1 P1"/>
+          <Text TextId="IDT_D_Slot_32770"                       Value="X1 P2"/>
+          <Text TextId="IDT_Interface_Name"                     Value="PROFINET Network Interface"/>
+          <Text TextId="IDT_Port1_Name"                         Value="Port 1"/>
+          <Text TextId="IDT_Port2_Name"                         Value="Port 2"/>
+          <Text TextId="IDT_M_Acyclic_Name"                     Value="Access Point for acyclic Services"/>
+          <Text TextId="IDT_M_Acyclic_Info"                     Value="Reading and writing of configuration and setting values."/>
+          <Text TextId="IDT_M_Input_Name"                       Value="Process Image Input"/>
+          <Text TextId="IDT_M_Input_Info"                       Value="Variant Process Image"/>
+          <Text TextId="IDT_M_Output_Name"                      Value="Process Image Output"/>
+          <Text TextId="IDT_M_Output_Info"                      Value="Variant Process Image"/>
+          <Text TextId="IDT_S_DAP1_Name"                        Value="MultiControl DAP"/>
+          <Text TextId="IDT_S_DAP1_Info"                        Value="Process Image and Settings"/>
+          <Text TextId="IDT_S_Acyclic_Name"                     Value="Access Point for acyclic Services"/>
+          <Text TextId="IDT_S_Acyclic_Info"                     Value="Reading and writing of configuration and setting values."/>
+          <Text TextId="IDT_S_Input_UniversalFull_Name"         Value="Input Universal Full"/>
+          <Text TextId="IDT_S_Input_UniversalFull_Info"         Value="I/O Device and Conveyor Control, old Style"/>
+          <Text TextId="IDT_S_Input_UniversalFull_DataItem"     Value="Input Values"/>
+          <Text TextId="IDT_S_Input_UniversalFull_BI_Name"      Value="Input Universal Full BI"/>
+          <Text TextId="IDT_S_Input_UniversalCompact_Name"      Value="Input Universal Compact"/>
+          <Text TextId="IDT_S_Input_UniversalCompact_Info"      Value="I/O Device and Conveyor Control, compact Format"/>
+          <Text TextId="IDT_S_Input_UniversalCompact_DataItem"  Value="Input Values"/>
+          <Text TextId="IDT_S_Input_ControlMode_Name"           Value="Input Control Mode"/>
+          <Text TextId="IDT_S_Input_ControlMode_Info"           Value="Only Conveyor Control Data"/>
+          <Text TextId="IDT_S_Input_ControlMode_DataItem"       Value="Input Values"/>
+          <Text TextId="IDT_S_Input_IoMode_Name"                Value="Input I/O Mode"/>
+          <Text TextId="IDT_S_Input_IoMode_Info"                Value="Only I/O Data"/>
+          <Text TextId="IDT_S_Input_IoMode_DataItem"            Value="Input Values"/>
+          <Text TextId="IDT_S_Input_IoModeTiny_Name"            Value="Input I/O Mode Tiny"/>
+          <Text TextId="IDT_S_Input_IoModeTiny_Info"            Value="Only I/O Data, compressed Format"/>
+          <Text TextId="IDT_S_Input_IoModeTiny_DataItem"        Value="Input Values"/>
+          <Text TextId="IDT_S_Input_CANOpen_Name"               Value="Input CANOpen"/>
+          <Text TextId="IDT_S_Input_CANOpen_Info"               Value="Only I/O Data, compressed Format"/>
+          <Text TextId="IDT_S_Input_CANOpen_DataItem"           Value="Input Values"/>
+          <Text TextId="IDT_S_Input_CANOpen_PRO_Name"           Value="Input CANOpen Pro"/>
+          <Text TextId="IDT_S_Output_UniversalFull_Name"        Value="Output Universal Full"/>
+          <Text TextId="IDT_S_Output_UniversalFull_Info"        Value="I/O Device and Conveyor Control, old Style"/>
+          <Text TextId="IDT_S_Output_UniversalFull_DataItem"    Value="Output Values"/>
+          <Text TextId="IDT_S_Output_UniversalFull_BI_Name"     Value="Output Universal Full BI"/>
+          <Text TextId="IDT_S_Output_UniversalCompact_Name"     Value="Output Universal Compact"/>
+          <Text TextId="IDT_S_Output_UniversalCompact_Info"     Value="I/O Device and Conveyor Control, compact Format"/>
+          <Text TextId="IDT_S_Output_UniversalCompact_DataItem" Value="Output Values"/>
+          <Text TextId="IDT_S_Output_ControlMode_Name"          Value="Output Control Mode"/>
+          <Text TextId="IDT_S_Output_ControlMode_Info"          Value="Only Conveyor Control Data"/>
+          <Text TextId="IDT_S_Output_ControlMode_DataItem"      Value="Output Values"/>
+          <Text TextId="IDT_S_Output_IoMode_Name"               Value="Output I/O Mode"/>
+          <Text TextId="IDT_S_Output_IoMode_Info"               Value="Only I/O Data"/>
+          <Text TextId="IDT_S_Output_IoMode_DataItem"           Value="Output Values"/>
+          <Text TextId="IDT_S_Output_IoModeTiny_Name"           Value="Output I/O Mode Tiny"/>
+          <Text TextId="IDT_S_Output_IoModeTiny_Info"           Value="Only I/O Data, compressed Format"/>
+          <Text TextId="IDT_S_Output_IoModeTiny_DataItem"       Value="Output Values"/>
+          <Text TextId="IDT_S_Output_CANOpen_Name"              Value="Output CANOpen"/>
+          <Text TextId="IDT_S_Output_CANOpen_Info"              Value="Only I/O Data, compressed Format"/>
+          <Text TextId="IDT_S_Output_CANOpen_DataItem"          Value="Output Values"/>
+          <Text TextId="IDT_S_Output_CANOpen_PRO_Name"          Value="Output CANOpen Pro"/>
+        </PrimaryLanguage>
+        
+        <!-- Die ganze Liste nochmal in Deutsch  -->
+        <Language xml:lang="de">
+          <Text TextId="IDT_C_DAP"                              Value="Gerät-Zugriffspunkt Module"/>
+          <Text TextId="IDT_C_Acyclic"                          Value="Azyklische Dienste Module"/>
+          <Text TextId="IDT_C_Input"                            Value="Input Module"/>
+          <Text TextId="IDT_C_Output"                           Value="Output Module"/>
+          <Text TextId="IDT_C_InputVariant"                     Value="Eingangsvarianten"/>
+          <Text TextId="IDT_C_OutputVariant"                    Value="Ausgangsvarianten"/>
+          <Text TextId="IDT_D_Identity_Info"                    Value="MultiControl PROFINET"/>
+          <Text TextId="IDT_D_DAP1_Name"                        Value="MultiControl PROFINET"/>
+          <Text TextId="IDT_D_DAP1_Info"                        Value="Multi Protokoll/Funktion Conveyor Steuerung"/>
+          <Text TextId="IDT_D_Slot_32768"                       Value="X1"/>
+          <Text TextId="IDT_D_Slot_32769"                       Value="X1 P1"/>
+          <Text TextId="IDT_D_Slot_32770"                       Value="X1 P2"/>
+          <Text TextId="IDT_Interface_Name"                     Value="PROFINET Netzwerk-Schnittstelle"/>
+          <Text TextId="IDT_Port1_Name"                         Value="Port 1"/>
+          <Text TextId="IDT_Port2_Name"                         Value="Port 2"/>
+          <Text TextId="IDT_M_Acyclic_Name"                     Value="Zugriffspunkt azyklische Dienste"/>
+          <Text TextId="IDT_M_Acyclic_Info"                     Value="Lesen und Schreiben von Konfiguration- und Einstellwerten."/>
+          <Text TextId="IDT_M_Input_Name"                       Value="Prozessabbild Input"/>
+          <Text TextId="IDT_M_Input_Info"                       Value="Variantes Prozessabbild"/>
+          <Text TextId="IDT_M_Output_Name"                      Value="Prozessabbild Output"/>
+          <Text TextId="IDT_M_Output_Info"                      Value="Variantes Prozessabbild"/>
+          <Text TextId="IDT_S_DAP1_Name"                        Value="MultiControl DAP"/>
+          <Text TextId="IDT_S_DAP1_Info"                        Value="Prozessabbild und Einstellwerte"/>
+          <Text TextId="IDT_S_Acyclic_Name"                     Value="Zugriffspunkt azyklische Dienste"/>
+          <Text TextId="IDT_S_Acyclic_Info"                     Value="Lesen und Schreiben von Konfiguration- und Einstellwerten."/>
+          <Text TextId="IDT_S_Input_UniversalFull_Name"         Value="Input Universal Full"/>
+          <Text TextId="IDT_S_Input_UniversalFull_Info"         Value="I/O-Gerät und Conveyor-Steuerung, altes Format"/>
+          <Text TextId="IDT_S_Input_UniversalFull_DataItem"     Value="Eingangswerte"/>
+          <Text TextId="IDT_S_Input_UniversalFull_BI_Name"      Value="Input Universal Full BI"/>
+          <Text TextId="IDT_S_Input_UniversalCompact_Name"      Value="Input Universal Compact"/>
+          <Text TextId="IDT_S_Input_UniversalCompact_Info"      Value="I/O-Gerät und Conveyor-Steuerung, kompaktes Format"/>
+          <Text TextId="IDT_S_Input_UniversalCompact_DataItem"  Value="Eingangswerte"/>
+          <Text TextId="IDT_S_Input_ControlMode_Name"           Value="Input Control Mode"/>
+          <Text TextId="IDT_S_Input_ControlMode_Info"           Value="Nur Steuerdaten"/>
+          <Text TextId="IDT_S_Input_ControlMode_DataItem"       Value="Eingangswerte"/>
+          <Text TextId="IDT_S_Input_IoMode_Name"                Value="Input I/O Mode"/>
+          <Text TextId="IDT_S_Input_IoMode_Info"                Value="Nur I/O-Daten"/>
+          <Text TextId="IDT_S_Input_IoMode_DataItem"            Value="Eingangswerte"/>
+          <Text TextId="IDT_S_Input_IoModeTiny_Name"            Value="Input I/O Mode Tiny"/>
+          <Text TextId="IDT_S_Input_IoModeTiny_Info"            Value="Nur I/O-Daten, kompaktes Format"/>
+          <Text TextId="IDT_S_Input_IoModeTiny_DataItem"        Value="Eingangswerte"/>
+          <Text TextId="IDT_S_Input_CANOpen_Name"               Value="Input CANOpen"/>
+          <Text TextId="IDT_S_Input_CANOpen_Info"               Value="Nur I/O-Daten, kompaktes Format"/>
+          <Text TextId="IDT_S_Input_CANOpen_DataItem"           Value="Eingangswerte"/>
+          <Text TextId="IDT_S_Input_CANOpen_PRO_Name"           Value="Input CANOpen Pro"/>
+          <Text TextId="IDT_S_Output_UniversalFull_Name"        Value="Output Universal Full"/>
+          <Text TextId="IDT_S_Output_UniversalFull_Info"        Value="I/O-Gerät und Conveyor-Steuerung, altes Format"/>
+          <Text TextId="IDT_S_Output_UniversalFull_DataItem"    Value="Ausgangswerte"/>
+          <Text TextId="IDT_S_Output_UniversalFull_BI_Name"     Value="Output Universal Full BI"/>
+          <Text TextId="IDT_S_Output_UniversalCompact_Name"     Value="Output Universal Compact"/>
+          <Text TextId="IDT_S_Output_UniversalCompact_Info"     Value="I/O-Gerät und Conveyor-Steuerung, kompaktes Format"/>
+          <Text TextId="IDT_S_Output_UniversalCompact_DataItem" Value="Ausgangswerte"/>
+          <Text TextId="IDT_S_Output_ControlMode_Name"          Value="Output Control Mode"/>
+          <Text TextId="IDT_S_Output_ControlMode_Info"          Value="Nur Steuerdaten"/>
+          <Text TextId="IDT_S_Output_ControlMode_DataItem"      Value="Ausgangswerte"/>
+          <Text TextId="IDT_S_Output_IoMode_Name"               Value="Output I/O Mode"/>
+          <Text TextId="IDT_S_Output_IoMode_Info"               Value="Nur I/O-Daten"/>
+          <Text TextId="IDT_S_Output_IoMode_DataItem"           Value="Ausgangswerte"/>
+          <Text TextId="IDT_S_Output_IoModeTiny_Name"           Value="Output I/O Mode Tiny"/>
+          <Text TextId="IDT_S_Output_IoModeTiny_Info"           Value="Nur I/O-Daten, kompaktes Format"/>
+          <Text TextId="IDT_S_Output_IoModeTiny_DataItem"       Value="Ausgangswerte"/>
+          <Text TextId="IDT_S_Output_CANOpen_Name"              Value="Output CANOpen"/>
+          <Text TextId="IDT_S_Output_CANOpen_Info"              Value="Nur I/O-Daten, kompaktes Format"/>
+          <Text TextId="IDT_S_Output_CANOpen_DataItem"          Value="Ausgangswerte"/>
+          <Text TextId="IDT_S_Output_CANOpen_PRO_Name"          Value="Output CANOpen Pro"/>
+        </Language>
+      </ExternalTextList>
+    </ApplicationProcess>
+  </ProfileBody>
+</ISO15745Profile>

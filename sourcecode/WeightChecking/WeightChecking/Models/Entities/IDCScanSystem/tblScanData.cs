@@ -59,7 +59,7 @@ namespace WeightChecking
         public string UserName { get; set; }
         public double CalculatedPairs { get; set; }
         public double DeviationPairs { get; set; } = 0;//thể hiện số pairs bị thiếu.
-        public StationEnum Station { get; set; }
+        public EnumStation Station { get; set; }
         [Browsable(false)]
         public Guid ApprovedBy { get; set; } = Guid.Empty;
         public string ApprovedName { get; set; }

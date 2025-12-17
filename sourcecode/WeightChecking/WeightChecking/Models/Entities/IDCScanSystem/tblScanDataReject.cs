@@ -28,7 +28,7 @@ namespace WeightChecking
 
         [Browsable(false)]
         [Key]
-        public Guid ID { get; set; }
+        public Guid Id { get; set; }
         [Browsable(false)]
         public string CreatedMachine { get; set; }
         [Browsable(false)]

@@ -8,18 +8,11 @@ using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-    public partial class ApplicationDbEntities: DbContext
+    public partial class ApplicationDbContextSSFG : DbContext
     {
-       
-        //public ApplicationDbEntities() : base("name=DB_SSFG")
-        //{
-        //}
-
-        // Constructor mới nhận connection string động
-        public ApplicationDbEntities(string connectionString) : base(connectionString)
+        public ApplicationDbContextSSFG(string connectionString) : base(connectionString)
         {
         }
-
         public string GetConnectionString()
         {
             return this.Database.Connection.ConnectionString;
@@ -27,9 +20,15 @@ namespace WeightChecking
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+
+            modelBuilder.Ignore<CheckLabelResult>();
+
             base.OnModelCreating(modelBuilder);
         }
 
+
+        // Không cần DbSet<CheckLabelResult>, nhưng nếu muốn dễ gọi:
+        public DbSet<CheckLabelResult> CheckLabelResults { get; set; }
         public virtual DbSet<tblConfig> TblConfigs { get; set; }
 
         public virtual DbSet<tblApprovedPrintLabel> TblApprovedPrintLabels { get; set; }
@@ -42,6 +41,8 @@ namespace WeightChecking
         public virtual DbSet<tblScanData> TblScanDatas { get; set; }
         public virtual DbSet<tblScanDataReject> TblScanDataRejects { get; set; }
         public virtual DbSet<tblUser> TblUsers { get; set; }
-        public  virtual DbSet<tblWinlineProductsInfo> TblWinlineProductsInfos { get; set; }
+        public virtual DbSet<tblWinlineProductsInfo> TblWinlineProductsInfos { get; set; }
+
+        public virtual DbSet<tblSpecialCase> TblSpecialCases { get; set; }
     }
 }

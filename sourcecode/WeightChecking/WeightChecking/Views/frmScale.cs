@@ -825,7 +825,7 @@ namespace WeightChecking
                         }
                         else//trường hợp quét lại chính thùng trước đó đã đi qua băng tải
                         {
-                            if ((box.Pass == 1 && (box.Status == 2 || GlobalVariables.ConfigJson.Station == StationEnum.IDC_1))
+                            if ((box.Pass == 1 && (box.Status == 2 || GlobalVariables.ConfigJson.Station == EnumStation.IDC_1))
                                 //|| (item.Pass == 0 && item.ActualDeviationPairs == 0 && item.ApprovedBy != Guid.Empty)
                                 || (box.Pass == 0 && box.Status == 2 && box.ActualDeviationPairs == 0)
                                 )
@@ -1364,7 +1364,7 @@ namespace WeightChecking
                     foreach (var item in checkInfo)
                     {
                         if (
-                            (item.Pass == 1 && (item.Status == 2 || GlobalVariables.ConfigJson.Station == StationEnum.IDC_1))
+                            (item.Pass == 1 && (item.Status == 2 || GlobalVariables.ConfigJson.Station == EnumStation.IDC_1))
                             //|| (item.Pass == 0 && item.ActualDeviationPairs == 0 && item.ApprovedBy != Guid.Empty)
                             || (item.Pass == 0 && item.Status == 2 && item.ActualDeviationPairs == 0)
                             )
@@ -2745,7 +2745,7 @@ namespace WeightChecking
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(barcode);
 
-            //Get ra ID của scanner
+            //Get ra Id của scanner
             var scannerId = xmlDoc.GetElementsByTagName("scannerID");
 
             using (var connection = GlobalVariables.GetDbConnection())
@@ -3485,7 +3485,7 @@ namespace WeightChecking
             try
             {
                 byte[] GetDelay = new byte[] { 0x2, 0x0, 0x4, 0x0, 0x64, 0x2, 0x0, 0x6A, 0x3 };
-                // ID ban tin =2
+                // Id ban tin =2
                 _serialPort.Write(GetDelay, 0, GetDelay.Length);
             }
             catch (Exception ex)

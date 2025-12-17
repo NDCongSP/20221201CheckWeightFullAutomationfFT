@@ -15,7 +15,7 @@ namespace WeightChecking
         public string OC { get; set; }
         public string BoxNo { get; set; }
         public double GrossWeight { get; set; }
-        public StationEnum Station { get; set; }
+        public EnumStation Station { get; set; }
         public DateTime CreatedDate { get; set; }
         public string CreatedMachine { get; set; }
         public string QRLabel { get; set; }

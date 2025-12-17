@@ -275,13 +275,15 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\Entities\IDCScanSystem\ApplicationDbEntities.cs" />
+    <Compile Include="Enums\EnumBoxType.cs" />
+    <Compile Include="Models\CheckLabelResult.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\ApplicationDbContextSSFG.cs" />
     <Compile Include="Class\AnserU2Print.cs" />
     <Compile Include="Class\CommonDefs.cs" />
     <Compile Include="Enums\EnumFactory.cs" />
     <Compile Include="Enums\LocationEnum.cs" />
     <Compile Include="Enums\RolesEnum.cs" />
-    <Compile Include="Enums\StationEnum.cs" />
+    <Compile Include="Enums\EnumStation.cs" />
     <Compile Include="Events\CustomEvents.cs" />
     <Compile Include="frmScaleNewUI.cs">
       <SubType>Form</SubType>
@@ -314,7 +316,7 @@
     <Compile Include="Models\ScanDataReport1Model.cs" />
     <Compile Include="Models\ScanDataReportModel.cs" />
     <Compile Include="Models\tblScanDataCheckModel.cs" />
-    <Compile Include="Models\Entities\IDCScanSystem\tblSpecialCaseModel.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblSpecialCase.cs" />
     <Compile Include="rptLabelFail.cs">
       <SubType>Component</SubType>
     </Compile>

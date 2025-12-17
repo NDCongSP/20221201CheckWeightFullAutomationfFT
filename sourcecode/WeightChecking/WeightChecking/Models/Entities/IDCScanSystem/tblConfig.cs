@@ -84,5 +84,11 @@ namespace WeightChecking
 
         [Description("The delay time (in milliseconds) to print label after passed the weight checking.")]
         public ushort PrintDelayTimer { get; set; } = 3000;
+
+        /// <summary>
+        /// Thời gian đếm ngược để reset UI dau khi thực hiện xong.
+        /// đơn vị (s).
+        /// </summary>
+        public int ResetUiInterval { get; set; } = 10;
     }
 }

@@ -708,7 +708,7 @@ namespace WeightChecking
                                 ws = wb.Worksheets["DataScanReject"];
 
                                 ws.Cells[0, 0].Value = "QR Label";
-                                ws.Cells[0, 1].Value = "ID Lable";
+                                ws.Cells[0, 1].Value = "Id Lable";
                                 ws.Cells[0, 2].Value = "OC";
                                 ws.Cells[0, 3].Value = "Box No";
                                 ws.Cells[0, 4].Value = "Product Code";
@@ -764,7 +764,7 @@ namespace WeightChecking
                                 //ws = wb.Worksheets["ApprovedPrintLable"];
 
                                 //ws.Cells[0, 0].Value = "User Name";
-                                //ws.Cells[0, 1].Value = "ID Lable";
+                                //ws.Cells[0, 1].Value = "Id Lable";
                                 //ws.Cells[0, 2].Value = "OC";
                                 //ws.Cells[0, 3].Value = "Box No";
                                 //ws.Cells[0, 4].Value = "Gross Weight";
@@ -843,7 +843,7 @@ namespace WeightChecking
                                 ws = wb.Worksheets["MetalScanResult"];
                                 ws.Cells[0, 0].Value = "Id";
                                 ws.Cells[0, 1].Value = "QR Label";
-                                ws.Cells[0, 2].Value = "ID Label";
+                                ws.Cells[0, 2].Value = "Id Label";
                                 ws.Cells[0, 3].Value = "OC";
                                 ws.Cells[0, 4].Value = "Box No";
                                 ws.Cells[0, 5].Value = "Quantity (Prs)";

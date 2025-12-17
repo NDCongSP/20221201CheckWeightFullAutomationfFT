@@ -69,7 +69,7 @@ namespace WeightChecking
                     var para = new DynamicParameters();
                     para.Add("@userName", txtUseName.Text);
 
-                    using (var dbContext = new ApplicationDbEntities(GlobalVariables.ConnectionString))
+                    using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
                     {
                         GlobalVariables.UserLoginInfo = await dbContext.TblUsers.FirstOrDefaultAsync(u => u.UserName == txtUseName.Text);
                     }

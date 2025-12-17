@@ -43,7 +43,7 @@ namespace WeightChecking
         public double CalculatedPairs { get; set; }
         public double DeviationPairs { get; set; } = 0;//thể hiện số pairs bị thiếu.
         public DateTime CreatedDate { get; set; }
-        public StationEnum Station { get; set; }
+        public EnumStation Station { get; set; }
         public string UserName { get; set; }
         public string ApprovedName { get; set; }
         public double ActualDeviationPairs { get; set; } = 0;

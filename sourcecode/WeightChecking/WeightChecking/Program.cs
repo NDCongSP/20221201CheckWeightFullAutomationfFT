@@ -30,7 +30,7 @@ namespace WeightChecking
             #region Đọc các thông số cấu hình ban đầu từ settings
             GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");//0-trước in; 1-sau in
 
-            using (var dbContext = new ApplicationDbEntities(GlobalVariables.ConnectionString))
+            using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
             {
                 var c = dbContext.TblConfigs.FirstOrDefault();
 
@@ -41,6 +41,9 @@ namespace WeightChecking
                 GlobalVariables.ConfigJson.ConStringSSFG = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringSSFG, "ITFramasBDVN");
                 GlobalVariables.ConfigJson.ConStringWL = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringWL, "ITFramasBDVN");
                 GlobalVariables.ConfigJson.ConStringTest = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringTest, "ITFramasBDVN");
+
+                //Đọc DB lấy danh sách specialCase
+                GlobalVariables.SpecialCaseList = dbContext.TblSpecialCases.ToList();
             }
 
             GlobalVariables.CognexCam_2Status = Properties.Settings.Default.IpCognexCam_2;
@@ -68,12 +71,7 @@ namespace WeightChecking
             }
             #endregion
 
-            #region Đọc DB lấy danh sách specialCase
-            using (var connection = GlobalVariables.GetDbConnection())
-            {
-                GlobalVariables.SpecialCaseList = connection.Query<tblSpecialCaseModel>("sp_tblSpecialCaseGets").ToList();
-            }
-            #endregion
+
 
             //Log các hành động của user thì tự log bằng tay vào bảng tblLog
             //tạo serilog để log Error exception.
