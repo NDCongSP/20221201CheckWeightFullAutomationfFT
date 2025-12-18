@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-    public enum StationEnum
+    public enum EnumStation
     {
-        IDC_1 = 0,
-        IDC_2 = 1,
-        Kerry_3 = 2
+        Identification = 0,
+        Scale = 1,
+        Distribution = 2
     }
 }

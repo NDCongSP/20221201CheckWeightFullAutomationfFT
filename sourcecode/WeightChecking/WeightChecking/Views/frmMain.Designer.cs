@@ -275,7 +275,7 @@ namespace WeightChecking
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
             this.repositoryItemComboBox1.Items.AddRange(new object[] {
             "All",
-            "IDC_1",
+            "Identification",
             "IDC_2",
             "Kerry_3"});
             this.repositoryItemComboBox1.Name = "repositoryItemComboBox1";

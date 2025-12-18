@@ -24,7 +24,7 @@ namespace WeightChecking
 
         public static IDbConnection GetDbConnection()
         {
-            return new SqlConnection(GlobalVariables.ConfigJson.ConStringSSFG);
+            return new SqlConnection(GlobalVariables.ConnectionString);
         }
 
         public static IDbConnection GetDbConnectionWinline()
@@ -48,19 +48,6 @@ namespace WeightChecking
         public static PLCPi MyDriver = new PLCPi();
         public static byte[] ReadHoldingArr { get; set; }
         public static bool ModbusStatus { get; set; }
-        //public static string ComPortScale { get; set; }//com kết nối PLC Delta ngay bàn cân, để đọc khố lượng cân và điều khiển đèn tháp
-
-        //public static bool IsScale { get; set; } = false;
-        //public static bool IsCounter { get; set; } = false;
-        //public static StationEnum Station { get; set; }
-
-        //bao can o tram truoc son hay sau son. 0-truoc; 1-sau
-        //public static int AfterPrinting { get; set; } = 0;
-
-        //public static string PrintComPort { get; set; }
-        //public static int ScannerIdMetal { get; set; } = 1;
-        //public static int ScannerIdWeight { get; set; } = 2;
-        //public static int ScannerIdPrint { get; set; } = 3;
 
         public static string ConveyorStatus { get; set; } = "Bad";
         public static string PrintConnectionStatus { get; set; } = "Bad";
@@ -133,5 +120,6 @@ namespace WeightChecking
         public static ConfigJsonModel ConfigJson { get; set; } = new ConfigJsonModel();
 
         public static int DelayPrintInterval { get; set; } = 0;
+        public static int D506Value { get; set; } = 0;
     }
 }

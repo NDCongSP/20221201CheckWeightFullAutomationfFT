@@ -34,11 +34,23 @@ namespace WeightChecking
             {
                 var c = dbContext.TblConfigs.FirstOrDefault();
 
-                GlobalVariables.ConfigJson = c != null
-                    ? JsonConvert.DeserializeObject<ConfigJsonModel>(c.ConfigJson)
-                    : new ConfigJsonModel();
+                if (c != null) GlobalVariables.ConfigJson = JsonConvert.DeserializeObject<ConfigJsonModel>(c.ConfigJson);
+                else
+                {
+                    GlobalVariables.ConfigJson = new ConfigJsonModel();
+                    dbContext.TblConfigs.Add(new tblConfig()
+                    {
+                        Id = Guid.NewGuid(),
+                        ConfigJson = JsonConvert.SerializeObject(GlobalVariables.ConfigJson),
+                        CreatedBy = Environment.UserName,
+                        CreatedDate = DateTime.Now,
+                        CreatedMachine = Environment.MachineName,
+                        Location = EnumFactory.framas1
+                    });
+                    dbContext.SaveChanges();
+                }
 
-                GlobalVariables.ConfigJson.ConStringSSFG = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringSSFG, "ITFramasBDVN");
+
                 GlobalVariables.ConfigJson.ConStringWL = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringWL, "ITFramasBDVN");
                 GlobalVariables.ConfigJson.ConStringTest = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringTest, "ITFramasBDVN");
 
@@ -82,7 +94,7 @@ namespace WeightChecking
             };
             Log.Logger = new LoggerConfiguration().WriteTo.MSSqlServer(
 
-              connectionString: GlobalVariables.ConfigJson.ConStringSSFG,
+              connectionString: GlobalVariables.ConnectionString,
               sinkOptions: sinkOption
 
               ).MinimumLevel.Error().CreateLogger();

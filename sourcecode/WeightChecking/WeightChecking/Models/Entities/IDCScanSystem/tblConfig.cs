@@ -27,11 +27,8 @@ namespace WeightChecking
 
     public class ConfigJsonModel
     {
-        [Description("Connection string to database SSFG.")]
-        public string ConStringSSFG { get; set; } = "ed3YbBgz3fF3bb/osXwqYNhSCfyKvNWvXPUgvQLnsbz+Nd6Vj/7Bp8rlvWbE/zlBsqiGfzls0FozxdSpLEGyIYk/FpLk0PUEB0owITx4e7QWtAs6hhG9O20ffz+nroHV3b//mZ91MP5kAywrsmMsnt2//5mfdTD+ZFycX6i+aqjOePbB/5XtS54TqvGoMQ6uZs5JoyLjxtFaOXCkfgRc3OCVgB+kkBmL";
-
         [Description("Connection string to database DOGE_WH.")]
-        public string ConStringWL { get; set; } = "ed3YbBgz3fF3bb/osXwqYNhSCfyKvNWvXPUgvQLnsbz+Nd6Vj/7Bp8rlvWbE/zlBsqiGfzls0FozxdSpLEGyIYk/FpLk0PUEB0owITx4e7QWtAs6hhG9O20ffz+nroHV3b//mZ91MP5kAywrsmMsnt2//5mfdTD+ZFycX6i+aqjOePbB/5XtS54TqvGoMQ6uZs5JoyLjxtFaOXCkfgRc3OCVgB+kkBmL";
+        public string ConStringWL { get; set; } = "ed3YbBgz3fF3bb/osXwqYHrw1jNOFfKc3JbTTBiu8d5CSX39iCbf3AbWoi/gdplGgQ4S1F0eqejL96hGqkSHiNF/aYcu0biohTIIX7i0D7GVBt2fqKx5q9lUQL3OPGXcNPbJq6KBYuZUOhOab0v96CKvWGtQSc7IV5bg4V+JSmYW7U+gN2mFCqA5Mo58v0O9uV+4I0lTv9bglYAfpJAZiw==";
 
         [Description("The IP address of PLC conveyor.")]
         public string IpConveyor { get; set; } = "192.168.80.3";
@@ -46,7 +43,7 @@ namespace WeightChecking
 
         public bool IsCounter { get; set; } = false;
 
-        public StationEnum Station { get; set; } = StationEnum.IDC_1;
+        public EnumStation Station { get; set; } = EnumStation.Identification;
 
         public int AfterPrinting { get; set; } = 0;
 
@@ -82,13 +79,44 @@ namespace WeightChecking
         [Description("Enable to scale.")]
         public bool IsScale { get; set; } = true;
 
-        [Description("The delay time (in milliseconds) to print label after passed the weight checking.")]
-        public ushort PrintDelayTimer { get; set; } = 3000;
-
         /// <summary>
         /// Thời gian đếm ngược để reset UI dau khi thực hiện xong.
         /// đơn vị (s).
         /// </summary>
         public int ResetUiInterval { get; set; } = 10;
+
+        /// <summary>
+        /// Thời gian chờ cân ổn định trước khi lấy giá trị cân.
+        /// Tính theo công thức: DelayTimer2 x 100ms. 10 x 100ms = 1s.
+        /// </summary>
+        [Description("The delay time (in milliseconds) to print label after passed the weight checking. value x 100(ms)")]
+        public ushort DelayTimer2 { get; set; } = 10;
+
+        /// <summary>
+        /// thời gian chạy băng tải để đưa thùng vào đúng vị trí chính giữa băng tải cân.
+        /// Tính theo công thức: DelayTimer1 x 100ms. 25 x 100ms = 2.5s.
+        /// </summary>
+        [Description("The delay time to run conveyor for moving the box to center the scale. value x 100(ms)")]
+        public ushort DelayTimer1 { get; set; } = 25;
+
+        /// <summary>
+        /// Tính theo công thức: DelayTimer3 x 100ms. 10 x 100ms = 1s.
+        /// Reset đèn tháp sau khi in xong.
+        /// </summary>
+        [Description("Delay time to set the scale stable. value x 100(ms)")]
+        public ushort DelayTimer3 { get; set; } = 10;
+
+        /// <summary>
+        /// Tính theo công thức: DelayTimer4 x 100ms. 50 x 100ms = 5s.
+        /// Reset đèn tháp sau khi in xong.
+        /// </summary>
+        [Description("Delay time to reset D506 (light town). value x 100(ms)\"")]
+        public ushort DelayTimer4 { get; set; } = 50;
+
+        /// <summary>
+        /// cho phép tự động post dữ liệu sau khi cân xong lên hệ thống Winline.
+        /// </summary>
+        [Description("Allow to auto post data to Winline system after weighing.")]
+        public bool FlagAutoPost { get; set; } = false;
     }
 }
