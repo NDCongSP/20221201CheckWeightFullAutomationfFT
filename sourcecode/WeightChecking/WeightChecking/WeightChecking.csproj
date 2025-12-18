@@ -30,6 +30,12 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <!-- Bật C# 8 (hoặc mới nhất) -->
+    <LangVersion>8.0</LangVersion>
+    <!-- hoặc dùng latest nếu bạn muốn luôn theo compiler mới nhất -->
+    <!-- <LangVersion>latest</LangVersion> -->
+    <!-- Bật nullable reference types -->
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>

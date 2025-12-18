@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-    [Table("tblScanData")]
+    [Table("tblScanData_test")]
     public class tblScanData
     {
         [Browsable(false)]
@@ -56,13 +56,18 @@ namespace WeightChecking
         public int Actived { get; set; }
         [Browsable(false)]
         public Guid CreatedBy { get; set; }
+        
+        [NotMapped]
         public string UserName { get; set; }
         public double CalculatedPairs { get; set; }
         public double DeviationPairs { get; set; } = 0;//thể hiện số pairs bị thiếu.
         public EnumStation Station { get; set; }
-        [Browsable(false)]
+
         public Guid ApprovedBy { get; set; } = Guid.Empty;
+
+        [NotMapped]
         public string ApprovedName { get; set; }
+
         public double ActualDeviationPairs { get; set; } = 0;
 
         /// <summary>

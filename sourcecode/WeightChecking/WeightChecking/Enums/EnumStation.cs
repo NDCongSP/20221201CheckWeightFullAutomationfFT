@@ -8,8 +8,8 @@ namespace WeightChecking
 {
     public enum EnumStation
     {
-        Identification = 0,
-        Scale = 1,
-        Distribution = 2
+        Identification = 1,
+        Scale = 2,
+        Distribution = 3
     }
 }

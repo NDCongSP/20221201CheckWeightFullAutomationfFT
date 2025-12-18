@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WeightChecking
 {
-    [Table("tblConfig")]
+    [Table("tblConfig_test")]
     public partial class tblConfig
     {
         [Key]
@@ -89,22 +89,23 @@ namespace WeightChecking
         /// Thời gian chờ cân ổn định trước khi lấy giá trị cân.
         /// Tính theo công thức: DelayTimer2 x 100ms. 10 x 100ms = 1s.
         /// </summary>
-        [Description("The delay time (in milliseconds) to print label after passed the weight checking. value x 100(ms)")]
-        public ushort DelayTimer2 { get; set; } = 10;
+        [Description("Delay time to set the scale stable. value x 100(ms)")]
+        public ushort DelayTimer2 { get; set; } = 5;
 
         /// <summary>
         /// thời gian chạy băng tải để đưa thùng vào đúng vị trí chính giữa băng tải cân.
         /// Tính theo công thức: DelayTimer1 x 100ms. 25 x 100ms = 2.5s.
         /// </summary>
         [Description("The delay time to run conveyor for moving the box to center the scale. value x 100(ms)")]
-        public ushort DelayTimer1 { get; set; } = 25;
+
+        public ushort DelayTimer1 { get; set; } = 9;
 
         /// <summary>
         /// Tính theo công thức: DelayTimer3 x 100ms. 10 x 100ms = 1s.
         /// Reset đèn tháp sau khi in xong.
         /// </summary>
-        [Description("Delay time to set the scale stable. value x 100(ms)")]
-        public ushort DelayTimer3 { get; set; } = 10;
+        [Description("The delay time (in milliseconds) to print label after passed the weight checking. value x 100(ms)")]
+        public ushort DelayTimer3 { get; set; } = 20;
 
         /// <summary>
         /// Tính theo công thức: DelayTimer4 x 100ms. 50 x 100ms = 5s.
