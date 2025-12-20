@@ -623,17 +623,17 @@ namespace WeightChecking
 
 
                         byte[] mangGhi = { 0, 0, 0, 0, 0, 0, 0, 0 };
-                        GlobalVariables.MyDriver.SetWord(mangGhi, 0, GlobalVariables.ConfigJson.DelayTimer2);
-                        GlobalVariables.MyDriver.SetWord(mangGhi, 0, GlobalVariables.ConfigJson.DelayTimer1);
                         GlobalVariables.MyDriver.SetWord(mangGhi, 0, GlobalVariables.ConfigJson.DelayTimer3);
-                        GlobalVariables.MyDriver.SetWord(mangGhi, 0, GlobalVariables.ConfigJson.DelayTimer4);
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 2, GlobalVariables.ConfigJson.DelayTimer1);
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 4, GlobalVariables.ConfigJson.DelayTimer3);
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 6, GlobalVariables.ConfigJson.DelayTimer4);
 
                         GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4604, 4, mangGhi);
 
-                        //if (GlobalVariables.ModbusStatus)
-                        {
-                            MessageBox.Show($"Ghi modbus: {GlobalVariables.ModbusStatus}");
-                        }
+                        ////if (GlobalVariables.ModbusStatus)
+                        //{
+                        //    MessageBox.Show($"Ghi modbus: {GlobalVariables.ModbusStatus}");
+                        //}
 
                         //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
                         GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 9, ref _readHoldingRegisterArr);
@@ -797,7 +797,6 @@ namespace WeightChecking
             _resetUiCts = new CancellationTokenSource();
             _resetUiTask = Task.Run(() => TaskCheckResetUIAsync(_resetUiCts.Token));
 
-
             #region Fake data to debug
             //layoutControlGroup3.Visibility = DevExpress.XtraLayout.Utils.LayoutVisibility.Never;
 
@@ -825,6 +824,7 @@ namespace WeightChecking
 
             #endregion
 
+            ResetControl();
         }
 
         private void DataEvent_EventHandleStatusChange(object sender, StatusChangeEventArgs e)
