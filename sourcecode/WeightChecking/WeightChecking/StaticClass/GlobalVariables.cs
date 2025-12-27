@@ -119,7 +119,7 @@ namespace WeightChecking
 
         public static ConfigJsonModel ConfigJson { get; set; } = new ConfigJsonModel();
 
-        public static int DelayPrintInterval { get; set; } = 0;
+        public static string DelayPrintInterval { get; set; } = string.Empty;
         public static int D506Value { get; set; } = 0;
     }
 }

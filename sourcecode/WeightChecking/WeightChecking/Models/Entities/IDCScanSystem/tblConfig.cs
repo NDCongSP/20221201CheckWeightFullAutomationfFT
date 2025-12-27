@@ -115,6 +115,13 @@ namespace WeightChecking
         public ushort DelayTimer4 { get; set; } = 50;
 
         /// <summary>
+        /// Tính theo công thức: DelayTimer5 x 100ms. 20 x 100ms = 5s.
+        /// Thời gian chờ để reset cờ báo bận Y3.
+        /// </summary>
+        [Description("Delay time to reset Y3 (busy flag). value x 100(ms)\"")]
+        public ushort DelayTimer5 { get; set; } = 20;
+
+        /// <summary>
         /// cho phép tự động post dữ liệu sau khi cân xong lên hệ thống Winline.
         /// </summary>
         [Description("Allow to auto post data to Winline system after weighing.")]

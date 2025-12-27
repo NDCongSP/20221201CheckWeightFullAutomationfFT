@@ -79,7 +79,7 @@ namespace WeightChecking
         private static CognexLibrary_NETFramework.DriverTelnet _driverTelnet = new CognexLibrary_NETFramework.DriverTelnet();
 
         private bool isUpdateClicked = false;
-        byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] _writeHoldingRegisterArr = { 0, 1 };
         int _countDisconnectPlc = 0;
         private System.Threading.Tasks.Task _tskModbus, _tskProfinet;
@@ -619,16 +619,17 @@ namespace WeightChecking
                         //ghi thông số delay trước khi chạy vào máy in
                         //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
                         //D511 -11FF = 4607
-                        //thanh ghi D508,D509,D510,D511 cua PLC Delta DPV14SS2 co dia chi la 4604
+                        //thanh ghi D508,D509,D510,D511,D512 cua PLC Delta DPV14SS2 co dia chi la 4604
 
 
-                        byte[] mangGhi = { 0, 0, 0, 0, 0, 0, 0, 0 };
+                        byte[] mangGhi = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
                         GlobalVariables.MyDriver.SetWord(mangGhi, 0, GlobalVariables.ConfigJson.DelayTimer3);
                         GlobalVariables.MyDriver.SetWord(mangGhi, 2, GlobalVariables.ConfigJson.DelayTimer1);
-                        GlobalVariables.MyDriver.SetWord(mangGhi, 4, GlobalVariables.ConfigJson.DelayTimer3);
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 4, GlobalVariables.ConfigJson.DelayTimer2);
                         GlobalVariables.MyDriver.SetWord(mangGhi, 6, GlobalVariables.ConfigJson.DelayTimer4);
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 8, GlobalVariables.ConfigJson.DelayTimer5);
 
-                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4604, 4, mangGhi);
+                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4604, 5, mangGhi);
 
                         ////if (GlobalVariables.ModbusStatus)
                         //{
@@ -636,21 +637,24 @@ namespace WeightChecking
                         //}
 
                         //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
-                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 9, ref _readHoldingRegisterArr);
+                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 12, ref _readHoldingRegisterArr);
 
                         //GlobalVariables.RememberInfo.CountMetalScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
                         ////update gia tri count vao sự kiện để trong frmScal  nó update lên giao diện
                         //GlobalVariables.MyEvent.CountValue = GlobalVariables.RememberInfo.CountMetalScan;
 
                         //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
-                        GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
-                        GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
+                        GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
+                        GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
                         GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
                         GlobalVariables.MyEvent.SensorBeforeWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 8);
                         GlobalVariables.MyEvent.SensorAfterWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
                         GlobalVariables.D506Value = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 12);
-                        GlobalVariables.DelayPrintInterval = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 16);
-                        //var delayConveyor = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 14);
+                        GlobalVariables.DelayPrintInterval = $"T1:{GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 18)}," +
+                            $"T2:{GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 20)}," +
+                            $"T3:{GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 16)}," +
+                            $"T4:{GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 22)}," +
+                            $"T5:{GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 24)}";
 
                         //đăng ký sự kiện bật tắt đèn tháp báo cân pass/fail
                         GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
@@ -2183,7 +2187,7 @@ namespace WeightChecking
                                     {
                                         Debug.WriteLine($"Thùng OC đã được quét ghi nhận khối lượng lỗi rồi, không được phép cân lại." +
                                              $"{Environment.NewLine}Quét thùng khác.", "THÔNG BÁO", MessageBoxButtons.OK, MessageBoxIcon.Information); ;
-                                         
+
                                         throw new Exception($"{_scanDataWeight.OcNo} - {_scanDataWeight.BoxNo} - {_unitLabel} - {_scanDataWeight.IdLabel} đã được quét ghi nhận khối lượng lỗi rồi.");
                                     }
                                     else// if (statusLogData == 2)
@@ -3300,7 +3304,6 @@ namespace WeightChecking
                             GlobalVariables.MyEvent.SensorBeforeWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 8);
                             GlobalVariables.MyEvent.SensorAfterWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
                             GlobalVariables.D506Value = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 12);
-                            GlobalVariables.DelayPrintInterval = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 16);
                         }
                         else
                         {
