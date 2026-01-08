@@ -199,7 +199,7 @@ namespace WeightChecking
             this.Margins = new DevExpress.Drawing.DXMargins(0, 0, 0, 0);
             this.PageHeight = 220;
             this.PageWidth = 350;
-            this.PaperKind = System.Drawing.Printing.PaperKind.Custom;
+            this.PaperKind = DevExpress.Drawing.Printing.DXPaperKind.Custom;
             this.Parameters.AddRange(new DevExpress.XtraReports.Parameters.Parameter[] {
             this.Weight,
             this.IdLabel,

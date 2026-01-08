@@ -85,7 +85,7 @@ namespace WeightChecking
             this.xrLabel1.BorderWidth = 1F;
             this.xrLabel1.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "?DeviationPrs")});
-            this.xrLabel1.Font = new System.Drawing.Font("Arial", 20F, System.Drawing.FontStyle.Bold);
+            this.xrLabel1.Font = new DevExpress.Drawing.DXFont("Arial", 20F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrLabel1.LocationFloat = new DevExpress.Utils.PointFloat(61.34176F, 0F);
             this.xrLabel1.Multiline = true;
             this.xrLabel1.Name = "xrLabel1";
@@ -107,7 +107,7 @@ namespace WeightChecking
             this.xrLabel4.CanGrow = false;
             this.xrLabel4.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "?IdLabel")});
-            this.xrLabel4.Font = new System.Drawing.Font("Arial", 8F);
+            this.xrLabel4.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
             this.xrLabel4.LocationFloat = new DevExpress.Utils.PointFloat(0F, 42.53941F);
             this.xrLabel4.Multiline = true;
             this.xrLabel4.Name = "xrLabel4";
@@ -129,7 +129,7 @@ namespace WeightChecking
             this.xrLabel5.CanGrow = false;
             this.xrLabel5.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "?CreatedDate")});
-            this.xrLabel5.Font = new System.Drawing.Font("Arial", 8F);
+            this.xrLabel5.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
             this.xrLabel5.LocationFloat = new DevExpress.Utils.PointFloat(0F, 61.24019F);
             this.xrLabel5.Multiline = true;
             this.xrLabel5.Name = "xrLabel5";
@@ -166,8 +166,8 @@ namespace WeightChecking
             this.TopMargin,
             this.BottomMargin,
             this.Detail});
-            this.Font = new System.Drawing.Font("Arial", 9.75F);
-            this.Margins = new System.Drawing.Printing.Margins(0, 1, 0, 0);
+            this.Font = new DevExpress.Drawing.DXFont("Arial", 9.75F);
+            this.Margins = new DevExpress.Drawing.DXMargins(0, 1, 0, 0);
             this.PageHeight = 220;
             this.PageWidth = 144;
             this.PaperKind = System.Drawing.Printing.PaperKind.Custom;

@@ -79,7 +79,7 @@ namespace WeightChecking
             this.xrLabel5.Dpi = 254F;
             this.xrLabel5.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "?CreatedDate")});
-            this.xrLabel5.Font = new System.Drawing.Font("Arial", 8F);
+            this.xrLabel5.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
             this.xrLabel5.LocationFloat = new DevExpress.Utils.PointFloat(0F, 155.5501F);
             this.xrLabel5.Multiline = true;
             this.xrLabel5.Name = "xrLabel5";
@@ -97,7 +97,7 @@ namespace WeightChecking
             // 
             this.xrLabel3.Borders = ((DevExpress.XtraPrinting.BorderSide)((DevExpress.XtraPrinting.BorderSide.Top | DevExpress.XtraPrinting.BorderSide.Right)));
             this.xrLabel3.Dpi = 254F;
-            this.xrLabel3.Font = new System.Drawing.Font("Arial", 6F);
+            this.xrLabel3.Font = new DevExpress.Drawing.DXFont("Arial", 6F);
             this.xrLabel3.LocationFloat = new DevExpress.Utils.PointFloat(295F, 0F);
             this.xrLabel3.Multiline = true;
             this.xrLabel3.Name = "xrLabel3";
@@ -119,7 +119,7 @@ namespace WeightChecking
             this.xrLabel4.Dpi = 254F;
             this.xrLabel4.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "?IdLabel\n")});
-            this.xrLabel4.Font = new System.Drawing.Font("Arial", 8F);
+            this.xrLabel4.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
             this.xrLabel4.LocationFloat = new DevExpress.Utils.PointFloat(0F, 108.0501F);
             this.xrLabel4.Multiline = true;
             this.xrLabel4.Name = "xrLabel4";
@@ -155,7 +155,7 @@ namespace WeightChecking
             this.xrLabel1.Dpi = 254F;
             this.xrLabel1.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "?Weight")});
-            this.xrLabel1.Font = new System.Drawing.Font("Arial", 20F, System.Drawing.FontStyle.Bold);
+            this.xrLabel1.Font = new DevExpress.Drawing.DXFont("Arial", 20F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrLabel1.LocationFloat = new DevExpress.Utils.PointFloat(86.90624F, 0F);
             this.xrLabel1.Multiline = true;
             this.xrLabel1.Name = "xrLabel1";
@@ -195,8 +195,8 @@ namespace WeightChecking
             this.BottomMargin,
             this.Detail});
             this.Dpi = 254F;
-            this.Font = new System.Drawing.Font("Arial", 9.75F);
-            this.Margins = new System.Drawing.Printing.Margins(0, 0, 0, 0);
+            this.Font = new DevExpress.Drawing.DXFont("Arial", 9.75F);
+            this.Margins = new DevExpress.Drawing.DXMargins(0, 0, 0, 0);
             this.PageHeight = 220;
             this.PageWidth = 350;
             this.PaperKind = System.Drawing.Printing.PaperKind.Custom;
