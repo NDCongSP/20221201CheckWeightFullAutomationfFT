@@ -19,6 +19,7 @@ using System.Windows.Forms;
 using AutoUpdaterDotNET;
 using System.Diagnostics;
 using DevExpress.XtraPrinting;
+using Microsoft.Data.SqlClient;
 
 namespace WeightChecking
 {
@@ -1060,38 +1061,112 @@ namespace WeightChecking
             {
                 using (var connection = GlobalVariables.GetDbConnectionWinline())
                 {
-                    SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
-                    SplashScreenManager.Default.SetWaitFormDescription("Loading...");
+                    //SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
+                    //SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    //SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                     var res = connection.Query<WinlineDataModel>("sp_IdcScanScaleGetCoreData").ToList();
 
                     if (res != null && res.Count > 0)
                     {
-                        using (var con = GlobalVariables.GetDbConnection())
+                        // using (var con = GlobalVariables.GetDbConnection())
+                        // {
+                        //     //truncate data
+                        //     con.Execute("truncate table tblWinlineProductsInfo");
+
+                        //     var _insertCount = con.Execute($"Insert into tblWinlineProductsInfo (CodeItemSize,ProductNumber," +
+                        //     $"ProductName,ProductCategory,Brand,Decoration,MainProductNo,MainProductName,Color,SizeCode," +
+                        //     $"SizeName,Weight,LeftWeight,RightWeight,BoxType,ToolingNo,PackingBoxType,CustomeUsePb) " +
+                        //$"values (@CodeItemSize,@ProductNumber,@ProductName,@ProductCategory,@Brand,@Decoration,@MainProductNo," +
+                        //$"@MainProductName,@Color,@SizeCode,@SizeName,@Weight,@LeftWeight,@RightWeight,@BoxType,@ToolingNo" +
+                        //$",@PackingBoxType,@CustomeUsePb)", res);
+
+                        //     if (_insertCount == res.Count)
+                        //     {
+                        //         XtraMessageBox.Show($"Get data from winline Ok.  Rows inserted {_insertCount}/{res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        //     }
+                        //     else
+                        //     {
+                        //         XtraMessageBox.Show($"Get data from winline fail. Rows inserted {_insertCount}/{res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        //     }
+                        // }
+                        using (var con = (SqlConnection)GlobalVariables.GetDbConnection())
                         {
-                            //truncate data
-                            con.Execute("truncate table tblWinlineProductsInfo");
+                            con.Open();
 
-                            var _insertCount = con.Execute($"Insert into tblWinlineProductsInfo (CodeItemSize,ProductNumber," +
-                            $"ProductName,ProductCategory,Brand,Decoration,MainProductNo,MainProductName,Color,SizeCode," +
-                            $"SizeName,Weight,LeftWeight,RightWeight,BoxType,ToolingNo,PackingBoxType,CustomeUsePb) " +
-                       $"values (@CodeItemSize,@ProductNumber,@ProductName,@ProductCategory,@Brand,@Decoration,@MainProductNo," +
-                       $"@MainProductName,@Color,@SizeCode,@SizeName,@Weight,@LeftWeight,@RightWeight,@BoxType,@ToolingNo" +
-                       $",@PackingBoxType,@CustomeUsePb)", res);
+                            // 1. Truncate table
+                            con.Execute("TRUNCATE TABLE tblWinlineProductsInfo");
 
-                            if (_insertCount == res.Count)
+                            // 2. Convert res (List<WinlineDataModel>) to DataTable
+                            var dt = new DataTable();
+                            dt.Columns.Add("CodeItemSize", typeof(string));
+                            dt.Columns.Add("ProductNumber", typeof(string));
+                            dt.Columns.Add("ProductName", typeof(string));
+                            dt.Columns.Add("ProductCategory", typeof(string));
+                            dt.Columns.Add("Brand", typeof(string));
+                            dt.Columns.Add("Decoration", typeof(int));
+                            dt.Columns.Add("MainProductNo", typeof(string));
+                            dt.Columns.Add("MainProductName", typeof(string));
+                            dt.Columns.Add("Color", typeof(string));
+                            dt.Columns.Add("SizeCode", typeof(int));
+                            dt.Columns.Add("SizeName", typeof(string));
+                            dt.Columns.Add("Weight", typeof(decimal));
+                            dt.Columns.Add("LeftWeight", typeof(decimal));
+                            dt.Columns.Add("RightWeight", typeof(decimal));
+                            dt.Columns.Add("BoxType", typeof(string));
+                            dt.Columns.Add("ToolingNo", typeof(string));
+                            dt.Columns.Add("PackingBoxType", typeof(string));
+                            dt.Columns.Add("CustomeUsePb", typeof(string));
+
+                            foreach (var item in res)
                             {
-                                XtraMessageBox.Show($"Get data from winline Ok.  Rows inserted {_insertCount}/{res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                dt.Rows.Add(
+                                    item.CodeItemSize,
+                                    item.ProductNumber,
+                                    item.ProductName,
+                                    item.ProductCategory,
+                                    item.Brand,
+                                    item.Decoration,
+                                    item.MainProductNo,
+                                    item.MainProductName,
+                                    item.Color,
+                                    item.SizeCode,
+                                    item.SizeName,
+                                    item.Weight,
+                                    item.LeftWeight,
+                                    item.RightWeight,
+                                    item.BoxType,
+                                    item.ToolingNo,
+                                    item.PackingBoxType,
+                                    item.CustomeUsePb
+                                );
                             }
-                            else
+
+                            // 3. Bulk insert
+                            using (var bulk = new SqlBulkCopy(con))
                             {
-                                XtraMessageBox.Show($"Get data from winline fail. Rows inserted {_insertCount}/{res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                bulk.DestinationTableName = "tblWinlineProductsInfo";
+
+                                // Optional: speeds up performance
+                                bulk.BatchSize = 5000;
+                                bulk.BulkCopyTimeout = 120;
+
+                                bulk.WriteToServer(dt);
                             }
+
+                            XtraMessageBox.Show(
+                                $"Get data from winline OK. Rows inserted {dt.Rows.Count}",
+                                "INFO",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information
+                            );
                         }
+
                         GlobalVariables.MyEvent.RefreshStatus = true;
                     }
                 }
+
+
             }
             catch (Exception ex)
             {
@@ -1100,7 +1175,7 @@ namespace WeightChecking
             }
             finally
             {
-                SplashScreenManager.CloseForm(false);
+                //SplashScreenManager.CloseForm(false);
                 GlobalVariables.MyEvent.RefreshStatus = true;
             }
         }
