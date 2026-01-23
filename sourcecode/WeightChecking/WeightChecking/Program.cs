@@ -120,7 +120,7 @@ namespace WeightChecking
                 AutoUpdater.ApplicationExitEvent += AutoUpdater_ApplicationExitEvent;
                 AutoUpdater.CheckForUpdateEvent += AutoUpdater_CheckForUpdateEvent;
                 AutoUpdater.Start(GlobalVariables.ConfigJson.UpdatePath);
-                Application.Run(new Login());
+                Application.Run(new frmScaleNewUI());
 
             }
         }

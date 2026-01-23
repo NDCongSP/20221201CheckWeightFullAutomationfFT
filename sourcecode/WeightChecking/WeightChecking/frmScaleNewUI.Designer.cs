@@ -81,6 +81,7 @@
             this._labQrIdentification = new DevExpress.XtraEditors.LabelControl();
             this.labelControl1 = new DevExpress.XtraEditors.LabelControl();
             this._groupControlWeightChecking = new DevExpress.XtraEditors.GroupControl();
+            this._labResultMessage = new DevExpress.XtraEditors.LabelControl();
             this._labUnitCalculatQty = new DevExpress.XtraEditors.LabelControl();
             this._labUnitDeviation = new DevExpress.XtraEditors.LabelControl();
             this.labelControl20 = new DevExpress.XtraEditors.LabelControl();
@@ -103,7 +104,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this._labStatus = new DevExpress.XtraEditors.LabelControl();
             this._labDateTime = new DevExpress.XtraEditors.LabelControl();
-            this._labResultMessage = new DevExpress.XtraEditors.LabelControl();
+            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.lblStatus = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.groupControl2)).BeginInit();
             this.groupControl2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.labAccessoriesWeight.Properties)).BeginInit();
@@ -136,6 +138,8 @@
             this.groupControl2.AppearanceCaption.Options.UseFont = true;
             this.groupControl2.AppearanceCaption.Options.UseForeColor = true;
             this.groupControl2.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this.groupControl2.Controls.Add(this.lblStatus);
+            this.groupControl2.Controls.Add(this.listBox1);
             this.groupControl2.Controls.Add(this._labFGW);
             this.groupControl2.Controls.Add(this.labelControl11);
             this.groupControl2.Controls.Add(this._labQtyStandard);
@@ -956,6 +960,22 @@
             this._groupControlWeightChecking.TabIndex = 1;
             this._groupControlWeightChecking.Text = "WEIGHT CHECK";
             // 
+            // _labResultMessage
+            // 
+            this._labResultMessage.Appearance.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this._labResultMessage.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
+            this._labResultMessage.Appearance.Options.UseBackColor = true;
+            this._labResultMessage.Appearance.Options.UseFont = true;
+            this._labResultMessage.Appearance.Options.UseTextOptions = true;
+            this._labResultMessage.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
+            this._labResultMessage.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
+            this._labResultMessage.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this._labResultMessage.Location = new System.Drawing.Point(30, 837);
+            this._labResultMessage.Name = "_labResultMessage";
+            this._labResultMessage.Size = new System.Drawing.Size(423, 115);
+            this._labResultMessage.TabIndex = 69;
+            this._labResultMessage.Text = "Everything OK.";
+            // 
             // _labUnitCalculatQty
             // 
             this._labUnitCalculatQty.Appearance.Font = new System.Drawing.Font("Tahoma", 25F);
@@ -1331,21 +1351,22 @@
             this._labDateTime.TabIndex = 63;
             this._labDateTime.Text = "Everything OK.";
             // 
-            // _labResultMessage
+            // listBox1
             // 
-            this._labResultMessage.Appearance.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this._labResultMessage.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
-            this._labResultMessage.Appearance.Options.UseBackColor = true;
-            this._labResultMessage.Appearance.Options.UseFont = true;
-            this._labResultMessage.Appearance.Options.UseTextOptions = true;
-            this._labResultMessage.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
-            this._labResultMessage.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this._labResultMessage.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
-            this._labResultMessage.Location = new System.Drawing.Point(30, 837);
-            this._labResultMessage.Name = "_labResultMessage";
-            this._labResultMessage.Size = new System.Drawing.Size(423, 115);
-            this._labResultMessage.TabIndex = 69;
-            this._labResultMessage.Text = "Everything OK.";
+            this.listBox1.FormattingEnabled = true;
+            this.listBox1.Location = new System.Drawing.Point(539, 237);
+            this.listBox1.Name = "listBox1";
+            this.listBox1.Size = new System.Drawing.Size(406, 95);
+            this.listBox1.TabIndex = 66;
+            // 
+            // lblStatus
+            // 
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Location = new System.Drawing.Point(398, 282);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(35, 13);
+            this.lblStatus.TabIndex = 67;
+            this.lblStatus.Text = "label2";
             // 
             // frmScaleNewUI
             // 
@@ -1471,5 +1492,7 @@
         private DevExpress.XtraEditors.LabelControl _labUnitCalculatQty;
         private DevExpress.XtraEditors.LabelControl _labUnitDeviation;
         private DevExpress.XtraEditors.LabelControl _labResultMessage;
+        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.Label lblStatus;
     }
 }

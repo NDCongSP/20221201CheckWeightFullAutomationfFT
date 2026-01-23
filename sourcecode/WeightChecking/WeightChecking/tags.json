@@ -1,0 +1,96 @@
+[
+  {
+    "Name": "PLC_1",
+    "Host": "phucthinhautomation.ddns.net",
+    "Rack": 0,
+    "Slot": 1,
+    "Tags": [
+      {
+        "Name": "BoxIdScale",
+        "Address": "DB1.DBB30",
+        "DataType": "String",
+        "Length": 62
+      },
+      {
+        "Name": "BoxIdMetal",
+        "Address": "DB1.DBB96",
+        "DataType": "String",
+        "Length": 62
+      },
+      {
+        "Name": "PrintContentLine1",
+        "Address": "DB1.DBB162",
+        "DataType": "String",
+        "Length": 62
+      },
+      {
+        "Name": "PrintContentLine2",
+        "Address": "DB1.DBB228",
+        "DataType": "String",
+        "Length": 62
+      },
+      {
+        "Name": "PrintContentLine3",
+        "Address": "DB1.DBB294",
+        "DataType": "String",
+        "Length": 62
+      },
+      {
+        "Name": "NewCodeMetal",
+        "Address": "DB1.DBB0",
+        "DataType": "Word"
+      },
+      {
+        "Name": "IsCheck",
+        "Address": "DB1.DBB2",
+        "DataType": "Word"
+      },
+      {
+        "Name": "ResultCheckMetal",
+        "Address": "DB1.DBB4",
+        "DataType": "Word"
+      },
+      {
+        "Name": "NewCodeScale",
+        "Address": "DB1.DBB6",
+        "DataType": "Word"
+      },
+      {
+        "Name": "StableTrigger",
+        "Address": "DB1.DBB8",
+        "DataType": "Word"
+      },
+      {
+        "Name": "WeightCheckDone",
+        "Address": "DB1.DBB10",
+        "DataType": "Word"
+      },
+      {
+        "Name": "ScaleValue",
+        "Address": "DB1.DBD22",
+        "DataType": "Real",
+        "Deadband": 0.01,
+        "OffsetValue": 0,
+        "GainRate": 1,
+        "NumDecimal": 2
+      },
+      {
+        "Name": "StableSccaleValue",
+        "Address": "DB1.DBB26",
+        "DataType": "Real",
+        "Deadband": 0.01,
+        "OffsetValue": 0,
+        "GainRate": 1,
+        "NumDecimal": 1
+      },
+      {
+        "Name": "StandardGrossWeight",
+        "Address": "DB1.DBB12",
+        "DataType": "Real",
+        "Deadband": 0.01,
+        "OffsetValue": 0,
+        "GainRate": 1
+      }
+    ]
+  }
+]

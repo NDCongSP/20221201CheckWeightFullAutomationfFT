@@ -11,7 +11,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WeightChecking</RootNamespace>
     <AssemblyName>SSFG</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -36,6 +36,7 @@
     <!-- <LangVersion>latest</LangVersion> -->
     <!-- Bật nullable reference types -->
     <Nullable>enable</Nullable>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -181,6 +182,9 @@
     </Reference>
     <Reference Include="Serilog.Sinks.PeriodicBatching, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.PeriodicBatching.2.3.0\lib\net45\Serilog.Sinks.PeriodicBatching.dll</HintPath>
+    </Reference>
+    <Reference Include="Sharp7, Version=1.1.84.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sharp7.1.1.84\lib\net40\Sharp7.dll</HintPath>
     </Reference>
     <Reference Include="snap7.net">
       <HintPath>..\..\DLL modbus\snap7.net.dll</HintPath>
@@ -474,6 +478,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="tags.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\framas mini %28black%29.png" />
@@ -497,6 +504,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\..\..\..\3.Others\0.Code\202600120_Snap7\Snap7ScadaSolution\Snap7Scada.Core\Snap7Scada.Lib.csproj">
+      <Project>{01af18dc-98d4-6780-0139-172961a989e7}</Project>
+      <Name>Snap7Scada.Lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CognexLibrary_NETFramework\CognexLibrary_NETFramework.csproj">
       <Project>{62c3b090-ef4f-46c8-ad2e-2310b148eb3d}</Project>
       <Name>CognexLibrary_NETFramework</Name>
