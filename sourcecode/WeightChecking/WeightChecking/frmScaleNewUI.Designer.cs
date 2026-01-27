@@ -104,8 +104,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this._labStatus = new DevExpress.XtraEditors.LabelControl();
             this._labDateTime = new DevExpress.XtraEditors.LabelControl();
-            this.listBox1 = new System.Windows.Forms.ListBox();
-            this.lblStatus = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.groupControl2)).BeginInit();
             this.groupControl2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.labAccessoriesWeight.Properties)).BeginInit();
@@ -138,8 +136,6 @@
             this.groupControl2.AppearanceCaption.Options.UseFont = true;
             this.groupControl2.AppearanceCaption.Options.UseForeColor = true;
             this.groupControl2.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
-            this.groupControl2.Controls.Add(this.lblStatus);
-            this.groupControl2.Controls.Add(this.listBox1);
             this.groupControl2.Controls.Add(this._labFGW);
             this.groupControl2.Controls.Add(this.labelControl11);
             this.groupControl2.Controls.Add(this._labQtyStandard);
@@ -1351,23 +1347,6 @@
             this._labDateTime.TabIndex = 63;
             this._labDateTime.Text = "Everything OK.";
             // 
-            // listBox1
-            // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(539, 237);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(406, 95);
-            this.listBox1.TabIndex = 66;
-            // 
-            // lblStatus
-            // 
-            this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(398, 282);
-            this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(35, 13);
-            this.lblStatus.TabIndex = 67;
-            this.lblStatus.Text = "label2";
-            // 
             // frmScaleNewUI
             // 
             this.Appearance.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
@@ -1492,7 +1471,5 @@
         private DevExpress.XtraEditors.LabelControl _labUnitCalculatQty;
         private DevExpress.XtraEditors.LabelControl _labUnitDeviation;
         private DevExpress.XtraEditors.LabelControl _labResultMessage;
-        private System.Windows.Forms.ListBox listBox1;
-        private System.Windows.Forms.Label lblStatus;
     }
 }

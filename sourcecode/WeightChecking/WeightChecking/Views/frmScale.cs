@@ -51,7 +51,7 @@ namespace WeightChecking
         //private tblScanData _scanDataPrint = new tblScanData();
 
         //private string _idLabel = null;
-        //private string _plr = null;// kiểu đóng thùng, P-đôi; L/R-left righ
+        //private string _unit = null;// kiểu đóng thùng, P-đôi; L/R-left righ
         //private double _weight = 0, _boxWeight = 0, _accessoriesWeight = 0;
 
         //private bool _approveUpdateActMetalScan = false;
@@ -549,7 +549,7 @@ namespace WeightChecking
         //        {
         //            var s = barcodeString.Split('|');
         //            var s1 = s[0].Split(',');
-        //            _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+        //            _unit = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
         //            //Check xem  QR code quét vào có đúng định dạng hay ko
 
@@ -641,7 +641,7 @@ namespace WeightChecking
         //        else
         //        {
         //            var s1 = _scanDataMetal.BarcodeString.Split(',');
-        //            _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+        //            _unit = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
         //            //Check xem  QR code quét vào có đúng định dạng hay ko
         //            var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstCharMetal);
@@ -1176,7 +1176,7 @@ namespace WeightChecking
         //        {
         //            var s = barcodeString.Split('|');
         //            var s1 = s[0].Split(',');
-        //            _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+        //            _unit = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
         //            //Check xem  QR code quét vào có đúng định dạng hay ko
 
@@ -1268,7 +1268,7 @@ namespace WeightChecking
         //        else
         //        {
         //            var s1 = _scanDataWeight.BarcodeString.Split(',');
-        //            _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+        //            _unit = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
         //            //Check xem  QR code quét vào có đúng định dạng hay ko
         //            var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstChar);
@@ -1689,11 +1689,11 @@ namespace WeightChecking
         //                    _scanDataWeight.StdGrossWeight = Math.Round(_scanDataWeight.StdNetWeight + _scanDataWeight.PackageWeight + _scanDataWeight.BoxWeight, 3);
 
         //                    #region tinh toán standardWeight theo Pair/Left/Right. lưu ý để sau này có áp dụng thì làm
-        //                    //if (_plr == "P")
+        //                    //if (_unit == "P")
         //                    //{
         //                    //    _scanDataWeight.GrossdWeight = res.Weight * res.QtyPerbag + res.BagWeight;
         //                    //}
-        //                    //else if (_plr == "L")
+        //                    //else if (_unit == "L")
         //                    //{
         //                    //    if (res.LeftWeight == 0)
         //                    //    {
@@ -1704,7 +1704,7 @@ namespace WeightChecking
         //                    //        _scanDataWeight.StandardWeight = res.LeftWeight * res.QtyPerbag + res.BagWeight;
         //                    //    }
         //                    //}
-        //                    //else if (_plr == "R")
+        //                    //else if (_unit == "R")
         //                    //{
         //                    //    if (res.RightWeight == 0)
         //                    //    {
@@ -2493,7 +2493,7 @@ namespace WeightChecking
         //        {
         //            var s = barcodeString.Split('|');
         //            var s1 = s[0].Split(',');
-        //            _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+        //            _unit = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
         //            //Check xem  QR code quét vào có đúng định dạng hay ko
 
@@ -2527,7 +2527,7 @@ namespace WeightChecking
         //        else
         //        {
         //            var s1 = _scanDataPrint.BarcodeString.Split(',');
-        //            _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+        //            _unit = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
         //            //Check xem  QR code quét vào có đúng định dạng hay ko
         //            var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstCharPrint);
