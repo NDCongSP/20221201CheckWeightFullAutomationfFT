@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-    public enum LocationEnum
+    public class MesoInfoModel
     {
-        Empty,
-        fVN,
-        fFT,
-        fKV,
-        fIN
+        public int MESOYEAR { get; set; }
+
+        public string MESOCOMP { get; set; }
     }
 }

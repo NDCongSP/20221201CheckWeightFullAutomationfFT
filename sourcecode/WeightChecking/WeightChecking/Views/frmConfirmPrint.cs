@@ -69,30 +69,30 @@ namespace WeightChecking
 
                                 if (s2[0] == "1")
                                 {
-                                    _scanData.Location = LocationEnum.fVN;
+                                    _scanData.Location = EnumLocation.fVN;
                                 }
                                 else if (s2[0] == "2")
                                 {
-                                    _scanData.Location = LocationEnum.fFT;
+                                    _scanData.Location = EnumLocation.fFT;
                                 }
                                 else if (s2[0] == "3")
                                 {
-                                    _scanData.Location = LocationEnum.fKV;
+                                    _scanData.Location = EnumLocation.fKV;
                                 }
                             }
                             else
                             {
                                 if (s[1] == "1")
                                 {
-                                    _scanData.Location = LocationEnum.fVN;
+                                    _scanData.Location = EnumLocation.fVN;
                                 }
                                 else if (s[1] == "2")
                                 {
-                                    _scanData.Location = LocationEnum.fFT;
+                                    _scanData.Location = EnumLocation.fFT;
                                 }
                                 else if (s[1] == "3")
                                 {
-                                    _scanData.Location = LocationEnum.fKV;
+                                    _scanData.Location = EnumLocation.fKV;
                                 }
                             }
                         }

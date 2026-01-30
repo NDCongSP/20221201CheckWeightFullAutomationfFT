@@ -27,7 +27,6 @@ namespace WeightChecking
         #region Static Properties
         private bool isUpdateClicked = false;
 
-        frmScale _frmScale;
         frmScaleNewUI _frmScaleNewUI;
         frmSettings _frmSettings;
         frmMasterData _frmMasterData;
@@ -170,7 +169,7 @@ namespace WeightChecking
                 }
                 else
                 {
-                    tabbedView1.ActivateDocument(_frmScale);
+                    //tabbedView1.ActivateDocument(_frmScale);
                 }
                 #endregion
 
@@ -763,15 +762,15 @@ namespace WeightChecking
                                 #region Approved print lable
                                 //ws = wb.Worksheets["ApprovedPrintLable"];
 
-                                //ws.Cells[0, 0].Value = "User Name";
-                                //ws.Cells[0, 1].Value = "Id Lable";
-                                //ws.Cells[0, 2].Value = "OC";
-                                //ws.Cells[0, 3].Value = "Box No";
-                                //ws.Cells[0, 4].Value = "Gross Weight";
-                                //ws.Cells[0, 5].Value = "Station";
-                                //ws.Cells[0, 6].Value = "Created Date";
-                                //ws.Cells[0, 7].Value = "QR Label";
-                                //ws.Cells[0, 8].Value = "Aprrove Type";
+                                //ws.Cells[0, 0].NewValue = "User Name";
+                                //ws.Cells[0, 1].NewValue = "Id Lable";
+                                //ws.Cells[0, 2].NewValue = "OC";
+                                //ws.Cells[0, 3].NewValue = "Box No";
+                                //ws.Cells[0, 4].NewValue = "Gross Weight";
+                                //ws.Cells[0, 5].NewValue = "Station";
+                                //ws.Cells[0, 6].NewValue = "Created Date";
+                                //ws.Cells[0, 7].NewValue = "QR Label";
+                                //ws.Cells[0, 8].NewValue = "Aprrove Type";
 
                                 //rHeader = ws.Range.FromLTRB(0, 0, 8, 0);//Col-Row;Col-Row. do created new WB nen ko lây theo hàng cot chũ cái đc
                                 //rHeader.FillColor = Color.Orange;
@@ -1044,15 +1043,15 @@ namespace WeightChecking
                     SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
-                    _frmScale = new frmScale();
-                    tabbedView1.AddDocument(_frmScale);
-                    tabbedView1.ActivateDocument(_frmScale);
+                    //_frmScale = new frmScale();
+                    //tabbedView1.AddDocument(_frmScale);
+                    //tabbedView1.ActivateDocument(_frmScale);
 
                     SplashScreenManager.CloseForm(false);
                 }
                 else
                 {
-                    tabbedView1.ActivateDocument(_frmScale);
+                    //tabbedView1.ActivateDocument(_frmScale);
                 }
             }
             catch (Exception ex)

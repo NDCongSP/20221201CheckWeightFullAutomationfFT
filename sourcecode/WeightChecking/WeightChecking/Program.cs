@@ -58,9 +58,6 @@ namespace WeightChecking
                 GlobalVariables.SpecialCaseList = dbContext.TblSpecialCases.ToList();
             }
 
-            GlobalVariables.CognexCam_2Status = Properties.Settings.Default.IpCognexCam_2;
-
-
             Console.WriteLine($"Path app: {Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
 
             GlobalVariables.RememberInfo = JsonConvert.DeserializeObject<RememberInfo>(File.ReadAllText(@"./RememberInfo.json"));

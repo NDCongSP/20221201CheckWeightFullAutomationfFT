@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-    public class AnserU2Print
+    public enum EnumLocation
     {
-        public SerialPort SerialPort;
-
-        public AnserU2Print()
-        {
-        }
+        fVN = 1,
+        fKV = 2,
+        fFT = 3,
+        fIN = 4,
+        fGE = 5
     }
 }

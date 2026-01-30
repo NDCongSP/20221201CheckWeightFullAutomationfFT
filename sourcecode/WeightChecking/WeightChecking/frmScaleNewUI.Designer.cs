@@ -71,10 +71,7 @@
             this.labelControl29 = new DevExpress.XtraEditors.LabelControl();
             this.groupControl1 = new DevExpress.XtraEditors.GroupControl();
             this.labelControl7 = new DevExpress.XtraEditors.LabelControl();
-            this._labResultDistribution = new DevExpress.XtraEditors.LabelControl();
             this._labLastResultMessage = new DevExpress.XtraEditors.LabelControl();
-            this._labQrDistribution = new DevExpress.XtraEditors.LabelControl();
-            this.labelControl6 = new DevExpress.XtraEditors.LabelControl();
             this.labQrScale = new DevExpress.XtraEditors.LabelControl();
             this.labelControl4 = new DevExpress.XtraEditors.LabelControl();
             this._labResultIdentification = new DevExpress.XtraEditors.LabelControl();
@@ -434,7 +431,6 @@
             this.labSize.Size = new System.Drawing.Size(171, 54);
             this.labSize.TabIndex = 12;
             this.labSize.Text = "No.3(12K - 13K)";
-            this.labSize.Click += new System.EventHandler(this.labSize_Click);
             // 
             // labelControl15
             // 
@@ -756,10 +752,7 @@
             this.groupControl1.AppearanceCaption.Options.UseForeColor = true;
             this.groupControl1.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
             this.groupControl1.Controls.Add(this.labelControl7);
-            this.groupControl1.Controls.Add(this._labResultDistribution);
             this.groupControl1.Controls.Add(this._labLastResultMessage);
-            this.groupControl1.Controls.Add(this._labQrDistribution);
-            this.groupControl1.Controls.Add(this.labelControl6);
             this.groupControl1.Controls.Add(this.labQrScale);
             this.groupControl1.Controls.Add(this.labelControl4);
             this.groupControl1.Controls.Add(this._labResultIdentification);
@@ -782,24 +775,6 @@
             this.labelControl7.TabIndex = 39;
             this.labelControl7.Text = "STATION CHECK";
             // 
-            // _labResultDistribution
-            // 
-            this._labResultDistribution.Appearance.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this._labResultDistribution.Appearance.Font = new System.Drawing.Font("Tahoma", 10F, System.Drawing.FontStyle.Italic);
-            this._labResultDistribution.Appearance.ForeColor = System.Drawing.Color.Green;
-            this._labResultDistribution.Appearance.Options.UseBackColor = true;
-            this._labResultDistribution.Appearance.Options.UseFont = true;
-            this._labResultDistribution.Appearance.Options.UseForeColor = true;
-            this._labResultDistribution.Appearance.Options.UseTextOptions = true;
-            this._labResultDistribution.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
-            this._labResultDistribution.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this._labResultDistribution.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
-            this._labResultDistribution.Location = new System.Drawing.Point(11, 370);
-            this._labResultDistribution.Name = "_labResultDistribution";
-            this._labResultDistribution.Size = new System.Drawing.Size(976, 29);
-            this._labResultDistribution.TabIndex = 38;
-            this._labResultDistribution.Text = "Printing";
-            // 
             // _labLastResultMessage
             // 
             this._labLastResultMessage.Appearance.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
@@ -817,31 +792,6 @@
             this._labLastResultMessage.Size = new System.Drawing.Size(976, 29);
             this._labLastResultMessage.TabIndex = 37;
             this._labLastResultMessage.Text = "The box was rejected due to fail weight.";
-            // 
-            // _labQrDistribution
-            // 
-            this._labQrDistribution.Appearance.BackColor = System.Drawing.Color.White;
-            this._labQrDistribution.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
-            this._labQrDistribution.Appearance.Options.UseBackColor = true;
-            this._labQrDistribution.Appearance.Options.UseFont = true;
-            this._labQrDistribution.Appearance.Options.UseTextOptions = true;
-            this._labQrDistribution.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
-            this._labQrDistribution.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this._labQrDistribution.Location = new System.Drawing.Point(11, 311);
-            this._labQrDistribution.Name = "_labQrDistribution";
-            this._labQrDistribution.Size = new System.Drawing.Size(976, 54);
-            this._labQrDistribution.TabIndex = 6;
-            this._labQrDistribution.Text = "A125886,6818012301-2672-2751,200,9,P,43/95,1900019,8/12|2,523875.2024,0,0,18";
-            // 
-            // labelControl6
-            // 
-            this.labelControl6.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
-            this.labelControl6.Appearance.Options.UseFont = true;
-            this.labelControl6.Location = new System.Drawing.Point(10, 286);
-            this.labelControl6.Name = "labelControl6";
-            this.labelControl6.Size = new System.Drawing.Size(82, 19);
-            this.labelControl6.TabIndex = 5;
-            this.labelControl6.Text = "Distribution";
             // 
             // labQrScale
             // 
@@ -885,7 +835,6 @@
             this._labResultIdentification.Size = new System.Drawing.Size(976, 29);
             this._labResultIdentification.TabIndex = 33;
             this._labResultIdentification.Text = "Could not read QR Code ";
-            this._labResultIdentification.Click += new System.EventHandler(this.labErrInfoMetal_Click);
             // 
             // _labQrIdentification
             // 
@@ -1120,7 +1069,6 @@
             this.labelControl40.Size = new System.Drawing.Size(360, 54);
             this.labelControl40.TabIndex = 49;
             this.labelControl40.Text = "Net Weight (g)";
-            this.labelControl40.Click += new System.EventHandler(this.labelControl40_Click);
             // 
             // labNetRealWeight
             // 
@@ -1196,7 +1144,7 @@
             this.labelControl28.Name = "labelControl28";
             this.labelControl28.Size = new System.Drawing.Size(360, 54);
             this.labelControl28.TabIndex = 43;
-            this.labelControl28.Text = "Scale Value (g)";
+            this.labelControl28.Text = "Scale NewValue (g)";
             // 
             // labScaleValue
             // 
@@ -1400,8 +1348,6 @@
         private DevExpress.XtraEditors.LabelControl labelControl1;
         private DevExpress.XtraEditors.GroupControl groupControl1;
         private DevExpress.XtraEditors.LabelControl _labQrIdentification;
-        private DevExpress.XtraEditors.LabelControl _labQrDistribution;
-        private DevExpress.XtraEditors.LabelControl labelControl6;
         private DevExpress.XtraEditors.LabelControl labQrScale;
         private DevExpress.XtraEditors.LabelControl labelControl4;
         private DevExpress.XtraEditors.GroupControl groupControl2;
@@ -1426,7 +1372,6 @@
         private DevExpress.XtraEditors.LabelControl _labUnitStandard;
         private DevExpress.XtraEditors.LabelControl labelControl35;
         private DevExpress.XtraEditors.LabelControl _labResultIdentification;
-        private DevExpress.XtraEditors.LabelControl _labResultDistribution;
         private DevExpress.XtraEditors.LabelControl _labLastResultMessage;
         private DevExpress.XtraEditors.TextEdit labCalculatedPairs;
         private DevExpress.XtraEditors.TextEdit labQuantity;

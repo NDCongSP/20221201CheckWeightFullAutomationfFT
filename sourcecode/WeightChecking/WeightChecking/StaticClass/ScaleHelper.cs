@@ -193,10 +193,10 @@ namespace WeightChecking
 
                     //valueStr = Reverse(Encoding.ASCII.GetString(bytes, 0, bytesRec));//dùng với trường hợp cân ở cookie
                     //string valueStr = Encoding.ASCII.GetString(bytes, 0, bytesRec);
-                    //Debug.WriteLine($"Value String Nguyen Mau: {valueStr}");
+                    //Debug.WriteLine($"NewValue String Nguyen Mau: {valueStr}");
 
 
-                    //Debug.WriteLine($"Value String Nguyen Mau: {valueStr}");
+                    //Debug.WriteLine($"NewValue String Nguyen Mau: {valueStr}");
 
                     //xử lý data đọc về
                     //if (valueStr.Substring(0, 1) != "+" && valueStr.Substring(0, 1) != "-")
@@ -265,14 +265,14 @@ namespace WeightChecking
                     //            {
                     //                valueStr = valueStr.Substring(subIndex, newLineIndex - subIndex);
                     //            }
-                    //            //Debug.WriteLine($"Value String Nguyen Mau: {valueStr}");
+                    //            //Debug.WriteLine($"NewValue String Nguyen Mau: {valueStr}");
                     //            digits = new Regex(@"^\D*?((-?(\d+(\.\d+)?))|(-?\.\d+)).*");
                     //            mx = digits.Match(valueStr);
                     //            //Debug.WriteLine($"Match String: {mx}");
                     //            try
                     //            {
-                    //                ScaleValue = mx.Success ? subIndex > -1 ? -Convert.ToDouble(mx.Groups[1].Value) : Convert.ToDouble(mx.Groups[1].Value) : oldScale;
-                    //                //ScaleValue = mx.Success ?  Convert.ToDouble(mx.Groups[1].Value) : oldScale;
+                    //                ScaleValue = mx.Success ? subIndex > -1 ? -Convert.ToDouble(mx.Groups[1].NewValue) : Convert.ToDouble(mx.Groups[1].NewValue) : oldScale;
+                    //                //ScaleValue = mx.Success ?  Convert.ToDouble(mx.Groups[1].NewValue) : oldScale;
                     //                oldScale = ScaleValue;
                     //            }
                     //            catch (Exception ex)
@@ -283,7 +283,7 @@ namespace WeightChecking
 
                     //    }
 
-                    //    //ScaleValue = mx.Success ? Convert.ToDouble(mx.Groups[1].Value) : 0;
+                    //    //ScaleValue = mx.Success ? Convert.ToDouble(mx.Groups[1].NewValue) : 0;
                     //    //Debug.WriteLine($"Read Scale value ++++: {ScaleValue}|{valueStr}");
 
                     //}
@@ -303,7 +303,7 @@ namespace WeightChecking
                         try
                         {
                             ScaleValue = mx.Success ? Convert.ToDouble(mx.Groups[1].Value) : oldScale;
-                            //ScaleValue = mx.Success ?  Convert.ToDouble(mx.Groups[1].Value) : oldScale;
+                            //ScaleValue = mx.Success ?  Convert.ToDouble(mx.Groups[1].NewValue) : oldScale;
                             oldScale = ScaleValue;
                         }
                         catch (Exception ex)

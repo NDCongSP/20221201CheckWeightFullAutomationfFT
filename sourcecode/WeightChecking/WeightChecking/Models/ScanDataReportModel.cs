@@ -18,7 +18,7 @@ namespace WeightChecking
         public string Unit { get; set; } = "Prs";
         public string BoxNo { get; set; } = null;
         public string CustomerNo { get; set; } = null;
-        public LocationEnum Location { get; set; }
+        public EnumLocation Location { get; set; }
         public string BoxPosNo { get; set; } = null;
         public string Note { get; set; } = null;
         public string Brand { get; set; } = null;
