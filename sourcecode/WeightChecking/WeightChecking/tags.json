@@ -1,0 +1,87 @@
+[
+  {
+    "Name": "PLC_1",
+    "Host": "phucthinhautomation.ddns.net",
+    "Rack": 0,
+    "Slot": 1,
+    "Tags": [
+      {
+        "Name": "S_1",
+        "Address": "DB1.DBB0",
+        "DataType": "Word"
+      },
+      {
+        "Name": "S_M",
+        "Address": "DB1.DBB1",
+        "DataType": "Word"
+      },
+      {
+        "Name": "S_2",
+        "Address": "DB1.DBB2",
+        "DataType": "Word"
+      },
+      {
+        "Name": "S_IN",
+        "Address": "DB1.DBB3",
+        "DataType": "Word"
+      },
+      {
+        "Name": "S_OUT",
+        "Address": "DB1.DBB4",
+        "DataType": "Word"
+      },
+      {
+        "Name": "Metal_Result",
+        "Address": "DB1.DBB5",
+        "DataType": "Word"
+      },
+      {
+        "Name": "Scale_Stable_Trigger",
+        "Address": "DB1.DBB6",
+        "DataType": "Word"
+      },
+      {
+        "Name": "P1",
+        "Address": "DB1.DBD7",
+        "DataType": "Word"
+      },
+      {
+        "Name": "P2",
+        "Address": "DB1.DBD8",
+        "DataType": "Word"
+      },
+      {
+        "Name": "P3",
+        "Address": "DB1.DBD9",
+        "DataType": "Word"
+      },
+      {
+        "Name": "Check_Weight_Result",
+        "Address": "DB1.DBD10",
+        "DataType": "Word"
+      },
+      {
+        "Name": "Delay_Time_To_Print",
+        "Address": "DB1.DBD11",
+        "DataType": "Word"
+      },
+      {
+        "Name": "Sccale_Value",
+        "Address": "DB1.DBB12",
+        "DataType": "Real",
+        "Deadband": 0.01,
+        "OffsetValue": 0,
+        "GainRate": 1,
+        "NumDecimal": 2
+      },
+      {
+        "Name": "Sccale_Value_Stable",
+        "Address": "DB1.DBB16",
+        "DataType": "Real",
+        "Deadband": 0.01,
+        "OffsetValue": 0,
+        "GainRate": 2
+      }
+    ]
+  }
+]

@@ -357,7 +357,7 @@ namespace WeightChecking
                 _stableScale = o.NewValue;
             };
 
-            //sự kiện ghi nhận thừng đêbs trước vị trí metalScan, lấy cánh xuống để tác động tính thời gian để báo ko đọc đc QR code
+            //sự kiện ghi nhận thừng đêbs trước vị trí Scanner đầu tiên, lấy cánh xuống để tác động tính thời gian để báo ko đọc đc QR code
             GlobalVariables.MyEvent.EventHandleSensorBeforeMetalScan += (s, o) =>
             {
                 Debug.WriteLine($"Event Sensor before metal scan đã qua vòng chờ: {o.NewValue} |{_isStartCountTimer}");

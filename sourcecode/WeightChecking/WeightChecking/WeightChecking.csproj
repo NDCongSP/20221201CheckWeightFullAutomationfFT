@@ -168,9 +168,6 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="PLCPi">
-      <HintPath>..\..\DLL modbus\PLCPi.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
@@ -181,9 +178,6 @@
     </Reference>
     <Reference Include="Serilog.Sinks.PeriodicBatching, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.PeriodicBatching.2.3.0\lib\net45\Serilog.Sinks.PeriodicBatching.dll</HintPath>
-    </Reference>
-    <Reference Include="snap7.net">
-      <HintPath>..\..\DLL modbus\snap7.net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -474,6 +468,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="tags.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\framas mini %28black%29.png" />
@@ -497,6 +494,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\..\..\..\3.Others\0.Code\202600120_Snap7\Snap7Client\Snap7Client\Snap7ClientLib.csproj">
+      <Project>{0e33848b-7d47-5789-e05e-96fad4e98996}</Project>
+      <Name>Snap7ClientLib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CognexLibrary_NETFramework\CognexLibrary_NETFramework.csproj">
       <Project>{62c3b090-ef4f-46c8-ad2e-2310b148eb3d}</Project>
       <Name>CognexLibrary_NETFramework</Name>
