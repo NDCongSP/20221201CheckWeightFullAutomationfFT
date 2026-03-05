@@ -2460,44 +2460,38 @@ namespace WeightChecking
 
                 using (var connection = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
                 {
-                    var res = connection.Database.SqlQuery<ProductInfoModel>("sp_vProductItemInfoGet @ProductNumber = {0}, @SpecialCase = {1}"
-                        , _scanDataPrint.BarcodeString, specialCasePrint).FirstOrDefault();
+                    var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstCharPrint && ocFirstCharPrint == "PR");
 
-                    if (res != null)
+                    if (resultCheckOc != null)
                     {
-                        var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstCharPrint && ocFirstCharPrint == "PR");
+                        Debug.WriteLine($"ProductNumber: {_scanDataPrint.ProductNumber} là hàng sơn.");
 
-                        if (resultCheckOc != null)
+                        GlobalVariables.InvokeIfRequired(this, () =>
                         {
-                            Debug.WriteLine($"ProductNumber: {res.ProductNumber} là hàng sơn.");
+                            _labResultDistribution.Text = "Hàng đi sơn.";
+                            _labResultDistribution.ForeColor = Color.Green;
+                        });
 
-                            GlobalVariables.InvokeIfRequired(this, () =>
-                            {
-                                _labResultDistribution.Text = "Hàng đi sơn.";
-                                _labResultDistribution.ForeColor = Color.Green;
-                            });
+                        GlobalVariables.MyEvent.PrintPusher = 1;
 
-                            GlobalVariables.MyEvent.PrintPusher = 1;
+                        // xử lý insert RackStorage cho hàng sơn (nếu là hàng đi sơn thì vào kho 10)
+                        //GlobalVariables.AutoPostingStatus = AutoPostingHelper.AutoTransfer(_scanDataPrint.ProductNumber, barcodeString, 1185, 10, dbContext);
+                    }
+                    else// không phải hàng sơn thì transfer vào kho 2
+                    {
+                        GlobalVariables.MyEvent.PrintPusher = 0;
 
-                            // xử lý insert RackStorage cho hàng sơn (nếu là hàng đi sơn thì vào kho 10)
-                            //GlobalVariables.AutoPostingStatus = AutoPostingHelper.AutoTransfer(_scanDataPrint.ProductNumber, barcodeString, 1185, 10, dbContext);
-                        }
-                        else// không phải hàng sơn thì transfer vào kho 2
+                        // xử lý insert RackStorage cho hàng sơn (nếu là hàng đi sơn thì vào kho 2)
+
+                        //var accept = AutoPostingHelper.CheckIn(_scanDataPrint.ProductNumber, barcodeString, dbContext).FirstOrDefault();
+
+                        //GlobalVariables.AutoPostingStatus = AutoPostingHelper.AutoTransfer(_scanDataPrint.ProductNumber, barcodeString, 1223, 2, dbContext);
+
+                        GlobalVariables.InvokeIfRequired(this, () =>
                         {
-                            GlobalVariables.MyEvent.PrintPusher = 0;
-
-                            // xử lý insert RackStorage cho hàng sơn (nếu là hàng đi sơn thì vào kho 2)
-
-                            //var accept = AutoPostingHelper.CheckIn(_scanDataPrint.ProductNumber, barcodeString, dbContext).FirstOrDefault();
-
-                            //GlobalVariables.AutoPostingStatus = AutoPostingHelper.AutoTransfer(_scanDataPrint.ProductNumber, barcodeString, 1223, 2, dbContext);
-
-                            GlobalVariables.InvokeIfRequired(this, () =>
-                            {
-                                _labResultDistribution.Text = "Hàng FG.";
-                                _labResultDistribution.ForeColor = Color.Green;
-                            });
-                        }
+                            _labResultDistribution.Text = "Hàng FG.";
+                            _labResultDistribution.ForeColor = Color.Green;
+                        });
                     }
                 }
             }
