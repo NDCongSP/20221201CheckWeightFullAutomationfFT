@@ -168,6 +168,10 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PLCPi, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\DLL modbus\PLCPi.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
@@ -275,7 +279,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncAutoResetEvent.cs" />
     <Compile Include="Enums\EnumBoxType.cs" />
+    <Compile Include="Enums\EnumLocation.cs" />
     <Compile Include="Models\CheckLabelResult.cs" />
     <Compile Include="Models\Entities\IDCScanSystem\ApplicationDbContextSSFG.cs" />
     <Compile Include="Class\AnserU2Print.cs" />
@@ -301,6 +307,7 @@
     <Compile Include="Models\Entities\IDCScanSystem\tblLog.cs" />
     <Compile Include="Models\Entities\IDCScanSystem\tblMetalScanResult.cs" />
     <Compile Include="Models\FT050Model.cs" />
+    <Compile Include="Models\MesoInfoModel.cs" />
     <Compile Include="Views\frmDeleteBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -494,10 +501,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\..\..\3.Others\0.Code\202600120_Snap7\Snap7Client\Snap7Client\Snap7ClientLib.csproj">
-      <Project>{0e33848b-7d47-5789-e05e-96fad4e98996}</Project>
-      <Name>Snap7ClientLib</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CognexLibrary_NETFramework\CognexLibrary_NETFramework.csproj">
       <Project>{62c3b090-ef4f-46c8-ad2e-2310b148eb3d}</Project>
       <Name>CognexLibrary_NETFramework</Name>

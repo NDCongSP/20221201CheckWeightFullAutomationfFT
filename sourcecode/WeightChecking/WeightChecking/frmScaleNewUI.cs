@@ -4,8 +4,12 @@ using CoreScanner;
 using Dapper;
 using DevExpress.XtraEditors;
 using DevExpress.XtraSplashScreen;
+using DevExpress.XtraSpreadsheet.Model;
 using Newtonsoft.Json;
 using Serilog;
+using Snap7ClientLib.Core;
+using Snap7ClientLib.Historian;
+using Snap7ClientLib.Tags;
 using System;
 using System.Data;
 using System.Data.Entity;
@@ -38,6 +42,7 @@ namespace WeightChecking
         private Button btnMaximize;
         private Button btnMinimize;
         private Button btnUpdateVersion;
+         private Label titleText;
 
 
         private ScaleHelper _scaleHelper;
@@ -109,6 +114,29 @@ namespace WeightChecking
         private string _unitLabel = string.Empty;
         private string _color = string.Empty;
         private string _sizeName = string.Empty;
+
+        //Dung thu vien S7 moi
+        //khai báo kết nối PLC S7
+        PlcManager _manager = new PlcManager();
+        PlcRuntime _plcRuntime;
+        PlcClient _plc1Client;
+        PlcSubscriptionManager _sub;
+        SqliteHistorian _historian;
+
+        private PlcConnectionState _plcConnectionState;
+
+        //private CancellationTokenSource _inspectionMetalCts;
+        //private Task _triggerInspectionMetal;
+        private readonly AsyncAutoResetEvent _triggerInspectionMetal = new AsyncAutoResetEvent();
+        private CancellationTokenSource _inspectionMetalCts;
+
+        //private CancellationTokenSource _inspectionWeightCts;
+        //private Task _triggerInspectionWeight;
+        private readonly AsyncAutoResetEvent _triggerInspectionWeight = new AsyncAutoResetEvent();
+        private CancellationTokenSource _inspectionWeightCts;
+
+        private string _version = string.Empty;
+        private MesoInfoModel _mesoinfo = new MesoInfoModel();
 
         public frmScaleNewUI()
         {
@@ -238,7 +266,7 @@ namespace WeightChecking
             titleBar.Controls.Add(logo);
 
             // Text
-            Label titleText = new Label();
+             titleText = new Label();
             titleText.Text = $"fFT - SSFG Station";
             titleText.ForeColor = Color.White;
             titleText.Font = new Font("Segoe UI", 12, FontStyle.Bold);
@@ -301,23 +329,21 @@ namespace WeightChecking
 
         private void FrmScale_Load(object sender, EventArgs e)
         {
-            #region Test get LotNo Brooks
-            //using (var dbContext = GlobalVariables.GetDbConnection())
-            //{
-            //    var para = new DynamicParameters();
-            //    para.Add("ocNo", "DTOTEST002");
-            //    para.Add("boxNo", "1/1");
 
-            //    var reader = dbContext.ExecuteReader("sp_GetLotOfBrooksHC", param: para, commandType: CommandType.StoredProcedure);
-            //    DataTable tableResult = new DataTable();
-            //    tableResult.Load(reader);
+            using var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString);
+            _mesoinfo = dbContext.Database.SqlQuery<MesoInfoModel>($"sp_GetMesoInfo").AsEnumerable().FirstOrDefault();
 
-            //    if (tableResult.Rows.Count > 0)
-            //    {
-            //        _scanDataWeight.LotNo = tableResult.Rows[0]["LotNo"].ToString();
-            //    }
-            //}
-            #endregion
+            var location = _mesoinfo.MESOCOMP == "VNT1" ? "fVN" :
+                          _mesoinfo.MESOCOMP == "FKV" ? "fKV" :
+                          _mesoinfo.MESOCOMP == "FTT1" ? "fFT" :
+                          _mesoinfo.MESOCOMP == "05FI" ? "fIN" :
+                          _mesoinfo.MESOCOMP == "fGE" ? "fGE" : "Unknown";
+
+            if (Enum.TryParse<EnumLocation>(location, ignoreCase: true, out var loc))
+            {
+                titleText.Text = $"{loc} - SSFG Station";
+            }
+            _version = System.Windows.Forms.Application.ProductVersion.Split('+')[0];
 
             #region đăng ký sự kiện từ cac PLC
             //sự kiện lấy số cân hiện tại của đầu cân (real time)
