@@ -11,7 +11,7 @@
   "IsReadOnly": true,
   "Enabled": true,
   "CreatedDate": "2026-03-05T15:32:18.1174669+07:00",
-  "ModifiedDate": "2026-03-05T15:34:58.8524083+07:00",
+  "ModifiedDate": "2026-03-09T10:21:31.0972599+07:00",
   "ParameterContainer": {
   "DisplayName": null,
   "DisplayParameters": null,
@@ -31,7 +31,7 @@
   "IsReadOnly": false,
   "Enabled": true,
   "CreatedDate": "2026-03-05T15:33:05.2369575+07:00",
-  "ModifiedDate": "2026-03-05T15:34:58.8524083+07:00",
+  "ModifiedDate": "2026-03-09T10:21:31.0972599+07:00",
   "ParameterContainer": {
   "DisplayName": null,
   "DisplayParameters": null,
@@ -46,7 +46,7 @@
   "IsReadOnly": false,
   "Enabled": true,
   "CreatedDate": "2026-03-05T15:33:16.410102+07:00",
-  "ModifiedDate": "2026-03-05T15:40:24.1318046+07:00",
+  "ModifiedDate": "2026-03-09T10:21:31.0972599+07:00",
   "ParameterContainer": {
   "DisplayName": "S7Ethernet Device Parameter",
   "DisplayParameters": "S7Ethernet Device Parameter",
@@ -77,16 +77,17 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW0",
+    "LastAddress": "DB1.DBB0",
     "AddressType": "Datablock",
     "ByteOffset": "0",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
-    "DBNumber": "1"
+    "DBNumber": "1",
+    "bitOffset": "0"
   }
 },
-  "Address": "DB1.DBW0",
+  "Address": "DB1.DBB0",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -112,16 +113,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW1",
+    "LastAddress": "DB1.DBB2",
     "AddressType": "Datablock",
-    "ByteOffset": "1",
+    "ByteOffset": "2",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW1",
+  "Address": "DB1.DBB2",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -147,16 +148,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW2",
+    "LastAddress": "DB1.DBB4",
     "AddressType": "Datablock",
-    "ByteOffset": "2",
+    "ByteOffset": "4",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW2",
+  "Address": "DB1.DBB4",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -182,16 +183,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW3",
+    "LastAddress": "DB1.DBB6",
     "AddressType": "Datablock",
-    "ByteOffset": "3",
+    "ByteOffset": "6",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW3",
+  "Address": "DB1.DBB6",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -217,16 +218,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW4",
+    "LastAddress": "DB1.DBB8",
     "AddressType": "Datablock",
-    "ByteOffset": "4",
+    "ByteOffset": "8",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW4",
+  "Address": "DB1.DBB8",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -252,16 +253,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW5",
+    "LastAddress": "DB1.DBB10",
     "AddressType": "Datablock",
-    "ByteOffset": "5",
+    "ByteOffset": "10",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW5",
+  "Address": "DB1.DBB10",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -287,16 +288,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW6",
+    "LastAddress": "DB1.DBB12",
     "AddressType": "Datablock",
-    "ByteOffset": "6",
+    "ByteOffset": "12",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW6",
+  "Address": "DB1.DBB12",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -322,16 +323,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW7",
+    "LastAddress": "DB1.DBB14",
     "AddressType": "Datablock",
-    "ByteOffset": "7",
+    "ByteOffset": "14",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW7",
+  "Address": "DB1.DBB14",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -357,16 +358,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW8",
+    "LastAddress": "DB1.DBB16",
     "AddressType": "Datablock",
-    "ByteOffset": "8",
+    "ByteOffset": "16",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW8",
+  "Address": "DB1.DBB16",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -392,16 +393,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW9",
+    "LastAddress": "DB1.DBB18",
     "AddressType": "Datablock",
-    "ByteOffset": "9",
+    "ByteOffset": "18",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW9",
+  "Address": "DB1.DBB18",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -427,16 +428,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW10",
+    "LastAddress": "DB1.DBB20",
     "AddressType": "Datablock",
-    "ByteOffset": "10",
+    "ByteOffset": "20",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW10",
+  "Address": "DB1.DBB20",
   "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -462,16 +463,16 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW12",
+    "LastAddress": "DB1.DBB24",
     "AddressType": "Datablock",
-    "ByteOffset": "12",
+    "ByteOffset": "24",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW12",
+  "Address": "DB1.DBB24",
   "DataTypeName": "Real",
   "RefreshRate": 100,
   "ByteOrder": 0,
@@ -497,17 +498,52 @@
   "DisplayName": "Tag Parameters",
   "DisplayParameters": "Tag Parameters",
   "Parameters": {
-    "LastAddress": "DB1.DBW16",
+    "LastAddress": "DB1.DBB28",
     "AddressType": "Datablock",
-    "ByteOffset": "16",
+    "ByteOffset": "28",
     "BitOffset": "0",
     "IsValid": "True",
     "IsBitAddress": "False",
     "DBNumber": "1"
   }
 },
-  "Address": "DB1.DBW16",
+  "Address": "DB1.DBB28",
   "DataTypeName": "Real",
+  "RefreshRate": 100,
+  "ByteOrder": 0,
+  "AccessPermission": "ReadAndWrite",
+  "Offset": 0.0,
+  "Gain": 1.0,
+  "IsInternalTag": false,
+  "GUID": null,
+  "Retain": false,
+  "Childs": [],
+  "HaveTags": true,
+  "Tags": []
+},
+    {
+  "Name": "Delay_Time_To_Print",
+  "Description": null,
+  "ItemType": "Tag",
+  "IsReadOnly": false,
+  "Enabled": true,
+  "CreatedDate": "2026-03-09T09:11:28.555831+07:00",
+  "ModifiedDate": "2026-03-09T09:11:28.5572142+07:00",
+  "ParameterContainer": {
+  "DisplayName": "Tag Parameters",
+  "DisplayParameters": "Tag Parameters",
+  "Parameters": {
+    "LastAddress": "DB1.DBB22",
+    "AddressType": "Datablock",
+    "ByteOffset": "22",
+    "BitOffset": "0",
+    "IsValid": "True",
+    "IsBitAddress": "False",
+    "DBNumber": "1"
+  }
+},
+  "Address": "DB1.DBB22",
+  "DataTypeName": "Word",
   "RefreshRate": 100,
   "ByteOrder": 0,
   "AccessPermission": "ReadAndWrite",
