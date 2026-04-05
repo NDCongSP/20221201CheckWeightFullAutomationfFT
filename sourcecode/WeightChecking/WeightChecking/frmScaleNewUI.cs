@@ -665,17 +665,6 @@ namespace WeightChecking
             _sub = new PlcSubscriptionManager(_plcRuntime.Reader);
             _sub.OnValueChanged += Sub_OnValueChanged;
 
-            //Đăng ký tag value chcange cho từng tag
-            //_plcRuntime.Tags.FirstOrDefault(t => t.Name == "Scale_Stable_Trigger").ValueChanged += (tag) =>
-            //{
-            //    Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
-
-            //    if (tag.NewValue.ToString() == "1")
-            //    {
-            //        _triggerInspectionMetal.Set();
-            //    }
-            //};
-
             _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S_1").ValueChanged += (tag) =>
             {
                 Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
@@ -943,11 +932,11 @@ namespace WeightChecking
             //}
 
 
-            _scaleValueStable = 8777;
-            GlobalVariables.MyEvent.StableScale = 1;
-            BarcodeScanner2Handle(2, "C111085,6812012209-4251-2502,12,1,P,1/3,1900021,1/1|2,1253747.2025,0,0,12,BX2");
+            //_scaleValueStable = 8777;
+            //GlobalVariables.MyEvent.StableScale = 1;
+            //BarcodeScanner2Handle(2, "C111085,6812012209-4251-2502,12,1,P,1/3,1900021,1/1|2,1253747.2025,0,0,12,BX2");
 
-            BarcodeScanner3Handle(3, "PRT111085,6812012209-4251-2502,12,1,P,1/3,1900021,1/1|2,1253747.2025,0,0,12,BX2");
+            //BarcodeScanner3Handle(3, "PRT111085,6812012209-4251-2502,12,1,P,1/3,1900021,1/1|2,1253747.2025,0,0,12,BX2");
 
 
             //GlobalVariables.MyEvent.SensorBeforeWeightScan = 1;
