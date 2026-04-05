@@ -46,7 +46,7 @@
   "IsReadOnly": false,
   "Enabled": true,
   "CreatedDate": "2026-03-05T15:33:16.410102+07:00",
-  "ModifiedDate": "2026-04-05T09:45:43.0021465+07:00",
+  "ModifiedDate": "2026-04-05T14:07:39.1152679+07:00",
   "ParameterContainer": {
   "DisplayName": "S7Ethernet Device Parameter",
   "DisplayParameters": "S7Ethernet Device Parameter",
@@ -368,6 +368,41 @@
   }
 },
   "Address": "DB1.DBB9",
+  "DataTypeName": "Byte",
+  "RefreshRate": 100,
+  "ByteOrder": 0,
+  "AccessPermission": "ReadAndWrite",
+  "Offset": 0.0,
+  "Gain": 1.0,
+  "IsInternalTag": false,
+  "GUID": null,
+  "Retain": false,
+  "Childs": [],
+  "HaveTags": true,
+  "Tags": []
+},
+    {
+  "Name": "P4",
+  "Description": null,
+  "ItemType": "Tag",
+  "IsReadOnly": false,
+  "Enabled": true,
+  "CreatedDate": "2026-04-05T14:07:21.5820885+07:00",
+  "ModifiedDate": "2026-04-05T14:07:21.5820885+07:00",
+  "ParameterContainer": {
+  "DisplayName": "Tag Parameters",
+  "DisplayParameters": "Tag Parameters",
+  "Parameters": {
+    "LastAddress": "DB1.DBB6",
+    "AddressType": "Datablock",
+    "ByteOffset": "6",
+    "BitOffset": "0",
+    "IsValid": "True",
+    "IsBitAddress": "False",
+    "DBNumber": "1"
+  }
+},
+  "Address": "DB1.DBB6",
   "DataTypeName": "Byte",
   "RefreshRate": 100,
   "ByteOrder": 0,
