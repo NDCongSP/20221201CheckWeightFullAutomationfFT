@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-    [Table("tblScanData")]
+    [Table("tblScanData_test")]
     public class tblScanData
     {
         [Browsable(false)]

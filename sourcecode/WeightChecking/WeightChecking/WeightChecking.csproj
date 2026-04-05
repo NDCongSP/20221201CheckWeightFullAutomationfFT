@@ -187,6 +187,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL modbus\snap7.net.dll</HintPath>
     </Reference>
+    <Reference Include="Snap7Scada.Lib">
+      <HintPath>..\..\..\..\..\..\..\..\3.Others\0.Code\202600120_Snap7\Snap7ScadaSolution\Release_Lib\Snap7Scada.Lib.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -283,6 +286,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncAutoResetEvent.cs" />
     <Compile Include="Enums\EnumBoxType.cs" />
     <Compile Include="Models\CheckLabelResult.cs" />
     <Compile Include="Models\Entities\IDCScanSystem\ApplicationDbContextSSFG.cs" />
@@ -476,6 +480,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="tags.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\framas mini %28black%29.png" />

@@ -4,8 +4,12 @@ using CoreScanner;
 using Dapper;
 using DevExpress.XtraEditors;
 using DevExpress.XtraSplashScreen;
+using DevExpress.XtraSpreadsheet.Model;
 using Newtonsoft.Json;
 using Serilog;
+using Snap7ClientLib.Core;
+using Snap7ClientLib.Historian;
+using Snap7ClientLib.Tags;
 using System;
 using System.Data;
 using System.Data.Entity;
@@ -109,6 +113,29 @@ namespace WeightChecking
         private string _unitLabel = string.Empty;
         private string _color = string.Empty;
         private string _sizeName = string.Empty;
+
+        //Dung thu vien S7 moi
+        //khai báo kết nối PLC S7
+        PlcManager _manager = new PlcManager();
+        PlcRuntime _plcRuntime;
+        PlcClient _plc1Client;
+        PlcSubscriptionManager _sub;
+        SqliteHistorian _historian;
+
+        private PlcConnectionState _plcConnectionState;
+
+        //private CancellationTokenSource _inspectionMetalCts;
+        //private Task _triggerInspectionMetal;
+        private readonly AsyncAutoResetEvent _triggerInspectionMetal = new AsyncAutoResetEvent();
+        private CancellationTokenSource _inspectionMetalCts;
+
+        //private CancellationTokenSource _inspectionWeightCts;
+        //private Task _triggerInspectionWeight;
+        private readonly AsyncAutoResetEvent _triggerInspectionWeight = new AsyncAutoResetEvent();
+        private CancellationTokenSource _inspectionWeightCts;
+
+        private string _version = string.Empty;
+        private MesoInfoModel _mesoinfo = new MesoInfoModel();
 
         public frmScaleNewUI()
         {
@@ -301,6 +328,21 @@ namespace WeightChecking
 
         private void FrmScale_Load(object sender, EventArgs e)
         {
+            using var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString);
+            _mesoinfo = dbContext.Database.SqlQuery<MesoInfoModel>($"sp_GetMesoInfo").AsEnumerable().FirstOrDefault();
+
+            var location = _mesoinfo.MESOCOMP == "VNT1" ? "fVN" :
+                          _mesoinfo.MESOCOMP == "FKV" ? "fKV" :
+                          _mesoinfo.MESOCOMP == "FTT1" ? "fFT" :
+                          _mesoinfo.MESOCOMP == "05FI" ? "fIN" :
+                          _mesoinfo.MESOCOMP == "fGE" ? "fGE" : "Unknown";
+
+            if (Enum.TryParse<EnumLocation>(location, ignoreCase: true, out var loc))
+            {
+                titleText.Text = $"{loc} - SSFG Station";
+            }
+            _version = System.Windows.Forms.Application.ProductVersion.Split('+')[0];
+
             #region Test get LotNo Brooks
             //using (var dbContext = GlobalVariables.GetDbConnection())
             //{
@@ -675,7 +717,65 @@ namespace WeightChecking
                 }
                 #endregion
 
+                #region Connect to PL Seimens
+                _manager.LoadFromConfig("tags.json");
+                //_manager.LoadFromConfig("tags1.json");
+
+                //tùy vào hệ thống kết nối bao nhiêu PLC để gọi kết nối đến PLC tương ứng
+                _plcRuntime = _manager.GetPlc("PLC_1");
+                _plc1Client = _plcRuntime.Client; // Lưu vào biến toàn cục
+
+                // ĐĂNG KÝ SỰ KIỆN TRƯỚC KHI KẾT NỐI
+                _plc1Client.StateChanged += Client_StateChanged;
+
+                await _plcRuntime.Reader.ReadGroupAsync(_plcRuntime.Tags);
+
+                // 1) Tạo và gán handler
+                _sub = new PlcSubscriptionManager(_plcRuntime.Reader);
+                _sub.OnValueChanged += Sub_OnValueChanged;
+
+                //Đăng ký tag value chcange cho từng tag
+                //_plcRuntime.Tags.FirstOrDefault(t => t.Name == "Scale_Stable_Trigger").ValueChanged += (tag) =>
+                //{
+                //    Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+
+                //    if (tag.NewValue.ToString() == "1")
+                //    {
+                //        _triggerInspectionMetal.Set();
+                //    }
+                //};
+
+                _plcRuntime.Tags.FirstOrDefault(t => t.Name == "Sccale_Value").ValueChanged += (tag) =>
+                {
+                    Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+
+                    //if (tag.NewValue.ToString() == "1")
+                    //{
+                    //    _triggerInspectionWeight.Set();
+                    //}
+
+                    _scaleValue = (double)tag.NewValue;
+
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        labScaleValue.Text = _scaleValue.ToString();
+                    });
+                };
+
+                // 2) Kết nối PLC, chạy Polling
+                await _plc1Client.ConnectAsync();
+                _plc1Client.StartWatchdog(2000);
+
+                // 3) (Tuỳ chọn) cập nhật UI lần đầu
+                foreach (var tag in _plcRuntime.Tags)
+                    tag.RaiseValueChanged();//Tự "bắn" sự kiện để UI cập nhật ngay giá trị ban đầu
+
+                // 4) BẮT ĐẦU POLLING (rất quan trọng)
+                _sub.Subscribe(_plcRuntime.Tags, intervalMs: 200);
+                #endregion
+
                 #region Ket noi conveyor
+
                 GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.ConfigJson.IpConveyor);
                 //GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi("10.40.0.112");
                 Console.WriteLine($"Conveyor Status: {GlobalVariables.ConveyorStatus}");
@@ -829,6 +929,16 @@ namespace WeightChecking
             #endregion
 
             ResetControl();
+        }
+
+        private void Sub_OnValueChanged(PlcTag obj)
+        {
+            Debug.WriteLine($"{obj.Name} = {obj.NewValue}");
+        }
+
+        private void Client_StateChanged(PlcConnectionState obj)
+        {
+            _plcConnectionState = obj;
         }
 
         private void DataEvent_EventHandleStatusChange(object sender, StatusChangeEventArgs e)

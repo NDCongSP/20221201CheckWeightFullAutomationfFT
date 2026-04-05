@@ -1,0 +1,55 @@
+[
+  {
+    "Name": "PLC_1",
+    "Host": "phucthinhautomation.ddns.net",
+    "Rack": 0,
+    "Slot": 1,
+    "Tags": [
+      {
+        "Name": "S_1",
+        "Address": "DB1.DBB3",
+        "DataType": "Word"
+      },
+      {
+        "Name": "S_M",
+        "Address": "DB1.DBB7",
+        "DataType": "Word"
+      },
+      {
+        "Name": "S_2",
+        "Address": "DB1.DBB5",
+        "DataType": "Word"
+      },
+      {
+        "Name": "Metal_Result",
+        "Address": "DB1.DBB4",
+        "DataType": "Word"
+      },
+      {
+        "Name": "P1",
+        "Address": "DB1.DBB0",
+        "DataType": "Word"
+      },
+      {
+        "Name": "P2",
+        "Address": "DB1.DBB1",
+        "DataType": "Word"
+      },
+      {
+        "Name": "P3",
+        "Address": "DB1.DBB2",
+        "DataType": "Word"
+      },
+      {
+        "Name": "S_Sorting_FG",
+        "Address": "DB1.DBB8",
+        "DataType": "Word"
+      },
+      {
+        "Name": "S_Sorting_Print",
+        "Address": "DB1.DBB9",
+        "DataType": "Word"
+      }
+    ]
+  }
+]

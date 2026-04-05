@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace WeightChecking
 {
-    [Table("tblScanDataReject")]
+    [Table("tblScanDataReject_test")]
     public class tblScanDataReject
     {
         public string BarcodeString { get; set; }
