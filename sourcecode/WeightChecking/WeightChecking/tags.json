@@ -8,47 +8,53 @@
       {
         "Name": "S_1",
         "Address": "DB1.DBB3",
-        "DataType": "Word"
+        "DataType": "Byte"
       },
       {
         "Name": "S_M",
         "Address": "DB1.DBB7",
-        "DataType": "Word"
+        "DataType": "Byte"
       },
       {
         "Name": "S_2",
         "Address": "DB1.DBB5",
-        "DataType": "Word"
+        "DataType": "Byte"
       },
       {
         "Name": "Metal_Result",
         "Address": "DB1.DBB4",
-        "DataType": "Word"
+        "DataType": "Byte"
       },
       {
         "Name": "P1",
         "Address": "DB1.DBB0",
-        "DataType": "Word"
+        "DataType": "Byte"
       },
       {
         "Name": "P2",
         "Address": "DB1.DBB1",
-        "DataType": "Word"
+        "DataType": "Byte"
       },
       {
         "Name": "P3",
         "Address": "DB1.DBB2",
-        "DataType": "Word"
+        "DataType": "Byte"
       },
+      {
+        "Name": "P4",
+        "Address": "DB1.DBB6",
+        "DataType": "Byte"
+      },
+
       {
         "Name": "S_Sorting_FG",
         "Address": "DB1.DBB8",
-        "DataType": "Word"
+        "DataType": "Byte"
       },
       {
         "Name": "S_Sorting_Print",
         "Address": "DB1.DBB9",
-        "DataType": "Word"
+        "DataType": "Byte"
       }
     ]
   }
