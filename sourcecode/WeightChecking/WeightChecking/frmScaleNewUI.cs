@@ -924,6 +924,8 @@ namespace WeightChecking
             _resetUiCts = new CancellationTokenSource();
             _resetUiTask = Task.Run(() => TaskCheckResetUIAsync(_resetUiCts.Token));
 
+            ResetControl();
+
             #region Fake data to debug
             //layoutControlGroup3.Visibility = DevExpress.XtraLayout.Utils.LayoutVisibility.Never;
 
@@ -941,17 +943,15 @@ namespace WeightChecking
             //}
 
 
-            //_scaleValueStable = 8777;
-            //GlobalVariables.MyEvent.StableScale = 1;
-            //BarcodeScanner2Handle(2, "C111085,6812012209-4251-2502,12,1,P,1/3,1900021,1/1|2,1253747.2025,0,0,12,BX2");
+            _scaleValueStable = 8777;
+            GlobalVariables.MyEvent.StableScale = 1;
+            BarcodeScanner2Handle(2, "C111085,6812012209-4251-2502,12,1,P,1/3,1900021,1/1|2,1253747.2025,0,0,12,BX2");
+
+            BarcodeScanner3Handle(3, "PRT111085,6812012209-4251-2502,12,1,P,1/3,1900021,1/1|2,1253747.2025,0,0,12,BX2");
 
 
             //GlobalVariables.MyEvent.SensorBeforeWeightScan = 1;
-
-
             #endregion
-
-            ResetControl();
         }
 
         private void Sub_OnValueChanged(PlcTag obj)
@@ -3465,79 +3465,56 @@ namespace WeightChecking
             }
         }
 
-        public async Task TaskReadProfinetAsync(CancellationToken token)
+        private async Task TaskCheckResetUIAsync(CancellationToken token)
         {
-            bool weightPushFlag = false;
+            var sw = Stopwatch.StartNew();
+            var lastResetAt = sw.Elapsed;
+            var intervalSeconds = GlobalVariables.ConfigJson.ResetUiInterval;
+
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    #region Đọc các giá trị từ PLC conveyor s7-1200, profinet
-                    if (GlobalVariables.ConveyorStatus == "GOOD")
+                    if (_resetUI)
                     {
-                        var resultData = GlobalVariables.MyDriver.S7Ethernet.Client.DocDB(1, 0, 10);
+                        var now = sw.Elapsed;
+                        var canReset = (now - lastResetAt).TotalSeconds >= intervalSeconds;
 
-                        GlobalVariables.ConveyorStatus = resultData.TrangThai;
-
-                        if (resultData.TrangThai == "GOOD")
+                        if (canReset)
                         {
-                            GlobalVariables.ConveyorStatus = resultData.TrangThai;
+                            if (this.IsHandleCreated && !this.IsDisposed)
+                            {
+                                this.BeginInvoke(new Action(() =>
+                                {
+                                    try
+                                    {
+                                        ResetControl();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Error(ex, "ResetControl error.");
+                                    }
+                                }));
+                            }
 
-                            _metalScan = resultData.MangGiaTri[0];
-                            _weightPusher = resultData.MangGiaTri[1];
-                            _printPusher = resultData.MangGiaTri[2];
-                            _metalPusher = resultData.MangGiaTri[6];
-
-                            //if (_weightPusher == 0 && weightPushFlag == false)
-                            //{
-                            //    weightPushFlag = true;
-                            //    GlobalVariables.MyEvent.WeightPusher = _weightPusher;
-                            //}
-                            //else if (_weightPusher == 0 && weightPushFlag == false)
-                            //{
-                            //    weightPushFlag = false;
-                            //}
-
-                            //vùng nhớ chứa trạng thái của sensor là DB1[3], truoc vị trí metal scan, để tính thời gian quét QR code. 1-On;0-off
-                            GlobalVariables.MyEvent.SensorBeforeMetalScan = resultData.MangGiaTri[3];
-                            //sensor đặt ngay sau máy quét kim loại, báo là thùng hàng đã qua metal scan. 1-On;0-off
-                            GlobalVariables.MyEvent.SensorAfterMetalScan = resultData.MangGiaTri[5];
-                            //vùng nhớ báo kết quả check metal. 0-pass; 1-Fail
-                            GlobalVariables.MyEvent.MetalCheckResult = resultData.MangGiaTri[4];
-                            //vùng nhớ báo tin hiệu sensor ngay vị trí bàn nâng chuyển 3 hướng sau vị trí metal scanner
-                            GlobalVariables.MyEvent.SensorMiddleMetal = resultData.MangGiaTri[7];
-
-                            //Vùng nhớ báo tín hiệu sensor 2 vị trí sau scannerPrint
-                            GlobalVariables.MyEvent.SensorAfterPrintScannerFG = resultData.MangGiaTri[8];
-                            GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting = resultData.MangGiaTri[9];
+                            lastResetAt = now;
+                            _resetUI = false;   // tiêu thụ yêu cầu reset
                         }
-                    }
-                    else
-                    {
-                        GlobalVariables.MyDriver.S7Ethernet.Client.NgatKetNoi();
 
-                        GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.KetNoi(GlobalVariables.ConfigJson.IpConveyor);
+                        // else: KHÔNG xoá _resetUI
                     }
-                    #endregion
 
-                    await Task.Delay(100, token); // nhịp kiểm tra, đủ nhẹ nhàng
+                    await Task.Delay(200, token);
                 }
-                catch (OperationCanceledException)
-                {
-                    // token.Cancel() => thoát vòng lặp
-                    break;
-                }
+                catch (OperationCanceledException) { break; }
                 catch (Exception ex)
                 {
-                    // Không để task chết âm thầm
-                    Log.Error(ex, "TaskReadProfinetAsync loop error.");
-                    await Task.Delay(500, token); // tạm nghỉ rồi thử lại
+                    Log.Error(ex, "TaskCheckResetUIAsync error");
+                    await Task.Delay(500, token);
                 }
-
             }
         }
-
-        private async Task TaskCheckResetUIAsync(CancellationToken token)
+        private async Task TaskCheckResetUIAsync1(CancellationToken token)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var lastResetAt = TimeSpan.Zero;
@@ -3730,8 +3707,8 @@ namespace WeightChecking
                 labColor.Text = _color;
                 labSize.Text = _sizeName;
                 labAveWeight.Text = _scanDataWeight.AveWeight1Prs.ToString();
-                labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
-                labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
+                //labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
+                //labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
                 labBoxWeight.Text = _scanDataWeight.BoxWeight.ToString();
                 labAccessoriesWeight.Text = _scanDataWeight.PackageWeight.ToString();
                 labGrossWeight.Text = _scanDataWeight.StdGrossWeight.ToString();
@@ -3752,11 +3729,11 @@ namespace WeightChecking
                 #region Scaled
 
                 labNetRealWeight.Text = $"{_scanDataWeight.NetWeight}";
-                labDeviation.Text = $"{_scanDataWeight.Deviation}";
+                labDeviation.Text = $"{_scanDataWeight.Deviation} (g)";
                 labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
-                labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
+                labDeviationPairs.Text = $"{_scanDataWeight.DeviationPairs.ToString()} ({_unitLabel})";
 
-                labDeviation.ForeColor = errorFlag == false ? Color.Green : Color.Red;
+                //labDeviation.ForeColor = errorFlag == false ? Color.Green : Color.Red;
                 _labResultMessage.ForeColor = errorFlag == false ? Color.Green : Color.Red;
                 labDeviationPairs.ForeColor = errorFlag == false ? Color.Green : Color.Red;
                 #endregion
@@ -3785,8 +3762,8 @@ namespace WeightChecking
                 labColor.Text = string.Empty;
                 labSize.Text = string.Empty;
                 labAveWeight.Text = "0";
-                labLowerTolerance.Text = "0";
-                labUpperTolerance.Text = "0";
+                //labLowerTolerance.Text = "0";
+                //labUpperTolerance.Text = "0";
                 labBoxWeight.Text = "0";
                 labAccessoriesWeight.Text = "0";
                 labGrossWeight.Text = "0";
@@ -3809,16 +3786,15 @@ namespace WeightChecking
                 labNetWeight.Text = "0";
 
                 labNetRealWeight.Text = "0";
-                labDeviation.Text = "0";
+                labDeviation.Text = "0 (g)";
 
                 labCalculatedPairs.Text = "0";
-                labDeviationPairs.Text = "0";
+                labDeviationPairs.Text = "0 (-)";
 
                 _labResultMessage.Text = string.Empty;
                 _labResult.Text = string.Empty;
                 _labResult.BackColor = Color.Gray;
 
-                labDeviation.ForeColor = default;
                 labDeviationPairs.ForeColor = default;
                 #endregion
             });
