@@ -66,7 +66,7 @@
       <HintPath>..\packages\Autoupdater.NET.Official.1.7.6\lib\net45\AutoUpdater.NET.dll</HintPath>
     </Reference>
     <Reference Include="BCrypt.Net-Next, Version=4.1.0.0, Culture=neutral, PublicKeyToken=1e11be04b6288443, processorArchitecture=MSIL">
-      <HintPath>..\packages\BCrypt.Net-Next.4.1.0\lib\net472\BCrypt.Net-Next.dll</HintPath>
+      <HintPath>..\packages\BCrypt.Net-Next.4.1.0\lib\net48\BCrypt.Net-Next.dll</HintPath>
     </Reference>
     <Reference Include="Dapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.2.0.123\lib\net461\Dapper.dll</HintPath>

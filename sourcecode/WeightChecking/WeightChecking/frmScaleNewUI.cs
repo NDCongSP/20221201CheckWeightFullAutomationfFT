@@ -998,7 +998,7 @@ namespace WeightChecking
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
                     _labResultMessage.Text = "The sensor clears the busy flag, it is not active.";
-                    _labResult.Text = "NG";
+                    _labResult.Text = "FAILED";
                     _labResult.BackColor = Color.Red;
                     _labResult.ForeColor = Color.White;
                 });
@@ -2187,7 +2187,7 @@ namespace WeightChecking
                                         //hien thi mau label
                                         GlobalVariables.InvokeIfRequired(this, () =>
                                         {
-                                            _labResult.Text = "OK";
+                                            _labResult.Text = "PASSED";
                                             _labResult.BackColor = Color.Green;
                                             _labResult.ForeColor = Color.White;
                                             _labResultMessage.Text = "Khối lượng OK. In tem.";
@@ -2303,7 +2303,7 @@ namespace WeightChecking
                                         LogDataScan(dbContextSSFG);
                                         #endregion
 
-                                        throw new Exception("Khối lượng lỗi.");
+                                        throw new Exception($"Khối lượng lỗi. {_scanDataWeight.OcNo} - {_scanDataWeight.BoxNo} - {_scanDataWeight.Unit} - lệch: {_scanDataWeight.DeviationPairs} {_unitLabel}.");
                                     }
                                     else if (statusLogData == 1)
                                     {
@@ -2376,7 +2376,7 @@ namespace WeightChecking
 
                                     GlobalVariables.InvokeIfRequired(this, () =>
                                     {
-                                        _labResult.Text = "OK";
+                                        _labResult.Text = "PASSED";
                                         _labResult.BackColor = Color.Green;
                                         _labResult.ForeColor = Color.White;
                                         _labResultMessage.Text = "Hàng heel counter OK. Không kiểm tra khối lượng.";
@@ -2435,7 +2435,7 @@ namespace WeightChecking
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
                     _labResultMessage.Text = ex.Message;
-                    _labResult.Text = "NG";
+                    _labResult.Text = "FAILED";
                     _labResult.BackColor = Color.Red;
                     _labResult.ForeColor = Color.White;
                 });
@@ -2853,7 +2853,7 @@ namespace WeightChecking
 
                     GlobalVariables.InvokeIfRequired(this, () =>
                     {
-                        _labResult.Text = "NG";
+                        _labResult.Text = "FAILED";
                         _labResult.BackColor = Color.Red;
                         _labResult.ForeColor = Color.White;
                         _labResultMessage.Text = "Fail Printing. IN KHÔNG THÀNH CÔNG.";
@@ -2885,7 +2885,7 @@ namespace WeightChecking
                     //hien thi mau label
                     GlobalVariables.InvokeIfRequired(this, () =>
                     {
-                        _labResult.Text = "NG";
+                        _labResult.Text = "FAILED";
                         _labResult.BackColor = Color.Red;
                         _labResult.ForeColor = Color.White;
                         _labResultMessage.Text = "Fail Printing. IN KHÔNG THÀNH CÔNG.";
@@ -2955,7 +2955,7 @@ namespace WeightChecking
 
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
-                    _labResult.Text = "NG";
+                    _labResult.Text = "FAILED";
                     _labResult.BackColor = Color.Red;
                     _labResult.ForeColor = Color.White;
                     _labLastResultMessage.Text = "EXCEPTION of printing.";
@@ -3099,7 +3099,7 @@ namespace WeightChecking
                 //hien thi mau label
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
-                    _labResult.Text = "NG";
+                    _labResult.Text = "FAILED";
                     _labResult.BackColor = Color.Red;
                     _labResult.ForeColor = Color.White;
                     _labResultMessage.Text = "System fail.Fail Printing. Lỗi khi đang truyền dữ liệu xuống máy in.";
@@ -3336,7 +3336,7 @@ namespace WeightChecking
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
                     labQrScale.Text = string.Empty;
-                    _labResult.Text = "NG";
+                    _labResult.Text = "FAILED";
                     _labResult.BackColor = Color.Red;
                     _labResult.ForeColor = Color.White;
                     _labResultMessage.Text = "Không đọc được QR code, Kiểm tra lại tem.";
@@ -3761,7 +3761,7 @@ namespace WeightChecking
 
                 _labQtyStandard.Text = $"Quantity (-)";
                 _labUnitCalculatQty.Text = $"Calculated Qty (-)";
-                _labUnitDeviation.Text = $"Quantity (-)";
+                _labUnitDeviation.Text = $"Deviation (-)";
 
                 _labUnitStandard.Text = string.Empty;
                 _labFGW.Text = $"Weight (g)/-";
