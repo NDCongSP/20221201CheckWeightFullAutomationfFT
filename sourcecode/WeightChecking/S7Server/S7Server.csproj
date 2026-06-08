@@ -33,7 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PLCPi">
+    <Reference Include="PLCPi, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL modbus\PLCPi.dll</HintPath>
     </Reference>
     <Reference Include="snap7.net, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
