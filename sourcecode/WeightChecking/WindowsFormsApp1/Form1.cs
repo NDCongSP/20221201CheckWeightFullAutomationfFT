@@ -37,10 +37,10 @@ namespace WindowsFormsApp1
         {
             InitializeComponent();
 
-            //driverTelnet.HostName = "192.168.80.4";
-            //driverTelnet.Port = 23;
-            //driverTelnet.DataEvent.EventHandleValueChange += DataEvent_EventHandleValueChange;
-            //driverTelnet.ConnectDevices();
+            driverTelnet.HostName = "192.168.4.30";
+            driverTelnet.Port = 23;
+            driverTelnet.DataEvent.EventHandleValueChange += DataEvent_EventHandleValueChange;
+            driverTelnet.ConnectDevices();
 
             this.FormClosing += Form1_FormClosing;
             Load += Form1_Load;
