@@ -263,23 +263,29 @@ const delay = 350; // gán delay bằng 350
 ```yaml
 # Cập nhật phần này MỖI KHI kết thúc session làm việc
 active_context:
-  current_task: "Thay thế Serial Port (COM) bằng TCP cho máy in Anser SmartU2"
+  current_task: "DONE — TCP driver & test form cho AnserU2_cSharp đã hoàn thành"
 
   related_files:
     - "WeightChecking/WeightChecking/frmScaleNewUI.cs"              # Form chính — đã cập nhật PrinterOpen/Close
-    - "WeightChecking/WeightChecking/Class/AnserU2Print.cs"         # TCP driver mới (AnserU2TcpDriver)
-    - "WeightChecking/WeightChecking/Models/Entities/IDCScanSystem/tblConfig.cs"  # Thêm IpPrinter, PortPrinter
+    - "WeightChecking/WeightChecking/Class/AnserU2Print.cs"         # TCP driver (AnserU2TcpDriver) — production
+    - "WeightChecking/WeightChecking/Models/Entities/IDCScanSystem/tblConfig.cs"  # IpPrinter, PortPrinter
+    - "AnserU2_DK/AnserU2_cSharp/AnserU2TcpDriver.cs"              # TCP driver — bản standalone cho test
+    - "AnserU2_DK/AnserU2_cSharp/frmTcpTest.cs"                    # Form test TCP mới
+    - "AnserU2_DK/AnserU2_cSharp/frmTcpTest.Designer.cs"           # Designer form test TCP
+    - "AnserU2_DK/AnserU2_cSharp/AnserU2_cSharp.csproj"            # Đã thêm 3 Compile entries mới
 
   blocked_by: ""
 
   next_step: >
-    - Cần cập nhật dữ liệu JSON trong tblConfig DB: thêm "IpPrinter":"192.168.4.70" và "PortPrinter":4001
-    - Test với IsTest=false, máy in kết nối TCP 192.168.4.70:4001
+    - Build AnserU2_cSharp project, kiểm tra compile OK
+    - Test kết nối thực: chạy frmTcpTest, nhấn Connect → 192.168.4.70:4001
+    - Cập nhật dữ liệu JSON trong tblConfig DB: thêm "IpPrinter":"192.168.4.70","PortPrinter":4001
+    - Test WeightChecking production với IsTest=false và TCP printer
 
   last_session: "2026-06-12"
 
   open_questions:
-    - "Port TCP của máy in là 4001 — xác nhận lại với Hercules screenshot?"
+    - "Port TCP của máy in là 4001 — đã dùng từ Hercules screenshot, cần xác nhận với hardware"
     - "Có cần cấu hình IP tĩnh trên máy in không, hay đã có sẵn?"
 ```
 
@@ -501,6 +507,24 @@ Task hiện tại: [mô tả]. File cần làm việc: [list file].
 - `_printerDriver?.Write(bytes)` dùng null-conditional → không crash nếu chưa kết nối
 - `DataReceived` event truyền `byte[]` thô → loại bỏ round-trip ASCII encode/decode cũ
 - **Cần update tblConfig DB**: thêm `"IpPrinter":"192.168.4.70","PortPrinter":4001` vào JSON config
+
+### [2026-06-12] — Session: Form test TCP cho AnserU2_cSharp
+
+```
+[FEAT]   AnserU2_DK/AnserU2_cSharp/AnserU2TcpDriver.cs   — Copy driver TCP (namespace AnserU2_cSharp): TcpClient, auto-reconnect, STX/ETX parser, SemaphoreSlim write-lock
+[FEAT]   AnserU2_DK/AnserU2_cSharp/frmTcpTest.cs         — Form test TCP mới: Connect/Disconnect, Start/Stop Print, Send 4 strings, Get/Set Speed, Get/Set Delay, log panel
+[FEAT]   AnserU2_DK/AnserU2_cSharp/frmTcpTest.Designer.cs — Designer cho frmTcpTest (830×530, ConsoleGreen log area)
+[CHORE]  AnserU2_DK/AnserU2_cSharp/AnserU2_cSharp.csproj  — Thêm Compile entries cho AnserU2TcpDriver.cs, frmTcpTest.cs, frmTcpTest.Designer.cs
+[DOCS]   CLAUDE.md                                        — Cập nhật active_context + CHANGELOG
+```
+
+**Chi tiết:**
+- `frmTcpTest` là standalone test form: IP mặc định `192.168.4.70`, Port `4001`
+- Connect → tạo `AnserU2TcpDriver`, event `DataReceived` + `ConnectionStatusChanged`
+- Log panel (RichTextBox đen/xanh lá, Consolas 8pt) hiển thị mỗi frame nhận dạng hex: `RX [N bytes]: XX XX ...`
+- Nút Disconnect: dispose driver, UI reset về disabled state
+- Tất cả lệnh protocol giữ nguyên so với Form1.cs gốc (COM), chỉ thay `_serialPort.Write` → `_driver?.Write`
+- Buttons Start/Stop Print, Send String, Speed, Delay disabled cho đến khi nhấn Connect
 
 <!-- Thêm session mới lên ĐẦU, trên dòng này -->
 
