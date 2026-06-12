@@ -17,7 +17,7 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.IO.Ports;
+using System.Net.Sockets;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -74,7 +74,7 @@ namespace WeightChecking
         private string _barcodeString1 = null, _barcodeString2 = null, _barcodeString3 = null;//checkMetal--checkWeight--printing
         private bool[] _scannerIsBussy = { false, false, false };
 
-        private SerialPort _serialPort;
+        private AnserU2TcpDriver _printerDriver;
 
         private bool _firstLoad = true;
 
@@ -878,10 +878,10 @@ namespace WeightChecking
             //khởi tạo scanner
             InitializeScaner();
 
-            //Khởi tạo máy in AnserU2 Smart one
+            //Khởi tạo máy in AnserU2 Smart one (TCP)
             if (!GlobalVariables.ConfigJson.IsTest)
             {
-                SerialPortOpen();
+                PrinterOpen();
                 Thread.Sleep(10000);
                 SendDynamicString(" ", " ", " ");
             }
@@ -1011,7 +1011,7 @@ namespace WeightChecking
             try
             {
                 //huy đối tượng máy in
-                SerialPortClose();
+                PrinterClose();
 
                 if (_ckQRTask != null)
                 {
@@ -2766,21 +2766,25 @@ namespace WeightChecking
         }
         #endregion
 
-        #region Printing AnserU2 smart one
-        public void SerialPortOpen()
+        #region Printing AnserU2 smart one (TCP)
+        private void PrinterOpen()
         {
-            DateTime dt = DateTime.Now;
-            String dtn = dt.ToShortTimeString();
-
-            _serialPort = new System.IO.Ports.SerialPort(GlobalVariables.ConfigJson.ComPortPrinter, 57600, Parity.None, 8, StopBits.One);
             try
             {
-                _serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
-                _serialPort.Open();
-                Console.WriteLine("[" + dtn + "] " + "Connected\n");
+                _printerDriver = new AnserU2TcpDriver
+                {
+                    IpAddress = GlobalVariables.ConfigJson.IpPrinter,
+                    Port = GlobalVariables.ConfigJson.PortPrinter
+                };
+                _printerDriver.DataReceived += PrinterDataReceived;
+                _printerDriver.ConnectionStatusChanged += status =>
+                {
+                    GlobalVariables.PrintConnectionStatus = status == "Connected" ? "Good" : status;
+                    Debug.WriteLine($"[AnserU2 TCP] {status}");
+                };
+                _printerDriver.Connect();
 
-                GlobalVariables.PrintConnectionStatus = "Good";
-
+                GlobalVariables.PrintConnectionStatus = "Connecting...";
                 StartPrint();
             }
             catch (Exception ex)
@@ -2790,32 +2794,19 @@ namespace WeightChecking
             }
         }
 
-        private void SerialPortClose()
+        private void PrinterClose()
         {
-            DateTime dt = DateTime.Now;
-            String dtn = dt.ToShortTimeString();
-
-            if (_serialPort.IsOpen)
-            {
-                _serialPort.Close();
-                _serialPort.Dispose();
-            }
+            if (_printerDriver == null) return;
+            _printerDriver.DataReceived -= PrinterDataReceived;
+            _printerDriver.Dispose();
+            _printerDriver = null;
         }
 
-        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void PrinterDataReceived(byte[] rcvArr)
         {
             try
             {
-                System.Threading.Thread.Sleep(100);
-                string dataRCV = _serialPort.ReadExisting(); // Read
-                if (string.IsNullOrEmpty(dataRCV))
-                {
-                    return;
-                }
-
-                var rcvArr = Encoding.ASCII.GetBytes(dataRCV);
-
-                Console.WriteLine(dataRCV);
+                if (rcvArr == null || rcvArr.Length < 5) return;
 
                 //xet phan tu thu 4 trong mang rcvArr[4] de check status
                 //0x4F-79--> OK
@@ -2978,34 +2969,23 @@ namespace WeightChecking
 
         private void StartPrint()
         {
-        loop1:
             try
             {
                 byte[] SetPtinting = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
-                // Gán số thứ tự của bản tin cần in vào array
-                SetPtinting[5] = 2;//chon ban in so 2
-                                   // Tính checksum
+                SetPtinting[5] = 2; // chon ban in so 2
                 byte chkSUM = 0;
                 for (var i = 1; i <= SetPtinting.Length - 3; i++)
                     chkSUM = (byte)(chkSUM + SetPtinting[i]);
-                // Gán giá trị checksum vào array
                 SetPtinting[9] = chkSUM;
-                // Gửi array xuống máy in
-                _serialPort.Write(SetPtinting, 0, SetPtinting.Length);
+                _printerDriver?.Write(SetPtinting);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, $"Start print error: {ex.ToString()}");
-
-                Thread.Sleep(10000);
-
-                goto loop1;
-
-                System.Threading.Thread.Sleep(10000);
             }
             finally
             {
-                System.Threading.Thread.Sleep(500);
+                Thread.Sleep(500);
             }
         }
 
@@ -3014,8 +2994,7 @@ namespace WeightChecking
             try
             {
                 byte[] SetPtinting = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x4C, 0x3 };
-
-                _serialPort.Write(SetPtinting, 0, SetPtinting.Length);
+                _printerDriver?.Write(SetPtinting);
             }
             catch (Exception ex)
             {
@@ -3023,7 +3002,7 @@ namespace WeightChecking
             }
             finally
             {
-                System.Threading.Thread.Sleep(500);
+                Thread.Sleep(500);
             }
         }
 
@@ -3086,7 +3065,7 @@ namespace WeightChecking
                 SetDynamicString[i + j + k + 12] = System.Convert.ToByte(chkSUM); // Gán byte checksum vào arr
                 SetDynamicString[i + j + k + 12 + 1] = 0x3;
 
-                _serialPort.Write(SetDynamicString, 0, SetDynamicString.Length);
+                _printerDriver?.Write(SetDynamicString);
             }
             catch (Exception ex)
             {
@@ -3139,8 +3118,7 @@ namespace WeightChecking
                 chksum = chksum & 0xFF;
                 // Gán checksum vào arr
                 setSpeed[9] = System.Convert.ToByte(chksum);
-                // Gửi xuống máy in
-                _serialPort.Write(setSpeed, 0, setSpeed.Length);
+                _printerDriver?.Write(setSpeed);
             }
             catch (Exception ex)
             {
@@ -3167,7 +3145,7 @@ namespace WeightChecking
             try
             {
                 byte[] GetSpeed = new byte[] { 0x2, 0x0, 0x2, 0x0, 0x5D, 0x5F, 0x3 };
-                _serialPort.Write(GetSpeed, 0, GetSpeed.Length);
+                _printerDriver?.Write(GetSpeed);
             }
             catch (Exception ex)
             {
@@ -3190,7 +3168,7 @@ namespace WeightChecking
             {
                 byte[] GetDelay = new byte[] { 0x2, 0x0, 0x4, 0x0, 0x64, 0x2, 0x0, 0x6A, 0x3 };
                 // Id ban tin =2
-                _serialPort.Write(GetDelay, 0, GetDelay.Length);
+                _printerDriver?.Write(GetDelay);
             }
             catch (Exception ex)
             {
@@ -3229,8 +3207,7 @@ namespace WeightChecking
                 chksum = chksum & 0xFF;
                 // Gán checksum vào arr
                 setDelay[11] = System.Convert.ToByte(chksum);
-                // Gửi xuống máy in
-                _serialPort.Write(setDelay, 0, setDelay.Length);
+                _printerDriver?.Write(setDelay);
             }
             catch (Exception ex)
             {

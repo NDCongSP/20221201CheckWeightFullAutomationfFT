@@ -47,8 +47,14 @@ namespace WeightChecking
 
         public int AfterPrinting { get; set; } = 0;
 
-        [Description("The COM port of printer.")]
+        [Description("The COM port of printer (legacy, replaced by TCP).")]
         public string ComPortPrinter { get; set; } = "COM4";
+
+        [Description("The IP address of Anser U2 printer (TCP connection).")]
+        public string IpPrinter { get; set; } = "192.168.4.70";
+
+        [Description("The TCP port of Anser U2 printer.")]
+        public int PortPrinter { get; set; } = 4001;
 
         public int ScannerIdMetal { get; set; } = 2;
         public int ScannerIdWeight { get; set; } = 3;
