@@ -294,7 +294,7 @@
     <Compile Include="Enums\EnumLocation.cs" />
     <Compile Include="Models\CheckLabelResult.cs" />
     <Compile Include="Models\Entities\IDCScanSystem\ApplicationDbContextSSFG.cs" />
-    <Compile Include="Class\AnserU2Print.cs" />
+    <Compile Include="Class\AnserU2TcpDriver.cs" />
     <Compile Include="Class\CommonDefs.cs" />
     <Compile Include="Enums\EnumFactory.cs" />
     <Compile Include="Enums\LocationEnum.cs" />
