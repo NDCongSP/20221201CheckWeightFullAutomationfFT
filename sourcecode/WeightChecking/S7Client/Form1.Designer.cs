@@ -74,7 +74,7 @@ namespace S7Client
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(213, 26);
             this.textBox5.TabIndex = 46;
-            this.textBox5.Text = "192.168.80.201";
+            this.textBox5.Text = "113.184.180.64";
             // 
             // button2
             // 

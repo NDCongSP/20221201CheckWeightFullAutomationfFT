@@ -1,22 +1,30 @@
 ﻿using AutoUpdaterDotNET;
+using CognexLibrary_NETFramework;
+using CoreScanner;
 using Dapper;
 using DevExpress.XtraEditors;
 using DevExpress.XtraSplashScreen;
+using DevExpress.XtraSpreadsheet.Model;
 using Newtonsoft.Json;
 using Serilog;
 using Snap7ClientLib.Core;
 using Snap7ClientLib.Historian;
 using Snap7ClientLib.Tags;
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Net.Sockets;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 using WeightChecking.StaticClass;
 
 namespace WeightChecking
@@ -37,7 +45,12 @@ namespace WeightChecking
         private Button btnUpdateVersion;
         private Label titleText;
 
+        private ScaleHelper _scaleHelper;
+        private Task _ckTask, _ckQRTask, _ckQrWeightScanTask;//task kiểm tra tại các trạm scanner để check xem có đoc đc QR code ko
+        private bool _isStartCountTimer = false;
         private int _metalScannerStatus = 0;
+
+        private bool[] _readQrStatus = { false, false, false };//biến báo đọc được QR hay không. metal-weight-print
 
         private int _stableScale = 0;//biến báo trạng thái cân ổn định, get khối lượng cân về
         private double _scaleValue = 0;//biến chứa giá trị cân realTime đọc từ đầu cân về
@@ -48,20 +61,51 @@ namespace WeightChecking
         //private tblScanDataModel _scanData = new tblScanDataModel();
         private tblScanData _scanDataMetal = new tblScanData();
         private tblScanData _scanDataWeight = new tblScanData();
+        private tblScanData _scanDataPrint = new tblScanData();
 
         private string _idLabel = null;
-        private string _unit = null;// kiểu đóng thùng, P-đôi; L/R-left righ
+        private string _plr = null;// kiểu đóng thùng, P-đôi; L/R-left righ
         private double _weight = 0, _boxWeight = 0, _accessoriesWeight = 0;
 
         private bool _approveUpdateActMetalScan = false;
 
-        private string _barcodeString1 = null, _barcodeString2 = null;
+        // Declare CoreScannerClass
+        private CCoreScanner _cCoreScannerClass;
+        private string _barcodeString1 = null, _barcodeString2 = null, _barcodeString3 = null;//checkMetal--checkWeight--printing
+        private bool[] _scannerIsBussy = { false, false, false };
+
+        private AnserU2TcpDriver _printerDriver;
 
         private bool _firstLoad = true;
 
         private bool _approvePrint = false;// lệnh cho phép in hay không, chỉ khi nào pass cân thì active lên cho in.
 
+        //20250510 upgrade system to use scanner cogned DM290-X at station check weight
+        private static CognexLibrary_NETFramework.DriverTelnet _driverTelnet = new CognexLibrary_NETFramework.DriverTelnet();
+
         private bool isUpdateClicked = false;
+        byte[] _readHoldingRegisterArr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] _writeHoldingRegisterArr = { 0, 1 };
+        int _countDisconnectPlc = 0;
+        private System.Threading.Tasks.Task _tskModbus, _tskProfinet;
+
+        private bool _resetCounter = false;
+
+        string _stationReport = "All";
+
+        int _metalScan = 0, _metalPusher = 0, _weightPusher = 0, _printPusher = 0;
+
+        private CancellationTokenSource _readModbus;
+        private Task _readModbusTask;
+
+        private CancellationTokenSource _readProfinet;
+        private Task _readProfinetTask;
+
+        private CancellationTokenSource _timer;
+        private Task _timerTask;
+
+        private CancellationTokenSource _resetUiCts;
+        private Task _resetUiTask;
 
         private EnumBoxType _boxType;
 
@@ -71,9 +115,7 @@ namespace WeightChecking
         private string _color = string.Empty;
         private string _sizeName = string.Empty;
 
-        private string _version = string.Empty;
-        private MesoInfoModel _mesoinfo = new MesoInfoModel();
-
+        //Dung thu vien S7 moi
         //khai báo kết nối PLC S7
         PlcManager _manager = new PlcManager();
         PlcRuntime _plcRuntime;
@@ -82,13 +124,6 @@ namespace WeightChecking
         SqliteHistorian _historian;
 
         private PlcConnectionState _plcConnectionState;
-
-        //tasks chay đọc lập
-        private CancellationTokenSource _timer;
-        private Task _timerTask;
-
-        private CancellationTokenSource _resetUiCts;
-        private Task _resetUiTask;
 
         //private CancellationTokenSource _inspectionMetalCts;
         //private Task _triggerInspectionMetal;
@@ -100,6 +135,9 @@ namespace WeightChecking
         private readonly AsyncAutoResetEvent _triggerInspectionWeight = new AsyncAutoResetEvent();
         private CancellationTokenSource _inspectionWeightCts;
 
+        private string _version = string.Empty;
+        private MesoInfoModel _mesoinfo = new MesoInfoModel();
+
         public frmScaleNewUI()
         {
             InitializeComponent();
@@ -109,7 +147,7 @@ namespace WeightChecking
             this.Text = "Custom Title Bar";
             this.FormBorderStyle = FormBorderStyle.None; // Bỏ header mặc định
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.Size = new System.Drawing.Size(1920, 1080);
+            this.Size = new Size(1920, 1080);
 
             // Tạo panel làm thanh tiêu đề
             titleBar = new Panel();
@@ -126,7 +164,8 @@ namespace WeightChecking
             btnClose.BackColor = Color.Black;
             btnClose.FlatStyle = FlatStyle.Flat;
             btnClose.FlatAppearance.BorderSize = 0;
-            btnClose.Location = new System.Drawing.Point(this.Width - 40, 0);
+            btnClose.Size = new Size(40, 40);
+            btnClose.Location = new Point(this.Width - 40, 0);
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             // 1) Gán icon từ Resources (đặt tên hình là "updateVersion" như trong Resource)
             btnClose.Image = Properties.Resources.close_white_30;  // PNG từ Resources
@@ -143,8 +182,8 @@ namespace WeightChecking
             btnMaximize.BackColor = Color.Black;
             btnMaximize.FlatStyle = FlatStyle.Flat;
             btnMaximize.FlatAppearance.BorderSize = 0;
-            btnMaximize.Size = new System.Drawing.Size(40, 40);
-            btnMaximize.Location = new System.Drawing.Point(this.Width - 80, 0);
+            btnMaximize.Size = new Size(40, 40);
+            btnMaximize.Location = new Point(this.Width - 80, 0);
             btnMaximize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             // 1) Gán icon từ Resources (đặt tên hình là "updateVersion" như trong Resource)
             btnMaximize.Image = Properties.Resources.maximize_white_30;  // PNG từ Resources
@@ -161,8 +200,8 @@ namespace WeightChecking
             btnMinimize.BackColor = Color.Black;
             btnMinimize.FlatStyle = FlatStyle.Flat;
             btnMinimize.FlatAppearance.BorderSize = 0;
-            btnMinimize.Size = new System.Drawing.Size(40, 40);
-            btnMinimize.Location = new System.Drawing.Point(this.Width - 120, 0);
+            btnMinimize.Size = new Size(40, 40);
+            btnMinimize.Location = new Point(this.Width - 120, 0);
             btnMinimize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             // 1) Gán icon từ Resources (đặt tên hình là "updateVersion" như trong Resource)
             btnMinimize.Image = Properties.Resources.minimize_white_30;  // PNG từ Resources
@@ -180,8 +219,8 @@ namespace WeightChecking
             btnUpdateVersion.BackColor = Color.Black;
             btnUpdateVersion.FlatStyle = FlatStyle.Flat;
             btnUpdateVersion.FlatAppearance.BorderSize = 0;
-            btnUpdateVersion.Size = new System.Drawing.Size(40, 40);
-            btnUpdateVersion.Location = new System.Drawing.Point(this.Width - 160, 0);
+            btnUpdateVersion.Size = new Size(40, 40);
+            btnUpdateVersion.Location = new Point(this.Width - 160, 0);
             btnUpdateVersion.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnUpdateVersion.Cursor = Cursors.Hand;
 
@@ -212,7 +251,7 @@ namespace WeightChecking
 
 
             // Đảm bảo tất cả có cùng Height = 30 và Y = 5
-            btnClose.Size = btnMaximize.Size = btnMinimize.Size = btnUpdateVersion.Size = new System.Drawing.Size(30, 30);
+            btnClose.Size = btnMaximize.Size = btnMinimize.Size = btnUpdateVersion.Size = new Size(30, 30);
 
 
             // Anchor cho cả 3 nút
@@ -222,17 +261,17 @@ namespace WeightChecking
             PictureBox logo = new PictureBox();
             logo.Image = Properties.Resources.framas__white_; // logo từ Resources
             logo.SizeMode = PictureBoxSizeMode.Zoom;
-            logo.Size = new System.Drawing.Size(100, 30); // kích thước logo
-            logo.Location = new System.Drawing.Point(10, 5); // vị trí bên trái
+            logo.Size = new Size(100, 30); // kích thước logo
+            logo.Location = new Point(10, 5); // vị trí bên trái
             titleBar.Controls.Add(logo);
 
             // Text
             titleText = new Label();
             titleText.Text = $"fFT - SSFG Station";
             titleText.ForeColor = Color.White;
-            titleText.Font = new Font("Segoe UI", 12, System.Drawing.FontStyle.Bold);
+            titleText.Font = new Font("Segoe UI", 12, FontStyle.Bold);
             titleText.AutoSize = true;
-            titleText.Location = new System.Drawing.Point(120, 10); // ngay sau logo
+            titleText.Location = new Point(120, 10); // ngay sau logo
             titleBar.Controls.Add(titleText);
             #endregion
 
@@ -241,7 +280,7 @@ namespace WeightChecking
             _labResult.Focus();
         }
 
-        #region Title bar button
+
         // Cho phép kéo form bằng panel
         private void TitleBar_MouseDown(object sender, MouseEventArgs e)
         {
@@ -286,7 +325,7 @@ namespace WeightChecking
         {
             this.WindowState = FormWindowState.Minimized;
         }
-        #endregion
+
 
         private async void FrmScale_Load(object sender, EventArgs e)
         {
@@ -305,6 +344,310 @@ namespace WeightChecking
             }
             _version = System.Windows.Forms.Application.ProductVersion.Split('+')[0];
 
+            #region Test get LotNo Brooks
+            //using (var dbContext = GlobalVariables.GetDbConnection())
+            //{
+            //    var para = new DynamicParameters();
+            //    para.Add("ocNo", "DTOTEST002");
+            //    para.Add("boxNo", "1/1");
+
+            //    var reader = dbContext.ExecuteReader("sp_GetLotOfBrooksHC", param: para, commandType: CommandType.StoredProcedure);
+            //    DataTable tableResult = new DataTable();
+            //    tableResult.Load(reader);
+
+            //    if (tableResult.Rows.Count > 0)
+            //    {
+            //        _scanDataWeight.LotNo = tableResult.Rows[0]["LotNo"].ToString();
+            //    }
+            //}
+            #endregion
+
+            #region đăng ký sự kiện từ cac PLC
+            //sự kiện lấy số cân hiện tại của đầu cân (real time)
+            GlobalVariables.MyEvent.EventHandleScaleValue += (s, o) =>
+            {
+                //Debug.WriteLine($"Event Scale value real time: {o.ScaleValue}");
+                _scaleValue = o.ScaleValue;
+
+                if (labScaleValue.InvokeRequired)
+                {
+                    labScaleValue.Invoke(new Action(() =>
+                    {
+                        labScaleValue.Text = _scaleValue.ToString();
+                    }));
+                }
+                else
+                {
+                    labScaleValue.Text = _scaleValue.ToString();
+                }
+            };
+            //sự kiến lấy khối lượng cân đã chốt ổn định
+            GlobalVariables.MyEvent.EventHandlerScaleValueStable += (s, o) =>
+            {
+                //Debug.WriteLine($"Event Scale value stable: {o.ScaleValue}");
+
+                _scaleValueStable = o.ScaleValue;
+
+                GlobalVariables.RealWeight = _scaleValueStable;
+
+                //this?.Invoke((MethodInvoker)delegate { labScaleValue.Text = _scanData.GrossWeight.ToString(); });
+            };
+
+            //sự kiện báo cân đã ổn định, chốt số cân.
+            GlobalVariables.MyEvent.EventHandlerStableScale += (s, o) =>
+            {
+                Debug.WriteLine($"Event Scale stable: {o.NewValue}");
+                _stableScale = o.NewValue;
+            };
+
+            //sự kiện ghi nhận thừng đêbs trước vị trí metalScan, lấy cánh xuống để tác động tính thời gian để báo ko đọc đc QR code
+            GlobalVariables.MyEvent.EventHandleSensorBeforeMetalScan += (s, o) =>
+            {
+                Debug.WriteLine($"Event Sensor before metal scan đã qua vòng chờ: {o.NewValue} |{_isStartCountTimer}");
+                //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ metal scanner
+                //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
+                if (_isStartCountTimer == false)
+                {
+                    if (o.NewValue == 0)
+                    {
+                        _isStartCountTimer = true;
+                        _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.ConfigJson.TimerCheckQrMetal)));
+                        _ckQRTask.Start();
+                    }
+                }
+
+                if (o.NewValue == 1)
+                {
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        _labQrIdentification.Text = string.Empty;
+                        _labResultIdentification.Text = string.Empty;
+                    });
+                }
+            };
+
+            GlobalVariables.MyEvent.EventHandleSensorBeforeWeightScan += (s, o) =>
+            {
+                Debug.WriteLine($"Event Sensor before weight scan: {o.NewValue}");
+                //chạy task đếm thời gian cho việc quét tem, hết thời gian mà chưa nhận đc tín hiệu từ Scanner cognex
+                //thì ghi tín hiêu xuống PLC conveyor để reject với lý do là không đọc đc QR
+                if (o.NewValue == 1)
+                {
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        labQrScale.Text = string.Empty;
+                        _labLastResultMessage.Text = string.Empty;
+                    });
+
+                    //bật biến báo đọc đc QR code từ label
+                    //_readQrStatus[1] = true;
+
+                    _ckQrWeightScanTask = new Task(() => CheckReadQrWeight());
+                    _ckQrWeightScanTask.Start();
+
+
+                    //reset các control để qua cân mẻ mới
+                    ResetControl();
+                }
+                //else
+                //{
+                //    if (_ckQrWeightScanTask != null)
+                //    {
+                //        _ckQrWeightScanTask.Wait();
+                //        _ckQrWeightScanTask.Dispose();
+                //    }
+                //}
+            };
+
+
+
+            //khi thùng đụng cảm biến out của cân thì reset biến báo bận cho scanner trạm cân quét tiếp
+            GlobalVariables.MyEvent.EventHandleSensorAfterWeightScan += (s, o) =>
+            {
+                if (o.NewValue == 1)
+                {
+                    //reset biến báo bận cho scanner trạm cân quét tiếp
+                    _scannerIsBussy[1] = false;
+                    //tắt biến báo đọc đc QR code từ label
+                    _readQrStatus[1] = false;
+                }
+
+                Debug.WriteLine($"Event Sensor after scale: {o.NewValue}|ScannerBussy{_scannerIsBussy[1]}");
+            };
+
+            //khi thùng đụng cảm biến sau printing scanner thì reset biến báo bận cho scanner trạm print quét tiếp
+            GlobalVariables.MyEvent.EventHandlerSensorAfterPrintScanner += (s, o) =>
+            {
+                if (o.NewValue == 1)
+                {
+                    _scannerIsBussy[2] = false;
+                }
+                Debug.WriteLine($"Event Sensor after sorting area: {o.NewValue}|ScannerBussy{_scannerIsBussy[2]}");
+            };
+
+            GlobalVariables.MyEvent.EventHandleSensorMiddleMetal += (s, o) =>
+            {
+                if (o.NewValue == 1)
+                {
+                    //xáo báo bận để cho phép scanner quét tiếp thùng.
+                    _scannerIsBussy[0] = false;
+
+                    _isStartCountTimer = false;
+                    GlobalVariables.MyEvent.MetalPusher = _metalScannerStatus;
+                }
+
+                Debug.WriteLine($"Sensor middle metal: {o.NewValue}|ScannerBussy{_scannerIsBussy[0]}");
+            };
+
+            GlobalVariables.MyEvent.EventHandleSensorAfterMetalScan += (s, o) =>
+            {
+                GlobalVariables.AutoPostingStatus2 = string.Empty;
+                Debug.WriteLine($"Event Sensor After metal scan: {o.NewValue}");
+                GlobalVariables.RememberInfo.CountMetalScan += 1;//đếm số thùng đi qua máy metalScan
+
+                if (o.NewValue == 1)
+                {
+                    using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
+                    {
+                        var para = new DynamicParameters();
+                        if (_metalCheckResult == 1)//Check metal fail
+                        {
+                            GlobalVariables.MyEvent.MetalPusher1 = 1;
+
+                            ////log vao bang reject
+                            var rejectLine = new tblScanDataReject()
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActived = 1,
+                                CreatedDate = DateTime.Now,
+                                CreatedMachine = Environment.MachineName,
+                                BarcodeString = _scanDataMetal.BarcodeString,
+                                IdLabel = _scanDataMetal.IdLabel,
+                                OcNo = _scanDataMetal.OcNo,
+                                BoxId = _scanDataMetal.BoxNo,
+                                ProductName = _scanDataMetal.ProductName,
+                                ProductNumber = _scanDataMetal.ProductNumber,
+                                Quantity = _scanDataMetal.Quantity,
+                                ScannerStation = EnumStation.Identification.ToString(),
+                                Reason = "Metal checking failure.",
+                                GrossWeight = _scanDataMetal.GrossWeight,
+                                DeviationPairs = _scanDataMetal.DeviationPairs,
+                                DeviationWeight = _scanDataMetal.Deviation
+                            };
+                            dbContext.TblScanDataRejects.Add(rejectLine);
+
+                            //transfer from WH in comming to 964
+                            #region Auto Stock In to 1223 if Box come to QC
+                            //kiểm tra thùng hàng ko có trong kho production hand ove WH (1185) là cho stock in vao kho QC hand over WH (1223)
+
+                            var res1 = AutoPostingHelper.CheckIn(GlobalVariables.ConfigJson.FlagAutoPost, _scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString, dbContext);
+                            var accept = res1?.FirstOrDefault();
+
+                            var logNl = new tblLog()
+                            {
+                                Message = $"Metal sp_lmpScannerClient_ScanningLabel_CheckIn = {res1?.Count}.",
+                                MessageTemplate = $"{_scanDataMetal.BarcodeString}",
+                                Level = "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn",
+                                Exception = null,
+                                TimeStamp = DateTime.Now
+                            };
+                            dbContext.TblLogs.Add(logNl);
+
+                            if (accept != null)
+                            {
+                                logNl = new tblLog()
+                                {
+                                    Message = $"Metal checking failure.",
+                                    Level = "Auto post metal.",
+                                    Exception = null,
+                                    TimeStamp = DateTime.Now
+                                };
+                                dbContext.TblLogs.Add(logNl);
+
+                                GlobalVariables.AutoPostingStatus2 = AutoPostingHelper.AutoTransfer(GlobalVariables.ConfigJson.FlagAutoPost, _scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString
+                                    , Convert.ToInt16(accept.C004), 964, dbContext, DateTime.Now);
+
+                                GlobalVariables.InvokeIfRequired(this, () =>
+                                {
+                                    _labResultIdentification.Text = $"{GlobalVariables.AutoPostingStatus2}";
+                                    _labResultIdentification.ForeColor = Color.Red;
+                                });
+                            }
+                            #endregion
+                        }
+                        else
+                        {
+                            GlobalVariables.MyEvent.MetalPusher1 = 0;
+
+                            ////transfer from WH 964 to WH in comming
+                            /////kiểm tra xem có trong 964 ko? nếu có thì mới transfer. không có thì ko làm gì cả
+                            #region Auto Stock In to 1223 if Box come to QC
+                            //kiểm tra thùng hàng ko có trong kho production hand ove WH (1185) là cho stock in vao kho QC hand over WH (1223)
+                            var res1 = AutoPostingHelper.CheckIn(GlobalVariables.ConfigJson.FlagAutoPost, _scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString, dbContext);
+                            var accept = res1?.FirstOrDefault(x => x.C004 == "964");
+
+                            var logNl = new tblLog()
+                            {
+                                Message = $"Metal sp_lmpScannerClient_ScanningLabel_CheckIn = {res1?.Count}.",
+                                MessageTemplate = $"{_scanDataMetal.BarcodeString}",
+                                Level = "Auto Transfer|sp_lmpScannerClient_ScanningLabel_CheckIn",
+                                Exception = null,
+                                TimeStamp = DateTime.Now
+                            };
+                            dbContext.TblLogs.Add(logNl);
+
+                            if (accept != null)
+                            {
+                                logNl = new tblLog()
+                                {
+                                    Message = $"Check metal OK.",
+                                    Level = "Auto post metal.",
+                                    Exception = null,
+                                    TimeStamp = DateTime.Now
+                                };
+                                dbContext.TblLogs.Add(logNl);
+
+                                GlobalVariables.AutoPostingStatus2 = AutoPostingHelper.AutoTransfer(GlobalVariables.ConfigJson.FlagAutoPost, _scanDataMetal.ProductNumber, _scanDataMetal.BarcodeString
+                                    , Convert.ToInt16(accept.C004), Convert.ToInt16(accept.C021), dbContext, DateTime.Now);
+
+                                GlobalVariables.InvokeIfRequired(this, () =>
+                                {
+                                    _labResultIdentification.Text = $"{GlobalVariables.AutoPostingStatus2}";
+                                    _labResultIdentification.ForeColor = Color.Green;
+                                });
+                            }
+                            #endregion
+                        }
+
+                        //log gia thông tin check metal vào bảng tblMetalScanResult
+                        var metalScanLine = new tblMetalScanResult()
+                        {
+                            Id = Guid.NewGuid(),
+                            IsActived = 1,
+                            CreatedDate = DateTime.Now,
+                            CreatedMachine = Environment.MachineName,
+                            BarcodeString = _scanDataMetal.BarcodeString,
+                            ProductItemCode = _scanDataMetal.ProductNumber,
+                            IdLabel = _scanDataMetal.IdLabel,
+                            Oc = _scanDataMetal.OcNo,
+                            BoxNo = _scanDataMetal.BoxNo,
+                            Qty = _scanDataMetal.Quantity,
+                            MetalCheckResult = _metalCheckResult == 0 ? false : true
+                        };
+                        dbContext.TblMetalScanResults.Add(metalScanLine);
+
+                        dbContext.SaveChanges();//lưu các thay đổi vào database
+                    }
+                }
+            };
+
+            GlobalVariables.MyEvent.EventHandleMetalCheckResult += (s, o) =>
+            {
+                _metalCheckResult = o.NewValue;
+                Debug.WriteLine($"Event Metal check result: {o.NewValue}");
+            };
+            #endregion
+
             #region Connect to PL Seimens
             _manager.LoadFromConfig("tags.json");
             //_manager.LoadFromConfig("tags1.json");
@@ -318,30 +661,82 @@ namespace WeightChecking
 
             await _plcRuntime.Reader.ReadGroupAsync(_plcRuntime.Tags);
 
-
             // 1) Tạo và gán handler
             _sub = new PlcSubscriptionManager(_plcRuntime.Reader);
             _sub.OnValueChanged += Sub_OnValueChanged;
 
-            //Đăng ký tag value chcange cho từng tag
-            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "NewCodeMetal").ValueChanged += (tag) =>
+            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S_1").ValueChanged += (tag) =>
             {
                 Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
 
-                if (tag.NewValue.ToString() == "1")
-                {
-                    _triggerInspectionMetal.Set();
-                }
+                GlobalVariables.MyEvent.SensorBeforeMetalScan = Convert.ToInt16(tag.NewValue);
             };
 
-            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "NewCodeScale").ValueChanged += (tag) =>
+            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S_2").ValueChanged += (tag) =>
             {
                 Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
 
-                if (tag.NewValue.ToString() == "1")
-                {
-                    _triggerInspectionWeight.Set();
-                }
+                GlobalVariables.MyEvent.SensorAfterMetalScan = Convert.ToInt16(tag.NewValue);
+            };
+
+            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S_M").ValueChanged += (tag) =>
+            {
+                Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+
+                GlobalVariables.MyEvent.SensorMiddleMetal = Convert.ToInt16(tag.NewValue);
+            };
+
+            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "Metal_Result").ValueChanged += (tag) =>
+            {
+                Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+
+                GlobalVariables.MyEvent.MetalCheckResult = Convert.ToInt16(tag.NewValue);
+            };
+
+            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S_Sorting_FG").ValueChanged += (tag) =>
+            {
+                Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+
+                GlobalVariables.MyEvent.SensorAfterPrintScannerFG = Convert.ToInt16(tag.NewValue);
+
+                GlobalVariables.MyEvent.PrintPusher = 0;
+            };
+
+            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S_Sorting_Print").ValueChanged += (tag) =>
+            {
+                Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+
+                GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting = Convert.ToInt16(tag.NewValue);
+
+                GlobalVariables.MyEvent.PrintPusher = 0;
+            };
+
+            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "P1").ValueChanged += (tag) =>
+            {
+                Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+
+                _metalScan = Convert.ToInt16(tag.NewValue);
+            };
+
+            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "P2").ValueChanged += (tag) =>
+            {
+                Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+
+                _weightPusher = Convert.ToInt16(tag.NewValue);
+            };
+
+            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "P3").ValueChanged += (tag) =>
+            {
+                Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+
+                _printPusher = Convert.ToInt16(tag.NewValue);
+            };
+
+            _plcRuntime.Tags.FirstOrDefault(t => t.Name == "P4").ValueChanged += (tag) =>
+            {
+                Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+
+                _metalPusher = Convert.ToInt16(tag.NewValue);
             };
 
             // 2) Kết nối PLC, chạy Polling
@@ -354,34 +749,200 @@ namespace WeightChecking
 
             // 4) BẮT ĐẦU POLLING (rất quan trọng)
             _sub.Subscribe(_plcRuntime.Tags, intervalMs: 200);
+
+            #region đăng ký các sự kiện ghi giá trị xuống PLC seimens để điều khiển các pusher
+            //đăng ký các sự kiện ghi giá trị điều khiển Pusher
+            //vùng nhớ dataBlock 1(DB1.DB0 byte). before metal scan
+            GlobalVariables.MyEvent.EventHandlerMetalPusher += (s, o) =>
+            {
+                //if (o.NewValue != 0)
+                {
+                    //GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 0, 1, new byte[] { (byte)o.NewValue });
+                    WriteData2PlcSeimens("P1", o.NewValue);
+                }
+                Debug.WriteLine($"Event ghi DB metal pusher {o.NewValue}. status {_plcConnectionState}");
+                //GlobalVariables.MyEvent.MetalPusher = 0;
+            };
+            //vùng nhớ dataBlock 1(DB1.DB1 byte). weight pusher
+            GlobalVariables.MyEvent.EventHandlerWeightPusher += (s, o) =>
+            {
+                if (o.NewValue == 1)
+                {
+                    //GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 1, 1, new byte[] { 1 });
+                    Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {_plcConnectionState}");
+                    //GlobalVariables.MyEvent.WeightPusher = 0;
+                    WriteData2PlcSeimens("P2", 1);
+                }
+                else
+                {
+                    Debug.WriteLine($"Event ghi DB weight pusher {o.NewValue}. status {_plcConnectionState}");
+                }
+            };
+            //vùng nhớ dataBlock 1(DB1.DB2 byte). printing pusher
+            GlobalVariables.MyEvent.EventHandlerPrintPusher += (s, o) =>
+            {
+                if (o.NewValue != 0)
+                {
+                    //GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 2, 1, new byte[] { (byte)o.NewValue });
+                    WriteData2PlcSeimens("P3", o.NewValue);
+                }
+                Debug.WriteLine($"Event ghi DB Print pusher {o.NewValue}. status {_plcConnectionState}");
+                GlobalVariables.MyEvent.PrintPusher = 0;
+            };
+
+            //vungf nho DB1.DB6/ dieu khien pusher reject quét kim loại lỗi
+            GlobalVariables.MyEvent.EventHandleMetalePusher1 += (s, o) =>
+            {
+                if (o.NewValue != 0)
+                {
+                    //GlobalVariables.ConveyorStatus = GlobalVariables.MyDriver.S7Ethernet.Client.GhiDB(1, 6, 1, new byte[] { (byte)o.NewValue });
+                    WriteData2PlcSeimens("P4", o.NewValue);
+                }
+                Debug.WriteLine($"Event ghi DB Metal pusher 1 {o.NewValue}. status {_plcConnectionState}");
+                GlobalVariables.MyEvent.MetalPusher1 = 0;
+            };
             #endregion
+            #endregion
+
+            if (!GlobalVariables.ConfigJson.IsTest)
+            {
+                #region Ket noi modbus RTU PLC: Scale, Metal scan
+                if (GlobalVariables.ConfigJson.IsScale)
+                {
+                    GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ConfigJson.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
+
+                    Debug.WriteLine($"PLC Status: {GlobalVariables.ModbusStatus}");
+
+                    if (GlobalVariables.ModbusStatus)
+                    {
+                        //ghi thông số delay trước khi chạy vào máy in
+                        //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
+                        //D511 -11FF = 4607
+                        //thanh ghi D508,D509,D510,D511,D512 cua PLC Delta DPV14SS2 co dia chi la 4604
+
+
+                        byte[] mangGhi = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 0, GlobalVariables.ConfigJson.DelayTimer3);
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 2, GlobalVariables.ConfigJson.DelayTimer1);
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 4, GlobalVariables.ConfigJson.DelayTimer2);
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 6, GlobalVariables.ConfigJson.DelayTimer4);
+                        GlobalVariables.MyDriver.SetWord(mangGhi, 8, GlobalVariables.ConfigJson.DelayTimer5);
+
+                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4604, 5, mangGhi);
+
+                        ////if (GlobalVariables.ModbusStatus)
+                        //{
+                        //    MessageBox.Show($"Ghi modbus: {GlobalVariables.ModbusStatus}");
+                        //}
+
+                        //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
+                        GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 12, ref _readHoldingRegisterArr);
+
+                        //GlobalVariables.RememberInfo.CountMetalScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                        ////update gia tri count vao sự kiện để trong frmScal  nó update lên giao diện
+                        //GlobalVariables.MyEvent.CountValue = GlobalVariables.RememberInfo.CountMetalScan;
+
+                        //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                        GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
+                        GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
+                        GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
+                        GlobalVariables.MyEvent.SensorBeforeWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 8);
+                        GlobalVariables.MyEvent.SensorAfterWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
+                        GlobalVariables.D506Value = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 12);
+                        GlobalVariables.DelayPrintInterval = $"T1:{GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 18)}," +
+                            $"T2:{GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 20)}," +
+                            $"T3:{GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 16)}," +
+                            $"T4:{GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 22)}," +
+                            $"T5:{GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 24)}";
+
+                        //đăng ký sự kiện bật tắt đèn tháp báo cân pass/fail
+                        GlobalVariables.MyEvent.EventHandleStatusLightPLC += MyEvent_EventHandleStatusLightPLC;
+
+                        //ghi giá trị tắt đèn tháp xuống PLC
+                        //GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+                        GlobalVariables.MyEvent.StatusLightPLC = 0;
+
+                        //run thread đọc modbus, để đọc các giá trị cân
+                        _readModbus = new CancellationTokenSource();
+                        _readModbusTask = Task.Run(() => TaskReadModbusAsync(_readModbus.Token));
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Không thể kết nối được cân (Modbus RTU).{Environment.NewLine}Tắt phần mềm, kiểm tra lại kết nối với PLC rồi mở lại phần mềm.",
+                                        "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                #endregion
+            }
+
+            //khởi tạo scanner
+            InitializeScaner();
+
+            //Khởi tạo máy in AnserU2 Smart one (TCP)
+            if (!GlobalVariables.ConfigJson.IsTest)
+            {
+                PrinterOpen();
+                Thread.Sleep(10000);
+                SendDynamicString(" ", " ", " ");
+            }
+
+            if (!GlobalVariables.ConfigJson.IsTest)
+            {
+                #region 20250310 update to use scanner Cognex
+                _driverTelnet.HostName = GlobalVariables.ConfigJson.IpCognexCamScale;
+                //_driverTelnet.Port = 23;
+
+                _driverTelnet.DataEvent.EventHandleValueChange += DataEvent_EventHandleValueChange;
+                _driverTelnet.DataEvent.EventHandleStatusChange += DataEvent_EventHandleStatusChange;
+
+                if (!GlobalVariables.ConfigJson.IsTest)
+                    _driverTelnet.ConnectDevices();
+
+                #endregion
+            }
 
             this.ActiveControl = null;
             this.ActiveControl = _labResult;
 
-            //tạo 1 task chạy độc lập.
+            GlobalVariables.AppStatus = "READY";
+
+            //tạo 1 task chạy độc lập để get data từ Hydra
             _timer = new CancellationTokenSource();
             _timerTask = Task.Run(() => TaskTimerAsync(_timer.Token));
 
             _resetUiCts = new CancellationTokenSource();
             _resetUiTask = Task.Run(() => TaskCheckResetUIAsync(_resetUiCts.Token));
 
-            _inspectionMetalCts = new CancellationTokenSource();
-            _=TaskInspectionMetalAsync(_inspectionMetalCts.Token);
-
-            _inspectionWeightCts = new CancellationTokenSource();
-            _ = TaskInspectionWeightAsync(_inspectionWeightCts.Token);
-            #region Fake data to debug
-
-            #endregion
-
             ResetControl();
+
+            #region Fake data to debug
+            //layoutControlGroup3.Visibility = DevExpress.XtraLayout.Utils.LayoutVisibility.Never;
+
+            //BarcodeScanner1Handle(1, "A129059,6818442301-ON01-2651,10,6,P,6/8,1900070,1/1|2,683388.2024,0,0,18");
+            //BarcodeScanner1Handle(1, "A123609,6817012201-2626-D228,95,3,P,3/5,1900022,1/1|2,436866.2024,1,0,99");
+
+            //GlobalVariables.MyEvent.SensorBeforeMetalScan = 1;
+            //GlobalVariables.MyEvent.SensorBeforeMetalScan = 0;
+            //GlobalVariables.MyEvent.SensorAfterMetalScan = 1;
+            //GlobalVariables.MyEvent.MetalCheckResult = 1;
+
+            //using (var con=GlobalVariables.GetDbConnection())
+            //{
+            //    AutoPostingHelper.AutoTransfer("", "A123631,6817012201-3265-D228,100,3,P,6/11,1900022,1/4|2,435752.2024,1,0,99", 1185, 2,con);
+            //}
+
+
+            //_scaleValueStable = 8777;
+            //GlobalVariables.MyEvent.StableScale = 1;
+            //BarcodeScanner2Handle(2, "C111085,6812012209-4251-2502,12,1,P,1/3,1900021,1/1|2,1253747.2025,0,0,12,BX2");
+
+            //BarcodeScanner3Handle(3, "PRT111085,6812012209-4251-2502,12,1,P,1/3,1900021,1/1|2,1253747.2025,0,0,12,BX2");
+
+
+            //GlobalVariables.MyEvent.SensorBeforeWeightScan = 1;
+            #endregion
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="obj"></param>
         private void Sub_OnValueChanged(PlcTag obj)
         {
             Debug.WriteLine($"{obj.Name} = {obj.NewValue}");
@@ -390,21 +951,94 @@ namespace WeightChecking
         private void Client_StateChanged(PlcConnectionState obj)
         {
             _plcConnectionState = obj;
+            Debug.WriteLine($"S7 Client Statuc: {_plcConnectionState}");
         }
+
+        private void DataEvent_EventHandleStatusChange(object sender, StatusChangeEventArgs e)
+        {
+            GlobalVariables.CognexCam_2Status = e.Status;
+            Debug.WriteLine($"[{DateTime.Now}]: {e.Status}|{e.Exception?.Message}");
+        }
+
+        private void DataEvent_EventHandleValueChange(object sender, ValueChangeEventArgs e)
+        {
+            Debug.WriteLine($"[{DateTime.Now}]: {e.NewValue}|{e.OldValue}");
+            if (!_scannerIsBussy[1])
+            {
+                GlobalVariables.AutoPostingStatus3 = string.Empty;
+
+                //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                _scannerIsBussy[1] = true;
+
+                //bật biến báo đọc đc QR code từ label
+                _readQrStatus[1] = true;
+
+                _barcodeString2 = e.NewValue;
+
+                BarcodeScanner2Handle(2, _barcodeString2);
+
+                using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
+                {
+                    var nl = new tblLog
+                    {
+                        Message = $"After2 1|Barcode Id Cognex|{_barcodeString2}",
+                        Level = "Scanner trigger.",
+                        TimeStamp = DateTime.Now,
+                    };
+
+                    dbContext.TblLogs.Add(nl);
+                    dbContext.SaveChanges();
+                }
+            }
+            else
+            {
+                Log.Error("The sensor clears the busy flag, it is not active", "Lỗi scale form");
+
+                //MessageBox.Show($"Quantity over the BX1 box limit ({res.BoxQtyBx1}).", "WARNING", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                GlobalVariables.InvokeIfRequired(this, () =>
+                {
+                    _labResultMessage.Text = "The sensor clears the busy flag, it is not active.";
+                    _labResult.Text = "FAILED";
+                    _labResult.BackColor = Color.Red;
+                    _labResult.ForeColor = Color.White;
+                });
+            }
+        }
+
 
         private void FrmScale_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
             {
+                //huy đối tượng máy in
+                PrinterClose();
+
+                if (_ckQRTask != null)
+                {
+                    _ckQRTask.Wait();
+                    _ckQRTask.Dispose();
+                }
+
+                _driverTelnet.DataEvent.EventHandleValueChange -= DataEvent_EventHandleValueChange;
+                _driverTelnet.DataEvent.EventHandleStatusChange -= DataEvent_EventHandleStatusChange;
+
+                _driverTelnet.IsDisconect = true;
+                _driverTelnet?.DisconnectDevices();
+                //huy doi tuong can
+                //_scaleHelper.StopScale = true;
+                //_ckTask.Wait();
+                //_ckTask.Dispose();
+                //_scaleHelper.Dispose();
+                GlobalVariables.ScaleStatus = "Disconnect";
+
+                _readModbus?.Cancel();
+                _readModbusTask?.Wait(1000); // đợi nhẹ, tránh treo UI
+
                 _timer?.Cancel();
                 _timerTask?.Wait(1000);
 
                 _resetUiCts?.Cancel();
                 _resetUiTask?.Wait(1000); // đợi nhẹ, tránh treo UI
-
-                // 1.Dừng vòng lặp Modbus
-                _inspectionMetalCts?.Cancel();
-                _inspectionWeightCts?.Cancel();
 
                 // 2. Dừng Polling của Snap7
                 _sub?.Stop();
@@ -418,6 +1052,10 @@ namespace WeightChecking
             }
             finally
             {
+                _readModbus?.Dispose();
+                _readModbus = null;
+                _readModbusTask = null;
+
                 _resetUiCts?.Dispose();
                 _resetUiCts = null;
                 _resetUiTask = null;
@@ -456,7 +1094,7 @@ namespace WeightChecking
                 {
                     var s = barcodeString.Split('|');
                     var s1 = s[0].Split(',');
-                    _unit = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+                    _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
                     //Check xem  QR code quét vào có đúng định dạng hay ko
 
@@ -526,37 +1164,37 @@ namespace WeightChecking
 
                         if (s2[0] == "1")
                         {
-                            _scanDataMetal.Location = EnumLocation.fVN;
+                            _scanDataMetal.Location = LocationEnum.fVN;
                         }
                         else if (s2[0] == "2")
                         {
-                            _scanDataMetal.Location = EnumLocation.fFT;
+                            _scanDataMetal.Location = LocationEnum.fFT;
                         }
                         else if (s2[0] == "3")
                         {
-                            _scanDataMetal.Location = EnumLocation.fKV;
+                            _scanDataMetal.Location = LocationEnum.fKV;
                         }
                     }
                     else
                     {
                         if (s[1] == "1")
                         {
-                            _scanDataMetal.Location = EnumLocation.fVN;
+                            _scanDataMetal.Location = LocationEnum.fVN;
                         }
                         else if (s[1] == "2")
                         {
-                            _scanDataMetal.Location = EnumLocation.fFT;
+                            _scanDataMetal.Location = LocationEnum.fFT;
                         }
                         else if (s[1] == "3")
                         {
-                            _scanDataMetal.Location = EnumLocation.fKV;
+                            _scanDataMetal.Location = LocationEnum.fKV;
                         }
                     }
                 }
                 else
                 {
                     var s1 = _scanDataMetal.BarcodeString.Split(',');
-                    _unit = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+                    _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
                     //Check xem  QR code quét vào có đúng định dạng hay ko
                     var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstCharMetal);
@@ -1050,6 +1688,7 @@ namespace WeightChecking
             }
             finally
             {
+                _scannerIsBussy[0] = false;
             }
         }
 
@@ -1060,6 +1699,7 @@ namespace WeightChecking
 
             try
             {
+                SendDynamicString(" ", " ", " ");
                 //reset model để lưu cho thùng mới
                 _scanDataWeight = null;
                 _scanDataWeight = new tblScanData();
@@ -1097,7 +1737,7 @@ namespace WeightChecking
                 {
                     var s = barcodeString.Split('|');
                     var s1 = s[0].Split(',');
-                    _scanDataWeight.Unit = _unit = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+                    _scanDataWeight.Unit = _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
                     //Check xem  QR code quét vào có đúng định dạng hay ko
 
@@ -1134,37 +1774,37 @@ namespace WeightChecking
 
                         if (s2[0] == "1")
                         {
-                            _scanDataWeight.Location = EnumLocation.fVN;
+                            _scanDataWeight.Location = LocationEnum.fVN;
                         }
                         else if (s2[0] == "2")
                         {
-                            _scanDataWeight.Location = EnumLocation.fFT;
+                            _scanDataWeight.Location = LocationEnum.fFT;
                         }
                         else if (s2[0] == "3")
                         {
-                            _scanDataWeight.Location = EnumLocation.fKV;
+                            _scanDataWeight.Location = LocationEnum.fKV;
                         }
                     }
                     else
                     {
                         if (s[1] == "1")
                         {
-                            _scanDataWeight.Location = EnumLocation.fVN;
+                            _scanDataWeight.Location = LocationEnum.fVN;
                         }
                         else if (s[1] == "2")
                         {
-                            _scanDataWeight.Location = EnumLocation.fFT;
+                            _scanDataWeight.Location = LocationEnum.fFT;
                         }
                         else if (s[1] == "3")
                         {
-                            _scanDataWeight.Location = EnumLocation.fKV;
+                            _scanDataWeight.Location = LocationEnum.fKV;
                         }
                     }
                 }
                 else
                 {
                     var s1 = _scanDataWeight.BarcodeString.Split(',');
-                    _scanDataWeight.Unit = _unit = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+                    _scanDataWeight.Unit = _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
 
 
                     //Check xem  QR code quét vào có đúng định dạng hay ko
@@ -1422,11 +2062,11 @@ namespace WeightChecking
                             _scanDataWeight.StdGrossWeight = Math.Round(_scanDataWeight.StdNetWeight + _scanDataWeight.PackageWeight + _scanDataWeight.BoxWeight, 3);
 
                             #region tinh toán standardWeight theo Pair/Left/Right. lưu ý để sau này có áp dụng thì làm
-                            //if (_unit == "P")
+                            //if (_plr == "P")
                             //{
                             //    _scanDataWeight.GrossdWeight = res.Weight * res.QtyPerbag + res.BagWeight;
                             //}
-                            //else if (_unit == "L")
+                            //else if (_plr == "L")
                             //{
                             //    if (res.LeftWeight == 0)
                             //    {
@@ -1437,7 +2077,7 @@ namespace WeightChecking
                             //        _scanDataWeight.StandardWeight = res.LeftWeight * res.QtyPerbag + res.BagWeight;
                             //    }
                             //}
-                            //else if (_unit == "R")
+                            //else if (_plr == "R")
                             //{
                             //    if (res.RightWeight == 0)
                             //    {
@@ -1524,23 +2164,20 @@ namespace WeightChecking
                                             var passMetal = "Passed quality check";
                                             var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
 
-                                            //gửi thông tin trọng lượng xuống máy in
-                                            //SendDynamicString($"{idLabel}  {passMetal}"
-                                            //                   , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
-                                            //                   , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
-                                            //                  );
+                                            SendDynamicString($"{idLabel}  {passMetal}"
+                                                               , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
+                                                               , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                                              );
                                         }
                                         else
                                         {
                                             //nếu là hàng sơn thì chỉ in ra khối lượng
                                             var passMetal = "Passed quality check";
                                             var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
-
-                                            //gửi thông tin trọng lượng xuống máy in
-                                            //SendDynamicString(" "
-                                            //              , $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")}"
-                                            //              , " "
-                                            //             );
+                                            SendDynamicString(" "
+                                                          , $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")}"
+                                                          , " "
+                                                         );
                                         }
 
                                         //bat den xanh 
@@ -1550,7 +2187,7 @@ namespace WeightChecking
                                         //hien thi mau label
                                         GlobalVariables.InvokeIfRequired(this, () =>
                                         {
-                                            _labResult.Text = "OK";
+                                            _labResult.Text = "PASSED";
                                             _labResult.BackColor = Color.Green;
                                             _labResult.ForeColor = Color.White;
                                             _labResultMessage.Text = "Khối lượng OK. In tem.";
@@ -1666,7 +2303,7 @@ namespace WeightChecking
                                         LogDataScan(dbContextSSFG);
                                         #endregion
 
-                                        throw new Exception("Khối lượng lỗi.");
+                                        throw new Exception($"Khối lượng lỗi. {_scanDataWeight.OcNo} - {_scanDataWeight.BoxNo} - {_scanDataWeight.Unit} - lệch: {_scanDataWeight.DeviationPairs} {_unitLabel}.");
                                     }
                                     else if (statusLogData == 1)
                                     {
@@ -1729,18 +2366,17 @@ namespace WeightChecking
 
                                     _approvePrint = true;
 
-                                    //Gửi thông tin trọng lượng xuống máy in
-                                    //SendDynamicString($"{idLabel}  {passMetal}"
-                                    //                    , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
-                                    //                    , $"{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")} {_scanDataWeight.LotNo}"
-                                    //                  );
+                                    SendDynamicString($"{idLabel}  {passMetal}"
+                                                        , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
+                                                        , $"{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")} {_scanDataWeight.LotNo}"
+                                                      );
 
                                     GlobalVariables.MyEvent.StatusLightPLC = 2;
                                     //hien thi mau label
 
                                     GlobalVariables.InvokeIfRequired(this, () =>
                                     {
-                                        _labResult.Text = "OK";
+                                        _labResult.Text = "PASSED";
                                         _labResult.BackColor = Color.Green;
                                         _labResult.ForeColor = Color.White;
                                         _labResultMessage.Text = "Hàng heel counter OK. Không kiểm tra khối lượng.";
@@ -1799,7 +2435,7 @@ namespace WeightChecking
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
                     _labResultMessage.Text = ex.Message;
-                    _labResult.Text = "NG";
+                    _labResult.Text = "FAILED";
                     _labResult.BackColor = Color.Red;
                     _labResult.ForeColor = Color.White;
                 });
@@ -1841,9 +2477,870 @@ namespace WeightChecking
                 _resetUI = true;
             }
         }
+
+        private void BarcodeScanner3Handle(int station, string barcodeString)
+        {
+            try
+            {
+                if (_labQrDistribution.InvokeRequired)
+                {
+                    _labQrDistribution.Invoke(new Action(() =>
+                    {
+                        _labQrDistribution.Text = barcodeString;
+                    }));
+                }
+                else
+                {
+                    _labQrDistribution.Text = barcodeString;
+                }
+
+                #region Xử lý data ban đầu theo QR code
+                bool specialCasePrint = false;//dùng có các trường hợp hàng PU, trên WL decpration là 0, nhưng QC phân ra printing 0-1. beforePrinting thì get theo
+                                              //printing=0; afterPrinting thì get theo printing=1. 6112012228
+
+                #region xử lý barcode lấy ra các giá trị theo code
+                _scanDataPrint.BarcodeString = barcodeString;
+                var ocFirstCharPrint = barcodeString.Substring(0, 2);
+
+                if (_scanDataPrint.BarcodeString.Contains("|"))
+                {
+                    var s = barcodeString.Split('|');
+                    var s1 = s[0].Split(',');
+                    _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+
+                    //Check xem  QR code quét vào có đúng định dạng hay ko
+
+                    var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstCharPrint);
+
+                    if (resultCheckOc != null)
+                    {
+                        _scanDataPrint.OcNo = s1[0];
+                    }
+                    else
+                    {
+                        Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        GlobalVariables.InvokeIfRequired(this, () =>
+                        {
+                            _labResultDistribution.Text = "OC không đúng định dạng.";
+                            _labResultDistribution.ForeColor = Color.Red;
+                        });
+
+                        //ghi lệnh reject do ko quet đc tem
+                        GlobalVariables.MyEvent.PrintPusher = 0;
+                        //_scannerIsBussy[2] = false;
+                        return;
+                    }
+
+                    _scanDataPrint.ProductNumber = s1[1];
+                }
+                else
+                {
+                    var s1 = _scanDataPrint.BarcodeString.Split(',');
+                    _plr = s1[4];//get Thung này đóng theo đôi (P) hay L/R
+
+                    //Check xem  QR code quét vào có đúng định dạng hay ko
+                    var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstCharPrint);
+
+                    if (resultCheckOc != null)
+                    {
+                        _scanDataPrint.OcNo = s1[0];
+                    }
+                    else
+                    {
+                        Debug.WriteLine("QR code bị sai, xóa đi rồi scan lại", "LỖI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                        GlobalVariables.InvokeIfRequired(this, () =>
+                        {
+                            _labResultDistribution.Text = "OC không đúng định dạng.";
+                            _labResultDistribution.ForeColor = Color.Red;
+                        });
+
+                        //ghi lệnh reject do ko quet đc tem
+                        GlobalVariables.MyEvent.PrintPusher = 0;
+                        //_scannerIsBussy[2] = false;
+                        return;
+                    }
+
+                    //_scanDataPrint.OcNo = s1[0];
+                    _scanDataPrint.ProductNumber = s1[1];
+                }
+
+                #region check special case
+                foreach (var item in GlobalVariables.SpecialCaseList)
+                {
+                    if (_scanDataPrint.ProductNumber.Split('-')[0].Equals(item.MainItem))
+                    {
+                        specialCasePrint = true;
+
+                        break;
+                    }
+                }
+                #endregion
+
+                #endregion
+                #endregion
+
+                using (var connection = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
+                {
+                    var resultCheckOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstCharPrint && ocFirstCharPrint == "PR");
+
+                    if (resultCheckOc != null)
+                    {
+                        Debug.WriteLine($"ProductNumber: {_scanDataPrint.ProductNumber} là hàng sơn.");
+
+                        GlobalVariables.InvokeIfRequired(this, () =>
+                        {
+                            _labResultDistribution.Text = "Hàng đi sơn.";
+                            _labResultDistribution.ForeColor = Color.Green;
+                        });
+
+                        GlobalVariables.MyEvent.PrintPusher = 1;
+
+                        // xử lý insert RackStorage cho hàng sơn (nếu là hàng đi sơn thì vào kho 10)
+                        //GlobalVariables.AutoPostingStatus = AutoPostingHelper.AutoTransfer(_scanDataPrint.ProductNumber, barcodeString, 1185, 10, dbContext);
+                    }
+                    else// không phải hàng sơn thì transfer vào kho 2
+                    {
+                        GlobalVariables.MyEvent.PrintPusher = 0;
+
+                        // xử lý insert RackStorage cho hàng sơn (nếu là hàng đi sơn thì vào kho 2)
+
+                        //var accept = AutoPostingHelper.CheckIn(_scanDataPrint.ProductNumber, barcodeString, dbContext).FirstOrDefault();
+
+                        //GlobalVariables.AutoPostingStatus = AutoPostingHelper.AutoTransfer(_scanDataPrint.ProductNumber, barcodeString, 1223, 2, dbContext);
+
+                        GlobalVariables.InvokeIfRequired(this, () =>
+                        {
+                            _labResultDistribution.Text = "Hàng FG.";
+                            _labResultDistribution.ForeColor = Color.Green;
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //hien thi mau label
+                GlobalVariables.InvokeIfRequired(this, () =>
+                {
+                    _labResultDistribution.Text = "System fail.";
+                    _labResultDistribution.ForeColor = Color.Red;
+                });
+                Log.Error(ex.ToString(), "Lỗi scale form tại trạm scanner 3 print.");
+            }
+            finally
+            {
+                _readQrStatus[2] = false;//trả lại bit này để quét lần sau
+            }
+        }
         #endregion
 
+        #region Read scanner using SDK
+        void InitializeScaner()
+        {
+            //Instantiate CoreScanner Class
+            _cCoreScannerClass = new CCoreScanner();
+            //Call Open API
+            short[] scannerTypes = new short[1]; // Scanner Types you are interested in
+            scannerTypes[0] = 2; // 1 for all scanner types
+            short numberOfScannerTypes = 1; // Size of the scannerTypes array
+            int status; // Extended API return code
+            _cCoreScannerClass.Open(0, scannerTypes, numberOfScannerTypes, out status);
+            // Lets list down all the scanners connected to the host
+            short numberOfScanners; // Number of scanners expect to be used
+            int[] connectedScannerIDList = new int[255];
+            // List of scanner IDs to be returned
+            string outXML; //Scanner details output
+            _cCoreScannerClass.GetScanners(out numberOfScanners, connectedScannerIDList,
+            out outXML, out status);
+            Console.WriteLine(outXML);
+
+            // Subscribe for barcode events in cCoreScannerClass
+            _cCoreScannerClass.BarcodeEvent += new
+            _ICoreScannerEvents_BarcodeEventEventHandler(OnBarcodeEvent);
+
+            // Let's subscribe for events
+            int opcode = 1001; // Method for Subscribe events
+
+            string inXML = "<inArgs>" +
+            "<cmdArgs>" +
+            "<arg-int>1</arg-int>" + // Number of events you want to subscribe
+            "<arg-int>1</arg-int>" + // Comma separated event IDs
+            "</cmdArgs>" +
+            "</inArgs>";
+            _cCoreScannerClass.ExecCommand(opcode, ref inXML, out outXML, out status);
+            Console.WriteLine(outXML);
+
+            inXML = "<inArgs>" +
+           "<cmdArgs>" +
+           "<arg-int>2</arg-int>" + // Number of events you want to subscribe
+           "<arg-int>1</arg-int>" + // Comma separated event IDs
+           "</cmdArgs>" +
+           "</inArgs>";
+            _cCoreScannerClass.ExecCommand(opcode, ref inXML, out outXML, out status);
+            Console.WriteLine(outXML);
+
+            inXML = "<inArgs>" +
+           "<cmdArgs>" +
+           "<arg-int>3</arg-int>" + // Number of events you want to subscribe
+           "<arg-int>1</arg-int>" + // Comma separated event IDs
+           "</cmdArgs>" +
+           "</inArgs>";
+            _cCoreScannerClass.ExecCommand(opcode, ref inXML, out outXML, out status);
+            Console.WriteLine(outXML);
+        }
+
+        void OnBarcodeEvent(short eventType, ref string pscanData)
+        {
+            var r = eventType;
+            string barcode = pscanData;//string từ scanner trả về
+
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(barcode);
+
+            //Get ra Id của scanner
+            var scannerId = xmlDoc.GetElementsByTagName("scannerID");
+
+            using (var connection = GlobalVariables.GetDbConnection())
+            {
+                if (scannerId[0].InnerText == GlobalVariables.ConfigJson.ScannerIdMetal.ToString())//vị trí check metal. đầu chuyền
+                {
+                    _barcodeString1 = string.Empty;
+                    if (!_scannerIsBussy[0])
+                    {
+                        //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                        _scannerIsBussy[0] = true;
+
+                        //bật biến báo đọc đc QR code từ label
+                        _readQrStatus[0] = true;
+
+                        //this?.Invoke((MethodInvoker)delegate { txtDataAscii1.Text = xmlDoc.GetElementsByTagName("datalabel")[0].InnerText; });
+                        _barcodeString1 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+
+                        //reset model;
+                        _scanDataMetal = null;
+                        _scanDataMetal = new tblScanData();
+
+                        BarcodeScanner1Handle(1, _barcodeString1);
+                    }
+                }
+                else if (scannerId[0].InnerText == GlobalVariables.ConfigJson.ScannerIdPrint.ToString())//vị trí phân loại hàng sơn cuối chuyền
+                {
+                    if (!_scannerIsBussy[2])
+                    {
+                        //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
+                        _scannerIsBussy[2] = true;
+
+                        //bật biến báo đọc đc QR code từ label
+                        _readQrStatus[2] = true;
+
+                        _barcodeString3 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+
+                        //reset model;
+                        _scanDataPrint = null;
+                        _scanDataPrint = new tblScanData();
+
+                        BarcodeScanner3Handle(3, _barcodeString3);
+
+                        //reset model;
+                        _scanDataPrint = null;
+                        _scanDataPrint = new tblScanData();
+                    }
+                }
+            }
+        }
+
+        string AsciiToString(string contentStr)
+        {
+            string returnValue = null;
+
+            string[] splitStr = contentStr.Split(' ');
+
+            foreach (var item in splitStr)
+            {
+                int n = Convert.ToInt32(item, 16);//chuyển đổi từ HEX --> DEC
+
+                returnValue = returnValue + (char)n;//get ky tu ASCII
+            }
+
+            return returnValue;
+        }
+        #endregion
+
+        #region Printing AnserU2 smart one (TCP)
+        private void PrinterOpen()
+        {
+            try
+            {
+                _printerDriver = new AnserU2TcpDriver
+                {
+                    IpAddress = GlobalVariables.ConfigJson.IpPrinter,
+                    Port = GlobalVariables.ConfigJson.PortPrinter
+                };
+                _printerDriver.DataReceived += PrinterDataReceived;
+                _printerDriver.ConnectionStatusChanged += status =>
+                {
+                    GlobalVariables.PrintConnectionStatus = status == "Connected" ? "Good" : status;
+                    Debug.WriteLine($"[AnserU2 TCP] {status}");
+                };
+                _printerDriver.Connect();
+
+                GlobalVariables.PrintConnectionStatus = "Connecting...";
+                StartPrint();
+            }
+            catch (Exception ex)
+            {
+                GlobalVariables.PrintConnectionStatus = "Bad";
+                MessageBox.Show(ex.ToString(), "Error");
+            }
+        }
+
+        private void PrinterClose()
+        {
+            if (_printerDriver == null) return;
+            _printerDriver.DataReceived -= PrinterDataReceived;
+            _printerDriver.Dispose();
+            _printerDriver = null;
+        }
+
+        private void PrinterDataReceived(byte[] rcvArr)
+        {
+            try
+            {
+                if (rcvArr == null || rcvArr.Length < 5) return;
+
+                //xet phan tu thu 4 trong mang rcvArr[4] de check status
+                //0x4F-79--> OK
+                //0x31-49-->Fail
+                //0x30-48-->may in phan hoi in thanh cong
+
+                if (rcvArr[4] == 0x30)
+                {
+                    Console.WriteLine($"in thanh cong!!!");
+                    GlobalVariables.PrintedResult = $"In thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
+
+                    //reset model;
+                    _scanDataWeight = null;
+                    _scanDataWeight = new tblScanData();
+                    //xoa string
+                    //SendDynamicString(" ", " ", " ");
+                }
+                else if (rcvArr[4] == 0x4F)
+                {
+                    Console.WriteLine($"Gui lenh xuong may in thanh cong!!!");
+                    GlobalVariables.PrintResult = $"Gửi lệnh xuống máy in thành công.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
+                }
+                else if (rcvArr[4] == 0x31)
+                {
+                    Console.WriteLine($"Loi. Error Code: {rcvArr[5]}. Kết nối lại máy in.");
+                    // MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    GlobalVariables.PrintResult = $"Lỗi in.{rcvArr[5]}|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
+
+                    //ghi giá trị xuống PLC cân reject
+                    GlobalVariables.MyEvent.WeightPusher = 1;
+
+                    //bat den đỏ 
+                    GlobalVariables.MyEvent.StatusLightPLC = 1;
+                    //hien thi mau label
+
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        _labResult.Text = "FAILED";
+                        _labResult.BackColor = Color.Red;
+                        _labResult.ForeColor = Color.White;
+                        _labResultMessage.Text = "Fail Printing. IN KHÔNG THÀNH CÔNG.";
+
+                        //hiển thị cho trạng thái log
+                        _labLastResultMessage.Text = "Fail printing.";
+                        _labLastResultMessage.ForeColor = Color.Red;
+                    });
+
+                    Log.Error("In không thành công.");
+
+                    StopPrint();
+                    Thread.Sleep(10000);
+                    StartPrint();
+                    Thread.Sleep(10000);
+                }
+                else
+                {
+                    //Console.WriteLine($"Loi. Error Code: {rcvArr[5]}. Kết nối lại máy in.");
+                    // MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    GlobalVariables.PrintResult = $"IN KHÔNG THÀNH CÔNG.{rcvArr[5]}|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
+
+                    //ghi giá trị xuống PLC cân reject
+                    GlobalVariables.MyEvent.WeightPusher = 1;
+
+                    //bat den đỏ 
+                    GlobalVariables.MyEvent.StatusLightPLC = 1;
+
+                    //hien thi mau label
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        _labResult.Text = "FAILED";
+                        _labResult.BackColor = Color.Red;
+                        _labResult.ForeColor = Color.White;
+                        _labResultMessage.Text = "Fail Printing. IN KHÔNG THÀNH CÔNG.";
+                    });
+
+                    Log.Error(GlobalVariables.PrintResult);
+
+                    using (var dbContextSSFG = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
+                    {
+                        DynamicParameters para = new DynamicParameters();
+                        //kiem tra neu co log vao thi xoa di
+                        var checkEixst = dbContextSSFG.TblScanDatas.Where(x => x.Actived == 1 && x.BarcodeString == _scanDataWeight.BarcodeString).ToList();
+                        checkEixst?.ForEach(x => x.Actived = 0);
+
+                        var rejectLine = new tblScanDataReject()
+                        {
+                            Id = Guid.NewGuid(),
+                            IsActived = 1,
+                            CreatedDate = DateTime.Now,
+                            CreatedMachine = Environment.MachineName,
+                            BarcodeString = _scanDataMetal.BarcodeString,
+                            IdLabel = _scanDataMetal.IdLabel,
+                            OcNo = _scanDataMetal.OcNo,
+                            BoxId = _scanDataMetal.BoxNo,
+                            ProductName = _scanDataMetal.ProductName,
+                            ProductNumber = _scanDataMetal.ProductNumber,
+                            Quantity = _scanDataMetal.Quantity,
+                            ScannerStation = EnumStation.Scale.ToString(),
+                            Reason = GlobalVariables.PrintedResult,
+                            GrossWeight = _scanDataMetal.GrossWeight,
+                            DeviationPairs = _scanDataMetal.DeviationPairs,
+                            DeviationWeight = _scanDataMetal.Deviation
+                        };
+                        dbContextSSFG.TblScanDataRejects.Add(rejectLine);
+                        dbContextSSFG.SaveChanges();
+                    }
+                }
+
+                //else if (rcvArr[4] == 0x5D)//93 get speed
+                //{
+                //    var speedPV = (double)(rcvArr[5] + rcvArr[6] * 0x100 + rcvArr[7] * 0x1000 + rcvArr[8] * 0x10000);
+                //    speedPV = Math.Round(speedPV / 1000, 2);
+                //}
+                //else if (rcvArr[4] == 0x64)//100 get delay
+                //{
+                //    var delayPV = (double)(rcvArr[5] + rcvArr[6] * 0x100 + rcvArr[7] * 0x1000 + rcvArr[8] * 0x10000);
+                //    delayPV = Math.Round(delayPV / 100, 2);
+                //}
+
+                //GlobalVariables.PrintResult = string.Empty;
+                //foreach (var item in rcvArr)
+                //{
+                //    GlobalVariables.PrintResult += item;
+                //}
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Printing data received error: {ex.ToString()}");
+                GlobalVariables.PrintResult = $"Printing data received error: {ex.ToString()}";
+
+                //ghi giá trị xuống PLC cân reject
+                GlobalVariables.MyEvent.WeightPusher = 1;
+
+                //bat den đỏ 
+                GlobalVariables.MyEvent.StatusLightPLC = 1;
+                //hien thi mau label
+
+                GlobalVariables.InvokeIfRequired(this, () =>
+                {
+                    _labResult.Text = "FAILED";
+                    _labResult.BackColor = Color.Red;
+                    _labResult.ForeColor = Color.White;
+                    _labLastResultMessage.Text = "EXCEPTION of printing.";
+                    _labLastResultMessage.ForeColor = Color.Red;
+                });
+            }
+            finally
+            {
+
+            }
+        }
+
+        //private void btn_sendSTRING1_Click(object sender, EventArgs e)
+        //{
+        //    string string1 = txtString1.Text;
+        //    string string2 = txtString2.Text;
+
+        //    SendDynamicString(string1, string2);
+        //}
+
+        private void StartPrint()
+        {
+            try
+            {
+                byte[] SetPtinting = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
+                SetPtinting[5] = 2; // chon ban in so 2
+                byte chkSUM = 0;
+                for (var i = 1; i <= SetPtinting.Length - 3; i++)
+                    chkSUM = (byte)(chkSUM + SetPtinting[i]);
+                SetPtinting[9] = chkSUM;
+                _printerDriver?.Write(SetPtinting);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Start print error: {ex.ToString()}");
+            }
+            finally
+            {
+                Thread.Sleep(500);
+            }
+        }
+
+        private void StopPrint()
+        {
+            try
+            {
+                byte[] SetPtinting = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x4C, 0x3 };
+                _printerDriver?.Write(SetPtinting);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Stop print error: {ex.ToString()}");
+            }
+            finally
+            {
+                Thread.Sleep(500);
+            }
+        }
+
+        /// <summary>
+        /// Method truyen noi dung xuong may in.
+        /// In ok thì mới log vào DB.
+        /// </summary>
+        /// <param name="grossWeight">Khối lượng cân thực tế.</param>
+        /// <param name="createdDate">Thời điểm cân.</param>
+        /// <param name="idLabel">'IdLabel' hoặc là 'OC|BoxNo'.</param>
+        private void SendDynamicString(string idLabel, string grossWeight, string createdDate)
+        {
+            try
+            {
+                int i = 0, j = 0, k = 0;
+                int chkSUM = 0;
+
+                byte[] SetDynamicString = new byte[14 + grossWeight.Length + createdDate.Length + idLabel.Length];
+                SetDynamicString[0] = 0x2;
+                SetDynamicString[1] = 0x0;
+                SetDynamicString[2] = (byte)(9 + grossWeight.Length + createdDate.Length + idLabel.Length);
+                SetDynamicString[3] = 0x0;
+                SetDynamicString[4] = 0xCA; // Mã lệnh Set dynamic string
+                SetDynamicString[5] = 0;
+                SetDynamicString[6] = 0;
+                SetDynamicString[7] = (byte)(grossWeight.Length); // Chiều dài của string 1
+                SetDynamicString[8] = (byte)(createdDate.Length); // Chiều dài của string 2
+                SetDynamicString[9] = (byte)(idLabel.Length); // Chiều dài của string 3
+                SetDynamicString[10] = 0;// (byte)(passMetal.Length); // Chiều dài của string 4
+                SetDynamicString[11] = 0; // Chiều dài của string 5
+
+                //chuyen string sang ASCII
+                var string1Arr = grossWeight.ToCharArray();
+                var string2Arr = createdDate.ToCharArray();
+                var string3Arr = idLabel.ToCharArray();
+
+                byte[] string1Ascii = Encoding.ASCII.GetBytes(string1Arr);
+                byte[] string2Ascii = Encoding.ASCII.GetBytes(string2Arr);
+                byte[] string3Ascii = Encoding.ASCII.GetBytes(string3Arr);
+
+                for (i = 0; i <= string1Ascii.Length - 1; i++)
+                {
+                    SetDynamicString[12 + i] = string1Ascii[i];// Nội dung của string 1
+                }
+
+                for (j = 0; j <= string2Ascii.Length - 1; j++)
+                {
+                    SetDynamicString[12 + i + j] = string2Ascii[j];// Nội dung của string 2
+                }
+
+                for (k = 0; k <= string3Ascii.Length - 1; k++)
+                {
+                    SetDynamicString[12 + i + j + k] = string3Ascii[k];// Nội dung của string 3
+                }
+
+                // Tính check SUM
+                for (var c = 1; c <= i + j + k + 12; c++)
+                    chkSUM = chkSUM + SetDynamicString[c];
+                chkSUM = chkSUM & 0xFF;
+                SetDynamicString[i + j + k + 12] = System.Convert.ToByte(chkSUM); // Gán byte checksum vào arr
+                SetDynamicString[i + j + k + 12 + 1] = 0x3;
+
+                _printerDriver?.Write(SetDynamicString);
+            }
+            catch (Exception ex)
+            {
+                //ghi giá trị xuống PLC cân reject
+                GlobalVariables.MyEvent.WeightPusher = 1;
+
+                //bat den đỏ 
+                GlobalVariables.MyEvent.StatusLightPLC = 1;
+
+                //hien thi mau label
+                GlobalVariables.InvokeIfRequired(this, () =>
+                {
+                    _labResult.Text = "FAILED";
+                    _labResult.BackColor = Color.Red;
+                    _labResult.ForeColor = Color.White;
+                    _labResultMessage.Text = "System fail.Fail Printing. Lỗi khi đang truyền dữ liệu xuống máy in.";
+                });
+
+                Log.Error(ex, $"System fail. Lỗi khi đang truyền dữ liệu xuống máy in. Ex:{ex.ToString()}.");
+            }
+        }
+
+        private void simpleButton1_Click(object sender, EventArgs e)
+        {
+            //BarcodeHandle(2, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
+        }
+
+        private void btn_Setspeed_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                byte[] setSpeed = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x5E, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
+
+                int speedSV = 10 * 1000;// (int)(double.TryParse(txt_SpeedSV.Text, out double value) ? value * 1000 : 0);
+
+                byte[] speedSVarr = BitConverter.GetBytes(speedSV);
+
+                // Gán giá trị tốc độ vào arr
+                var i = 0;
+                foreach (var item in speedSVarr)
+                {
+                    setSpeed[5 + i] = item;
+                    i += 1;
+                }
+
+                // Tính checksum
+                int chksum = 0;
+                for (var j = 1; j <= setSpeed.Length - 2; j++)
+                    chksum = chksum + setSpeed[j];
+                chksum = chksum & 0xFF;
+                // Gán checksum vào arr
+                setSpeed[9] = System.Convert.ToByte(chksum);
+                _printerDriver?.Write(setSpeed);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Printing set speed error: {ex.ToString()}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
+        }
+
+        private void labErrInfoMetal_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void labelControl40_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btn_GetSpeed_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                byte[] GetSpeed = new byte[] { 0x2, 0x0, 0x2, 0x0, 0x5D, 0x5F, 0x3 };
+                _printerDriver?.Write(GetSpeed);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Printing get speed error: {ex.ToString()}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
+        }
+
+        private void labSize_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnGetDelay_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                byte[] GetDelay = new byte[] { 0x2, 0x0, 0x4, 0x0, 0x64, 0x2, 0x0, 0x6A, 0x3 };
+                // Id ban tin =2
+                _printerDriver?.Write(GetDelay);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Printing get delay error: {ex.ToString()}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
+        }
+
+        private void btnSetDelay_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                byte[] setDelay = new byte[] { 0x2, 0x0, 0x8, 0x0, 0x65, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3 };
+                // Gán IDbản tin
+                setDelay[5] = 0x2;
+
+                int delaySV = 10 * 10;// (int)(double.TryParse(txtDelaySV.Text, out double value) ? value * 10 : 0);
+
+                byte[] delaySVarr = BitConverter.GetBytes(delaySV);
+
+                // Gán giá trị tốc độ vào arr
+                var i = 0;
+                foreach (var item in delaySVarr)
+                {
+                    setDelay[7 + i] = item;
+                    i += 1;
+                }
+
+                // Tính checksum
+                int chksum = 0;
+                for (var j = 1; j <= setDelay.Length - 2; j++)
+                    chksum = chksum + setDelay[j];
+                chksum = chksum & 0xFF;
+                // Gán checksum vào arr
+                setDelay[11] = System.Convert.ToByte(chksum);
+                _printerDriver?.Write(setDelay);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Printing set delay error: {ex.ToString()}");
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(500);
+            }
+        }
+        #endregion
+
+
         #region Task and other methos
+        /// <summary>
+        /// Chạy method này để tính thời gian quét Qr.
+        /// Sau thời gian này mà chưa đọc đọc QR Thì báo không đọc được, ghi tín hiệu xuống cho MetalPusher reject.
+        /// </summary>
+        public void CheckReadQr(int timeCheckSettings)
+        {
+            Debug.WriteLine("Bat dau vao dem thoi gian doc barcode");
+            double timeCheck = 0;
+            DateTime startTime = DateTime.Now;
+            DateTime endTime = DateTime.Now;
+
+            while (timeCheck <= timeCheckSettings)
+            {
+                timeCheck = (endTime - startTime).TotalSeconds;
+                endTime = DateTime.Now;
+                //Debug.WriteLine($"Dem thoi gian bao Metal Scanner fail: {timeCheck}");
+                Thread.Sleep(10);
+            }
+
+            //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject
+            if (!_readQrStatus[0])
+            {
+                Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram metal");
+
+                GlobalVariables.InvokeIfRequired(this, () =>
+                {
+                    _labResultIdentification.Text = "Không đọc được QR code, Kiểm tra lại tem.";
+                    _labResultIdentification.ForeColor = Color.Red;
+                    _labQrIdentification.Text = string.Empty;
+                });
+
+                //hết thời gian đọc QR code mà chưa đọc được
+                //gui data xuong PLC báo reject metalPusher
+                _metalScannerStatus = 1;
+
+                _scanDataMetal = null;
+                _scanDataMetal = new tblScanData();
+                //log vao bang reject
+                using (var dbContextSSFG = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
+                {
+                    var rejectLine = new tblScanDataReject()
+                    {
+                        Id = Guid.NewGuid(),
+                        IsActived = 1,
+                        CreatedDate = DateTime.Now,
+                        CreatedMachine = Environment.MachineName,
+                        ScannerStation = EnumStation.Identification.ToString(),
+                        Reason = "Không đọc được QR code, Kiểm tra lại tem."
+                    };
+                    dbContextSSFG.TblScanDataRejects.Add(rejectLine);
+                    dbContextSSFG.SaveChanges();
+                }
+            }
+            _readQrStatus[0] = false;//xóa biến này cho lần đọc kế tiếp
+        }
+
+        /// <summary>
+        /// Chạy method này để tính thời gian quét Qr.
+        /// Sau thời gian này mà chưa đọc đọc QR Thì báo không đọc được, ghi tín hiệu xuống cho MetalPusher reject.
+        /// </summary>
+        public void CheckReadQrWeight()
+        {
+            double timeCheck = 0;
+            DateTime startTime = DateTime.Now;
+            DateTime endTime = DateTime.Now;
+
+            while (timeCheck <= GlobalVariables.ConfigJson.TimerCheckQrScale)
+            {
+                timeCheck = (endTime - startTime).TotalSeconds;
+                endTime = DateTime.Now;
+                //Debug.WriteLine($"Dem thoi gian bao weight Scanner fail: {timeCheck}");
+                Thread.Sleep(100);
+            }
+
+            //hết thời gian mà vẫn chưa có tín hiệu từ scanner metal thì ghi tín hiệu xuống PLC conveyor báo reject
+            if (!_readQrStatus[1])
+            {
+                SendDynamicString(" ", " ", " ");
+
+                // Debug.WriteLine($"Ghi tin hieu bao reject do ko doc dc QR code tram scale");
+
+                //hết thời gian đọc QR code mà chưa đọc được
+                //gui data xuong PLC báo reject Weight Pusher
+                GlobalVariables.MyEvent.WeightPusher = 1;
+                //bật đèn đỏ
+                GlobalVariables.MyEvent.StatusLightPLC = 1;
+
+
+                GlobalVariables.InvokeIfRequired(this, () =>
+                {
+                    labQrScale.Text = string.Empty;
+                    _labResult.Text = "FAILED";
+                    _labResult.BackColor = Color.Red;
+                    _labResult.ForeColor = Color.White;
+                    _labResultMessage.Text = "Không đọc được QR code, Kiểm tra lại tem.";
+                });
+
+                //_scanDataWeight = null;
+                //_scanDataWeight = new tblScanDataModel();
+
+                //log vao bang reject
+                using (var dbContextSSFG = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
+                {
+                    var rejectLine = new tblScanDataReject()
+                    {
+                        Id = Guid.NewGuid(),
+                        IsActived = 1,
+                        CreatedDate = DateTime.Now,
+                        CreatedMachine = Environment.MachineName,
+                        ScannerStation = EnumStation.Scale.ToString(),
+                        Reason = "Không đọc được QR code, Kiểm tra lại tem."
+                    };
+                    dbContextSSFG.TblScanDataRejects.Add(rejectLine);
+                    dbContextSSFG.SaveChanges();
+                }
+            }
+            //_readQrStatus[1] = false;//xóa biến này cho lần đọc kế tiếp
+        }
+
         private async Task TaskTimerAsync(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
@@ -1853,8 +3350,14 @@ namespace WeightChecking
                     GlobalVariables.InvokeIfRequired(this, () =>
                     {
                         _labStatus.Text = $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} " +
-                              $"| PLC Status: {_plcConnectionState}";
-                        _labDateTime.Text = $"{_version}";
+                              $"| {GlobalVariables.UserLoginInfo.UserName} | Cognex cam: {GlobalVariables.CognexCam_2Status}" +
+                              $" | ConveyorStatus: {_plcConnectionState}. S1-{GlobalVariables.MyEvent.SensorBeforeMetalScan}. Sm-{GlobalVariables.MyEvent.SensorMiddleMetal}" +
+                              $";MC-{GlobalVariables.MyEvent.MetalCheckResult};S2-{GlobalVariables.MyEvent.SensorAfterMetalScan};PL-{GlobalVariables.MyEvent.SensorAfterPrintScannerFG};PR-{GlobalVariables.MyEvent.SensorAfterPrintScannerPrinting}" +
+                              $". Pusher: MS-{_metalScan};M-{_metalPusher};W-{_weightPusher};P-{_printPusher}" +
+                              $" | ModbusRTUStatus: {GlobalVariables.ModbusStatus}. SV:{GlobalVariables.MyEvent.ScaleValue}-ST:{GlobalVariables.MyEvent.ScaleValueStable}" +
+                              $"-Stable:{GlobalVariables.MyEvent.StableScale}-SIn:{GlobalVariables.MyEvent.SensorBeforeWeightScan}-result:{GlobalVariables.D506Value}-timer:{GlobalVariables.DelayPrintInterval}"
+                              + $" | PrintStatus: {GlobalVariables.PrintConnectionStatus} | AP1: {GlobalVariables.AutoPostingStatus1}|APM:{GlobalVariables.AutoPostingStatus2} | APW: {GlobalVariables.AutoPostingStatus3}";
+                        _labDateTime.Text = $"{GlobalVariables.AppStatus}|{Application.ProductVersion}";
                     });
 
                     await Task.Delay(300, token); // nhịp kiểm tra, đủ nhẹ nhàng
@@ -1873,7 +3376,111 @@ namespace WeightChecking
             }
         }
 
+        public async Task TaskReadModbusAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    #region Đọc các giá trị từ PLC Cân
+                    if (GlobalVariables.ConfigJson.IsScale)
+                    {
+                        if (GlobalVariables.ModbusStatus)
+                        {
+                            //thanh ghi D500 cua PLC Delta DPV14SS2 co dia chi la 4596
+                            GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.ReadHoldingRegisters(1, 4596, 12, ref _readHoldingRegisterArr);
+
+                            //GlobalVariables.MyEvent.CountValue = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 0);
+                            GlobalVariables.MyEvent.ScaleValue = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 2);
+                            GlobalVariables.MyEvent.ScaleValueStable = GlobalVariables.MyDriver.GetShortAt(_readHoldingRegisterArr, 4);
+                            GlobalVariables.MyEvent.StableScale = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 6);
+                            GlobalVariables.MyEvent.SensorBeforeWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 8);
+                            GlobalVariables.MyEvent.SensorAfterWeightScan = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 10);
+                            GlobalVariables.D506Value = GlobalVariables.MyDriver.GetUshortAt(_readHoldingRegisterArr, 12);
+                        }
+                        else
+                        {
+                            _countDisconnectPlc += 1;
+                            Debug.WriteLine($"Dem mat ket noi modbus RTU:{_countDisconnectPlc}");
+                            if (_countDisconnectPlc >= 3)
+                            {
+                                _countDisconnectPlc = 0;
+                                GlobalVariables.MyDriver.ModbusRTUMaster.NgatKetNoi();
+
+                                GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.KetNoi(GlobalVariables.ConfigJson.ComPortScale, 9600, 8, System.IO.Ports.Parity.None, System.IO.Ports.StopBits.One);
+
+                                Debug.WriteLine($"Ket noi lai modbus RTU. Result: {GlobalVariables.ModbusStatus}");
+                            }
+                        }
+                    }
+                    #endregion
+
+                    await Task.Delay(100, token); // nhịp kiểm tra, đủ nhẹ nhàng
+                }
+                catch (OperationCanceledException)
+                {
+                    // token.Cancel() => thoát vòng lặp
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    // Không để task chết âm thầm
+                    Log.Error(ex, "TaskReadModbusAsync loop error.");
+                    await Task.Delay(500, token); // tạm nghỉ rồi thử lại
+                }
+            }
+        }
+
         private async Task TaskCheckResetUIAsync(CancellationToken token)
+        {
+            var sw = Stopwatch.StartNew();
+            var lastResetAt = sw.Elapsed;
+            var intervalSeconds = GlobalVariables.ConfigJson.ResetUiInterval;
+
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    if (_resetUI)
+                    {
+                        var now = sw.Elapsed;
+                        var canReset = (now - lastResetAt).TotalSeconds >= intervalSeconds;
+
+                        if (canReset)
+                        {
+                            if (this.IsHandleCreated && !this.IsDisposed)
+                            {
+                                this.BeginInvoke(new Action(() =>
+                                {
+                                    try
+                                    {
+                                        ResetControl();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Error(ex, "ResetControl error.");
+                                    }
+                                }));
+                            }
+
+                            lastResetAt = now;
+                            _resetUI = false;   // tiêu thụ yêu cầu reset
+                        }
+
+                        // else: KHÔNG xoá _resetUI
+                    }
+
+                    await Task.Delay(200, token);
+                }
+                catch (OperationCanceledException) { break; }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "TaskCheckResetUIAsync error");
+                    await Task.Delay(500, token);
+                }
+            }
+        }
+        private async Task TaskCheckResetUIAsync1(CancellationToken token)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var lastResetAt = TimeSpan.Zero;
@@ -1936,56 +3543,6 @@ namespace WeightChecking
                 }
             }
         }
-
-        // Task sẽ “ngủ” cho đến khi có _triggerInspectionMetal.Set()
-        private async Task TaskInspectionMetalAsync(CancellationToken token)
-        {
-            try
-            {
-                while (true)
-                {
-                    // chờ sự kiện → không tốn CPU, không Sleep
-                    await _triggerInspectionMetal.WaitAsync(token);
-
-                    // === xử lý 1 lần duy nhất mỗi lần được kích ===
-                    Debug.WriteLine("TaskInspectionMetalAsync triggered.");
-
-                    // cập nhật UI an toàn thread
-                    BeginInvoke(new Action(() =>
-                    {
-                        label1.Text = $"BoxIdScale";
-                    }));
-
-                    // xong việc → quay lại vòng chờ (không cần Delay hay poll)
-                }
-            }
-            catch (OperationCanceledException) { /* thoát êm */ }
-        }
-
-        // Task sẽ “ngủ” cho đến khi có _triggerInspectionWeight.Set()
-        private async Task TaskInspectionWeightAsync(CancellationToken token)
-        {
-            try
-            {
-                while (true)
-                {
-                    // chờ sự kiện → không tốn CPU, không Sleep
-                    await _triggerInspectionWeight.WaitAsync(token);
-
-                    // === xử lý 1 lần duy nhất mỗi lần được kích ===
-                    Debug.WriteLine("TaskInspectionWeightAsync triggered.");
-
-                    // cập nhật UI an toàn thread
-                    BeginInvoke(new Action(() =>
-                    {
-                        label1.Text = $"BoxIdScale";
-                    }));
-
-                    // xong việc → quay lại vòng chờ (không cần Delay hay poll)
-                }
-            }
-            catch (OperationCanceledException) { /* thoát êm */ }
-        }
         #endregion
 
         private void LogDataScan(ApplicationDbContextSSFG dbContext)
@@ -2047,7 +3604,7 @@ namespace WeightChecking
                 dialogResult =
                         MessageBox.Show(
                             $@"SSFG App có phiên bản mới {args.CurrentVersion}. SSFG App bản hiện tại là {args.InstalledVersion}. Bạn có muốn lên phiên bản mới không?", @"Thông Báo",
-                           MessageBoxButtons.YesNo,
+                            MessageBoxButtons.YesNo,
                             MessageBoxIcon.Information);
 
                 if (dialogResult.Equals(DialogResult.Yes) || dialogResult.Equals(DialogResult.OK))
@@ -2061,7 +3618,7 @@ namespace WeightChecking
                         if (AutoUpdater.DownloadUpdate(args))
                         {
                             SplashScreenManager.CloseForm(false);
-                            System.Windows.Forms.Application.Exit();
+                            Application.Exit();
                         }
                         else
                         {
@@ -2086,6 +3643,20 @@ namespace WeightChecking
             }
         }
 
+        #region Event PLC
+        private void MyEvent_EventHandleStatusLightPLC(object sender, TagValueChangeEventArgs e)
+        {
+            _writeHoldingRegisterArr[1] = (byte)e.NewValue;
+        Loop1:
+            GlobalVariables.ModbusStatus = GlobalVariables.MyDriver.ModbusRTUMaster.WriteHoldingRegisters(1, 4602, 1, _writeHoldingRegisterArr);
+
+            if (!GlobalVariables.ModbusStatus)
+            {
+                goto Loop1;
+            }
+        }
+        #endregion
+
         private void ShowUI(bool errorFlag = false)
         {
             #region hien thi cac thong so dem
@@ -2102,8 +3673,8 @@ namespace WeightChecking
                 labColor.Text = _color;
                 labSize.Text = _sizeName;
                 labAveWeight.Text = _scanDataWeight.AveWeight1Prs.ToString();
-                labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
-                labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
+                //labLowerTolerance.Text = _scanDataWeight.LowerTolerance.ToString();
+                //labUpperTolerance.Text = _scanDataWeight.UpperTolerance.ToString();
                 labBoxWeight.Text = _scanDataWeight.BoxWeight.ToString();
                 labAccessoriesWeight.Text = _scanDataWeight.PackageWeight.ToString();
                 labGrossWeight.Text = _scanDataWeight.StdGrossWeight.ToString();
@@ -2124,11 +3695,11 @@ namespace WeightChecking
                 #region Scaled
 
                 labNetRealWeight.Text = $"{_scanDataWeight.NetWeight}";
-                labDeviation.Text = $"{_scanDataWeight.Deviation}";
+                labDeviation.Text = $"{_scanDataWeight.Deviation} (g)";
                 labCalculatedPairs.Text = _scanDataWeight.CalculatedPairs.ToString();
-                labDeviationPairs.Text = _scanDataWeight.DeviationPairs.ToString();
+                labDeviationPairs.Text = $"{_scanDataWeight.DeviationPairs.ToString()} ({_unitLabel})";
 
-                labDeviation.ForeColor = errorFlag == false ? Color.Green : Color.Red;
+                //labDeviation.ForeColor = errorFlag == false ? Color.Green : Color.Red;
                 _labResultMessage.ForeColor = errorFlag == false ? Color.Green : Color.Red;
                 labDeviationPairs.ForeColor = errorFlag == false ? Color.Green : Color.Red;
                 #endregion
@@ -2157,8 +3728,8 @@ namespace WeightChecking
                 labColor.Text = string.Empty;
                 labSize.Text = string.Empty;
                 labAveWeight.Text = "0";
-                labLowerTolerance.Text = "0";
-                labUpperTolerance.Text = "0";
+                //labLowerTolerance.Text = "0";
+                //labUpperTolerance.Text = "0";
                 labBoxWeight.Text = "0";
                 labAccessoriesWeight.Text = "0";
                 labGrossWeight.Text = "0";
@@ -2167,7 +3738,7 @@ namespace WeightChecking
 
                 _labQtyStandard.Text = $"Quantity (-)";
                 _labUnitCalculatQty.Text = $"Calculated Qty (-)";
-                _labUnitDeviation.Text = $"Quantity (-)";
+                _labUnitDeviation.Text = $"Deviation (-)";
 
                 _labUnitStandard.Text = string.Empty;
                 _labFGW.Text = $"Weight (g)/-";
@@ -2181,19 +3752,78 @@ namespace WeightChecking
                 labNetWeight.Text = "0";
 
                 labNetRealWeight.Text = "0";
-                labDeviation.Text = "0";
+                labDeviation.Text = "0 (g)";
 
                 labCalculatedPairs.Text = "0";
-                labDeviationPairs.Text = "0";
+                labDeviationPairs.Text = "0 (-)";
 
                 _labResultMessage.Text = string.Empty;
                 _labResult.Text = string.Empty;
                 _labResult.BackColor = Color.Gray;
 
-                labDeviation.ForeColor = default;
                 labDeviationPairs.ForeColor = default;
                 #endregion
             });
+        }
+
+        private async void WriteData2PlcSeimens(string tagName, object value)
+        {
+            // Giả sử bạn đã có đối tượng writer được khởi tạo từ PlcClient
+            var writer = _plcRuntime.Writer;
+
+            //// 1. Tạo danh sách các tag muốn ghi
+            //var tagsToWrite = new List<PlcTag>();
+
+            // Ghi số thực (Real) - Ví dụ thiết lập ngưỡng cân
+            //var tagWeightSet = _plcRuntime.Tags.First(t => t.Name == "ScaleValue");
+            //tagWeightSet.NewValue = 50.5f; // Gán giá trị mới
+            //tagsToWrite.Add(tagWeightSet);
+
+            //// Ghi giá trị Logic (Bool) - Ví dụ kích hoạt lệnh Check
+            //var tagCheck = _plcRuntime.Tags.First(t => t.Name == "IsCheck");
+            //tagCheck.NewValue = true;
+            //tagsToWrite.Add(tagCheck);
+
+            //// Ghi chuỗi ký tự (String) - Ví dụ mã QR
+            //var tagQr = _plcRuntime.Tags.First(t => t.Name == "BoxIdScale");
+            //tagQr.NewValue = "S7-1200-OK-2026";
+            //tagsToWrite.Add(tagQr);
+
+            //// 2. Thực thi ghi xuống PLC bất đồng bộ (không treo UI)
+            //await writer.WriteGroupAsync(tagsToWrite);
+
+            var tag = _plcRuntime.Tags.FirstOrDefault(t => t.Name == tagName);
+
+            if (tag == null) return;
+
+            // 1. Chuyển đổi dữ liệu an toàn
+            object newValue = tag.DataType switch
+            {
+                PlcDataType.String => value,
+                PlcDataType.Bool => value == "true" || value == "1",
+                PlcDataType.Real or PlcDataType.LReal => double.TryParse(value.ToString(), out var d) ? d : 0.0,
+                _ => int.TryParse(value.ToString(), out var i) ? i : 0
+            };
+
+            // 2. CHỈ GHI TAG ĐANG CHỌN (Tối ưu cực quan trọng)
+            tag.NewValue = newValue;
+            var tagsToWrite = new List<PlcTag> { tag };
+
+            try
+            {
+                // Ghi bất đồng bộ để tránh đơ UI và không làm gián đoạn luồng đọc
+                await Task.Run(() => writer.WriteGroupAsync(tagsToWrite));
+
+                // Cập nhật ngay giá trị LastWritten trong Dictionary của Writer (nếu có dùng WriteGroupOnlyChanged ở chỗ khác)
+                // writer.UpdateCache(tag); 
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Write PLC Seimens error: {ex.Message}");
+            }
+
+            //// Sử dụng hàm này nếu bạn gọi lệnh ghi trong một vòng lặp liên tục, ghi tất cả các tag.s
+            //writer.WriteGroupOnlyChanged(_plcRuntime.Tags);
         }
     }
 }
