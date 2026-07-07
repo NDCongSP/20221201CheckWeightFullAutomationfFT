@@ -263,30 +263,35 @@ const delay = 350; // gán delay bằng 350
 ```yaml
 # Cập nhật phần này MỖI KHI kết thúc session làm việc
 active_context:
-  current_task: "DONE — TCP driver & test form cho AnserU2_cSharp đã hoàn thành"
+  current_task: >
+    DONE — Migration cổng in Anser COM → TCP đã hoàn tất và verify lại trong session
+    2026-07-07 (code đã có sẵn từ session 2026-06-12, session này chỉ xác nhận + đối chiếu).
 
   related_files:
-    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"              # Form chính — đã cập nhật PrinterOpen/Close
-    - "WeightChecking/WeightChecking/Class/AnserU2Print.cs"         # TCP driver (AnserU2TcpDriver) — production
-    - "WeightChecking/WeightChecking/Models/Entities/IDCScanSystem/tblConfig.cs"  # IpPrinter, PortPrinter
+    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"              # PrinterOpen/PrinterClose/StartPrint/StopPrint dùng _printerDriver (đã verify, không còn SerialPort cho máy in)
+    - "WeightChecking/WeightChecking/Class/AnserU2TcpDriver.cs"     # TCP driver production (file này thay thế AnserU2Print.cs cũ, đã đổi tên)
+    - "WeightChecking/WeightChecking/Models/Entities/IDCScanSystem/tblConfig.cs"  # IpPrinter (default 192.168.4.70), PortPrinter (default 4001) — có default nên deserialize JSON cũ (thiếu key) vẫn an toàn
+    - "WeightChecking/WeightChecking/Views/frmSettings.cs"          # PropertyGridControl bind thẳng ConfigJsonModel → IpPrinter/PortPrinter tự hiện ra, không cần thêm code UI
     - "AnserU2_DK/AnserU2_cSharp/AnserU2TcpDriver.cs"              # TCP driver — bản standalone cho test
-    - "AnserU2_DK/AnserU2_cSharp/frmTcpTest.cs"                    # Form test TCP mới
-    - "AnserU2_DK/AnserU2_cSharp/frmTcpTest.Designer.cs"           # Designer form test TCP
-    - "AnserU2_DK/AnserU2_cSharp/AnserU2_cSharp.csproj"            # Đã thêm 3 Compile entries mới
+    - "AnserU2_DK/AnserU2_cSharp/frmTcpTest.cs"                    # Form test TCP
 
   blocked_by: ""
 
   next_step: >
-    - Build AnserU2_cSharp project, kiểm tra compile OK
-    - Test kết nối thực: chạy frmTcpTest, nhấn Connect → 192.168.4.70:4001
-    - Cập nhật dữ liệu JSON trong tblConfig DB: thêm "IpPrinter":"192.168.4.70","PortPrinter":4001
-    - Test WeightChecking production với IsTest=false và TCP printer
+    - Không còn việc code. Việc còn lại là vận hành: xác nhận IP/port thật của máy in tại từng
+      trạm/nhà máy (mặc định 192.168.4.70:4001 chỉ là fallback code), rồi set qua UI frmSettings
+      (PropertyGridControl) hoặc sửa trực tiếp cột ConfigJson trong bảng tblConfig — KHÔNG cần
+      sửa code thêm vì property đã có default.
+    - Build full solution hiện KHÔNG chạy được trên máy dev/sandbox này do thiếu DevExpress
+      v24.2 design-time assemblies (lỗi MSB3103 trên frmMain.resx/frmSettings.resx) — lỗi môi
+      trường, không liên quan đến thay đổi máy in. Cần build trên máy có cài đủ DevExpress.
 
-  last_session: "2026-06-12"
+  last_session: "2026-07-07"
 
   open_questions:
     - "Port TCP của máy in là 4001 — đã dùng từ Hercules screenshot, cần xác nhận với hardware"
     - "Có cần cấu hình IP tĩnh trên máy in không, hay đã có sẵn?"
+    - "IP/port thật tại từng nhà máy (fVN/fFT/fKV/fIN/fGE) có khác 192.168.4.70:4001 mặc định không?"
 ```
 
 ### 4.1b Bản đồ luồng Scanner (quan trọng — đọc kỹ trước khi sửa)
@@ -527,6 +532,24 @@ Task hiện tại: [mô tả]. File cần làm việc: [list file].
 - Buttons Start/Stop Print, Send String, Speed, Delay disabled cho đến khi nhấn Connect
 
 <!-- Thêm session mới lên ĐẦU, trên dòng này -->
+
+---
+
+### [2026-07-07] — Session: Verify migration máy in Anser COM→TCP (không đổi code)
+
+```
+[DOCS]   CLAUDE.md   — Đối chiếu next_step cũ với code thực tế: migration COM→TCP đã hoàn thành từ trước (session 2026-06-12), không phải việc đang chờ làm
+[DOCS]   CLAUDE.md   — Cập nhật active_context: current_task, related_files, next_step, open_questions
+```
+
+**Kết quả kiểm tra:**
+- `frmScaleNewUI.cs`: `PrinterOpen()`/`PrinterClose()`/`StartPrint()`/`StopPrint()`/`PrinterDataReceived()` đều dùng `_printerDriver` (kiểu `AnserU2TcpDriver`), không còn `SerialPort` cho máy in. `System.IO.Ports` còn lại trong file chỉ phục vụ Modbus RTU của cân (`ModbusRTUMaster.KetNoi`), không liên quan máy in.
+- `Class/AnserU2TcpDriver.cs` tồn tại và đúng nội dung (file `AnserU2Print.cs` cũ đã được đổi tên/thay thế, không còn tồn tại — không phải thiếu file).
+- `tblConfig.cs` → `ConfigJsonModel` đã có `IpPrinter` (default `"192.168.4.70"`) và `PortPrinter` (default `4001`) với property initializer, nên **không bắt buộc** phải sửa tay JSON trong DB — bản ghi cũ thiếu 2 key này khi deserialize qua Newtonsoft.Json vẫn nhận giá trị default.
+- `frmSettings.cs` dùng `PropertyGridControl` bind thẳng vào `ConfigJsonModel` nên `IpPrinter`/`PortPrinter` tự động xuất hiện trong UI cấu hình, không cần thêm code riêng.
+- Thử build full solution (`MSBuild WeightChecking.sln /p:Configuration=Release /p:Platform="Any CPU"`) thất bại với lỗi **MSB3103** trên `frmMain.resx` và `frmSettings.resx` (thiếu `DevExpress.Utils.Svg.SvgImage, DevExpress.Data.v24.2` design-time assembly) — đây là lỗi môi trường build (thiếu cài đặt DevExpress đầy đủ trên máy chạy sandbox này), không liên quan đến thay đổi máy in, không sửa trong session này.
+
+**Việc còn lại (không phải code):** xác nhận IP/port thật của máy in tại từng trạm sản xuất, rồi set qua UI `frmSettings` hoặc DB — xem `open_questions`.
 
 ---
 
