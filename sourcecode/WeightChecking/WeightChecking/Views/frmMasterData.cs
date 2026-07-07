@@ -34,8 +34,11 @@ namespace WeightChecking
             GridView gv = (GridView)sender;
             try
             {
-                _productNumber = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber").ToString();
-                _codeItemZise = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize") != null ? gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize").ToString() : string.Empty;
+                var productNumberValue = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber");
+                _productNumber = productNumberValue != null ? productNumberValue.ToString() : string.Empty;
+
+                var codeItemSizeValue = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize");
+                _codeItemZise = codeItemSizeValue != null ? codeItemSizeValue.ToString() : string.Empty;
             }
             catch (Exception ex)
             {
@@ -195,8 +198,11 @@ namespace WeightChecking
             GridView gv = (GridView)sender;
             try
             {
-                _productNumber = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber").ToString();
-                _codeItemZise = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize").ToString();
+                var productNumberValue = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber");
+                _productNumber = productNumberValue != null ? productNumberValue.ToString() : string.Empty;
+
+                var codeItemSizeValue = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize");
+                _codeItemZise = codeItemSizeValue != null ? codeItemSizeValue.ToString() : string.Empty;
             }
             catch (Exception ex)
             {

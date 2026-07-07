@@ -35,9 +35,6 @@ namespace WeightChecking
 
         public double UnitScale { get; set; } = 1000;
 
-        [Description("The COM port of scale.")]
-        public string ComPortScale { get; set; } = "COM2";
-
         [Description("The path folder to update version for application.")]
         public string UpdatePath { get; set; } = "\\\\10.40.10.9\\Public$\\98_Public_Share\\99_Shared\\05_IT\\01_Update\\21- IDCScaleSystem\\update.xml";
 
@@ -55,10 +52,6 @@ namespace WeightChecking
 
         [Description("The TCP port of Anser U2 printer.")]
         public int PortPrinter { get; set; } = 4001;
-
-        public int ScannerIdMetal { get; set; } = 2;
-        public int ScannerIdWeight { get; set; } = 3;
-        public int ScannerIdPrint { get; set; } = 1;
 
         /// <summary>
         /// THời gian đếm từ khi cảm biến S1 trên conveyor kích hoạt, sau khoảng thời gian này mà không nhận được tín hiêu từ scanner trả về thì reject.
@@ -81,6 +74,9 @@ namespace WeightChecking
 
         [Description("The IP address of matrix scanner weighing.")]
         public string IpCognexCamScale { get; set; } = "192.168.80.4";
+
+        [Description("The IP address of matrix scanner at the metal (Identification) station. Fallback default - confirm real IP with the production line before deploying.")]
+        public string IpCognexCamMetal { get; set; } = "192.168.80.5";
 
         [Description("Enable to scale.")]
         public bool IsScale { get; set; } = true;

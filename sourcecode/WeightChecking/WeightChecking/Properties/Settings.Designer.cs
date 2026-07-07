@@ -25,20 +25,6 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fF3bb/osXwqYNhSCfyKvNWvXPUgvQLnsbz+Nd6Vj/7Bp8rlvWbE/zlBsqiGfzls0FozxdSpL" +
-            "EGyIYk/FpLk0PUEB0owITx4e7QWtAs6hhG9O20ffz+nroHV3b//mZ91MP5kAywrsmMsnt2//5mfdTD+Z" +
-            "FycX6i+aqjOePbB/5XtS54TqvGoMQ6uZs5JoyLjxtFaOXCkfgRc3OCVgB+kkBmL")]
-        public string conString {
-            get {
-                return ((string)(this["conString"]));
-            }
-            set {
-                this["conString"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("192.168.80.3")]
         public string ipConveyor {
             get {
@@ -51,9 +37,9 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fF3bb/osXwqYNhSCfyKvNWvXPUgvQLnsbxhiBYExpE31Zqka9VTJreKXnvPXqdo2TaQPGxYv" +
-            "jIEfeJvW5J47WBVFrQLOoYRvTttH38/p66B1d2//5mfdTD+ZAMsK7JjLJ7dv/+Zn3Uw/mRcnF+ovmqoz" +
-            "nj2wf+V7UueE6rxqDEOrmbOSaMi48bRWjlwpH4EXNzglYAfpJAZiw==")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fEdyTkRahthFZQybJoLW8i7KQ3iME8B8ooQTkdsvUtAX21xE6NORw6ZjeFRNfYstnY3i+gaW" +
+            "i1klpA8bFi+MgR9ITgqnLzeiyws1GWRrQCFxMtL71X8AXE2sTWqjj1sbO8CdlS+bVSjejV8+oAfmvCtC" +
+            "aJH8xlBbRgT+ESojwoFaqoSJkl4TwNu38HDUfxMcKGHrLYKpkEvPg==\r\n")]
         public string conStringWL {
             get {
                 return ((string)(this["conStringWL"]));
@@ -255,6 +241,20 @@ namespace WeightChecking.Properties {
             }
             set {
                 this["IsScale"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fEdyTkRahthFZQybJoLW8i7KQ3iME8B8ooQTkdsvUtAX21xE6NORw6ZjeFRNfYstnY3i+gaW" +
+            "i1klpA8bFi+MgR9ITgqnLzeiyws1GWRrQCFxMtL71X8AXE2sTWqjj1sbO8CdlS+bVSjejV8+oAfmvCtC" +
+            "aJH8xlBbRgT+ESojwoFaqoSJkl4TwNu38HDUfxMcKGHrLYKpkEvPg==")]
+        public string conString {
+            get {
+                return ((string)(this["conString"]));
+            }
+            set {
+                this["conString"] = value;
             }
         }
     }

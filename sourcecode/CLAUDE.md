@@ -264,27 +264,49 @@ const delay = 350; // gán delay bằng 350
 # Cập nhật phần này MỖI KHI kết thúc session làm việc
 active_context:
   current_task: >
-    DONE — Migration cổng in Anser COM → TCP đã hoàn tất và verify lại trong session
-    2026-07-07 (code đã có sẵn từ session 2026-06-12, session này chỉ xác nhận + đối chiếu).
+    DONE — (1) Tối ưu barButtonItemGetDataWL_ItemClick (frmMain.cs, nút "Get Data WL") theo yêu cầu
+    next_step phiên trước. Root cause đã xác nhận: đoạn insert vào tblWinlineProductsInfo dùng
+    Dapper `con.Execute(sql, res)` với `res` là `List<WinlineDataModel>` — Dapper thực thi câu
+    INSERT NÀY MỘT LẦN CHO MỖI DÒNG (round-trip riêng cho từng dòng), không phải 1 lệnh gộp. Với
+    vài nghìn dòng sản phẩm từ Winline, đây chính là lý do "chạy rất là lâu". Đã thay bằng
+    SqlBulkCopy (1 round-trip theo batch 5000 dòng) bọc trong 1 SqlTransaction cùng với
+    `truncate table` (trước đây 2 lệnh này không transactional — nếu insert lỗi giữa chừng thì
+    bảng bị để trống, giờ sẽ rollback).
+    (2) Fix NullReferenceException khi bấm refresh ở frmMasterData (user báo kèm screenshot debugger
+    break tại Grv_SelectionChanged dòng 37). Nguyên nhân: MyEvent_RefreshActionevent set
+    `grc.DataSource = null` trước khi gán data mới → GridView bắn SelectionChanged với
+    FocusedRowHandle không hợp lệ → `GetRowCellValue(...)` trả về null → `.ToString()` trên null ném
+    NRE. Exception này thực ra đã bị nuốt bởi catch rỗng có sẵn (không crash app), nhưng debugger
+    break vì cờ "Break when this exception type is thrown" — bug tồn tại từ trước, không phải do
+    session này gây ra, không liên quan gì đến thay đổi SqlBulkCopy ở (1). Đã null-check trước khi
+    gọi ToString() ở cả Grv_SelectionChanged và grv_RowClick (cùng pattern, cùng file). Build thành
+    công cho cả 2 fix (xem below), compile-verified.
 
   related_files:
-    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"              # PrinterOpen/PrinterClose/StartPrint/StopPrint dùng _printerDriver (đã verify, không còn SerialPort cho máy in)
-    - "WeightChecking/WeightChecking/Class/AnserU2TcpDriver.cs"     # TCP driver production (file này thay thế AnserU2Print.cs cũ, đã đổi tên)
-    - "WeightChecking/WeightChecking/Models/Entities/IDCScanSystem/tblConfig.cs"  # IpPrinter (default 192.168.4.70), PortPrinter (default 4001) — có default nên deserialize JSON cũ (thiếu key) vẫn an toàn
-    - "WeightChecking/WeightChecking/Views/frmSettings.cs"          # PropertyGridControl bind thẳng ConfigJsonModel → IpPrinter/PortPrinter tự hiện ra, không cần thêm code UI
-    - "AnserU2_DK/AnserU2_cSharp/AnserU2TcpDriver.cs"              # TCP driver — bản standalone cho test
-    - "AnserU2_DK/AnserU2_cSharp/frmTcpTest.cs"                    # Form test TCP
+    - "WeightChecking/WeightChecking/Views/frmMain.cs"       # barButtonItemGetDataWL_ItemClick: gọi hàm mới BulkInsertWinlineProductsInfo(res) thay vì Dapper Execute(sql, res) theo dòng; thêm using System.Data.SqlClient; tăng commandTimeout=120 cho sp_IdcScanScaleGetCoreData (SP phía Winline có thể trả nhiều dòng, tránh timeout 30s mặc định)
+    - "WeightChecking/WeightChecking/Views/frmMasterData.cs" # Grv_SelectionChanged + grv_RowClick: null-check GetRowCellValue(...) trước khi gọi .ToString() — tránh NRE khi grid rỗng/đang refresh (DataSource = null)
 
-  blocked_by: ""
+  blocked_by: >
+    KHÔNG còn blocked bởi build nữa — phát hiện trong session trước: sandbox thực ra CÓ MSBuild đầy
+    đủ (VS "18"/2022 Professional tại "C:\Program Files\Microsoft Visual Studio\18\Professional\
+    MSBuild\Current\Bin\MSBuild.exe" và "...\2022\Professional\..."), không phải chỉ có MSBuild
+    4.0.30319 cũ (compiler đó KHÔNG hiểu string interpolation `$"..."`, gây lỗi giả CS1043/CS1056
+    không liên quan code). Ghi chú các session trước "không build được trong sandbox" — CẦN THỬ
+    LẠI với đường dẫn MSBuild này trước khi kết luận không build được.
+    LƯU Ý: đường dẫn .csproj trong sandbox này ĐÃ ĐỔI giữa các session (trước là
+    "WeightChecking/WeightChecking.csproj", session này là "WeightChecking/WeightChecking/
+    WeightChecking.csproj" — chạy `find . -iname "WeightChecking.csproj"` để xác nhận trước khi
+    build nếu lệnh cũ báo "Project file does not exist"). Lệnh build (cần MSYS_NO_PATHCONV=1 nếu
+    chạy qua git-bash để tránh path bị mangle switch có dấu `/`):
+    `MSYS_NO_PATHCONV=1 "/c/Program Files/Microsoft Visual Studio/2022/Professional/MSBuild/Current/Bin/MSBuild.exe" WeightChecking/WeightChecking/WeightChecking.csproj /p:Configuration=Release /p:Platform=AnyCPU /t:Build /nologo /v:minimal`
+    Vẫn còn bug P4 tag thiếu trong tags.json từ session trước (xem CHANGELOG 2026-07-07 "Bỏ trạm
+    scan Distribution...") — chưa được xử lý, không thuộc phạm vi session này.
 
   next_step: >
-    - Không còn việc code. Việc còn lại là vận hành: xác nhận IP/port thật của máy in tại từng
-      trạm/nhà máy (mặc định 192.168.4.70:4001 chỉ là fallback code), rồi set qua UI frmSettings
-      (PropertyGridControl) hoặc sửa trực tiếp cột ConfigJson trong bảng tblConfig — KHÔNG cần
-      sửa code thêm vì property đã có default.
-    - Build full solution hiện KHÔNG chạy được trên máy dev/sandbox này do thiếu DevExpress
-      v24.2 design-time assemblies (lỗi MSB3103 trên frmMain.resx/frmSettings.resx) — lỗi môi
-      trường, không liên quan đến thay đổi máy in. Cần build trên máy có cài đủ DevExpress.
+    - Chưa có next_step mới cụ thể. Có thể hỏi user có muốn áp dụng cùng pattern SqlBulkCopy cho
+    các chỗ khác trong frmMasterData.cs / AutoPostingHelper.cs nếu cũng có insert theo vòng lặp
+    Dapper tương tự (chưa audit).
+    - Xác nhận với hardware địa chỉ DB1 thật cho tag "P4" trên PLC Siemens (xem open_questions).
 
   last_session: "2026-07-07"
 
@@ -292,30 +314,36 @@ active_context:
     - "Port TCP của máy in là 4001 — đã dùng từ Hercules screenshot, cần xác nhận với hardware"
     - "Có cần cấu hình IP tĩnh trên máy in không, hay đã có sẵn?"
     - "IP/port thật tại từng nhà máy (fVN/fFT/fKV/fIN/fGE) có khác 192.168.4.70:4001 mặc định không?"
+    - "IP thật của camera Cognex trạm Metal (IpCognexCamMetal) là gì?"
+    - "Địa chỉ DB1 thật cho tag P4 (metal reject pusher) trên PLC Siemens là gì?"
+    - "Ladder PLC S7 mới có cần DelayTimer1-5 (trước ghi qua Modbus PLC Delta) không, hay đã hardcode?"
 ```
 
 ### 4.1b Bản đồ luồng Scanner (quan trọng — đọc kỹ trước khi sửa)
 
 ```
+CẬP NHẬT 2026-07-07: chỉ còn 2 trạm scan (đã bỏ trạm 3 Distribution — không còn phân loại
+FG/Sơn bằng phần mềm). Cả 2 trạm còn lại đều dùng Cognex Telnet (không còn Zebra CoreScanner SDK).
+
 Trạm 1 — Identification (Metal Scanner):
-  Hardware: Zebra CoreScanner USB (CCoreScanner)
-  Event: OnBarcodeEvent → BarcodeScanner1Handle(1, barcode)
+  Hardware: Cognex Telnet (DriverTelnet instance _driverTelnetMetal, IP = ConfigJson.IpCognexCamMetal)
+  Event: DataEventMetal_EventHandleValueChange → BarcodeScanner1Handle(1, barcode)
   Guard: _scannerIsBussy[0] — reset bởi EventHandleSensorMiddleMetal
 
 Trạm 2 — Scale (Weight Check):
-  Hardware: Cognex DM290-X (Telnet, _driverTelnet)
+  Hardware: Cognex DM290-X (Telnet, _driverTelnet, IP = ConfigJson.IpCognexCamScale)
   Event: DataEvent_EventHandleValueChange → BarcodeScanner2Handle(2, barcode)
   Guard: _scannerIsBussy[1] — reset bởi EventHandleSensorAfterWeightScan
-  Scale: Modbus RTU, đợi _stableScale==1 (spin-wait với Thread.Yield)
+  Scale: tag S7 (Sccale_Value/Sccale_Value_Stable/Scale_Stable_Trigger qua _plc1Client/tags.json),
+  đợi _stableScale==1 (spin-wait với Thread.Yield). KHÔNG còn Modbus RTU/PLC Delta.
 
-Trạm 3 — Distribution (Printing Scanner):
-  Hardware: Zebra CoreScanner USB (CCoreScanner, scanner ID khác trạm 1)
-  Event: OnBarcodeEvent → BarcodeScanner3Handle(3, barcode)
-  Guard: _scannerIsBussy[2] — reset bởi EventHandlerSensorAfterPrintScanner
+(Trạm 3 — Distribution/Printing Scanner: ĐÃ BỎ. BarcodeScanner3Handle, S_Sorting_FG/
+S_Sorting_Print, PrintPusher/tag P3 không còn được phần mềm dùng nữa.)
 
 PLC Write (Siemens S7):
-  WriteData2PlcSeimens("P1"|"P2"|"P3"|"P4", value) — dùng PlcRuntime.Tags
-  P1 = MetalPusher, P2 = WeightPusher, P3 = PrintPusher, P4 = MetalRejectPusher
+  WriteData2PlcSeimens("RJ1"|"Check_Weight_Result", value) — dùng PlcRuntime.Tags
+  Check_Weight_Result = đèn tháp pass/fail
+  (P3 không còn ghi từ phần mềm. CẢNH BÁO: tag "P4" hiện KHÔNG có trong tags.json — xem blocked_by ở 4.1)
 ```
 
 ### 4.2 Quyết định đã chốt (Decision Log)
@@ -327,6 +355,9 @@ PLC Write (Siemens S7):
 | DEC-003 | 2024-08-19 | AutoPostingHelper.CheckIn() trước rồi mới AutoTransfer() | Dev | `StaticClass/AutoPostingHelper.cs` |
 | DEC-004 | 2025-XX-XX | Custom titlebar (FormBorderStyle.None + Panel) | Dev | `frmScaleNewUI.cs` constructor |
 | DEC-005 | 2026-06-12 | CLAUDE.md cập nhật từ template TypeScript → thực tế C# WinForms | NDCongSP | `CLAUDE.md` |
+| DEC-006 | 2026-07-07 | Bỏ trạm scan Distribution (station 3), không phân loại FG/Sơn bằng phần mềm nữa | User | `frmScaleNewUI.cs` |
+| DEC-007 | 2026-07-07 | Trạm Metal chuyển từ Zebra CoreScanner SDK sang Cognex Telnet (cùng driver với trạm Scale) | User | `frmScaleNewUI.cs` → `_driverTelnetMetal` |
+| DEC-008 | 2026-07-07 | Scale I/O (giá trị cân, stable trigger, sensor, đèn tháp) chuyển từ Modbus RTU (PLC Delta) sang tag S7 qua `_plc1Client`/`tags.json` | User | `frmScaleNewUI.cs` |
 <!-- Thêm quyết định mới vào đây -->
 
 ### 4.3 Hướng dẫn Claude đọc context
@@ -550,6 +581,100 @@ Task hiện tại: [mô tả]. File cần làm việc: [list file].
 - Thử build full solution (`MSBuild WeightChecking.sln /p:Configuration=Release /p:Platform="Any CPU"`) thất bại với lỗi **MSB3103** trên `frmMain.resx` và `frmSettings.resx` (thiếu `DevExpress.Utils.Svg.SvgImage, DevExpress.Data.v24.2` design-time assembly) — đây là lỗi môi trường build (thiếu cài đặt DevExpress đầy đủ trên máy chạy sandbox này), không liên quan đến thay đổi máy in, không sửa trong session này.
 
 **Việc còn lại (không phải code):** xác nhận IP/port thật của máy in tại từng trạm sản xuất, rồi set qua UI `frmSettings` hoặc DB — xem `open_questions`.
+
+---
+
+### [2026-07-07] — Session: Fix crash EF6 "model backing the context has changed"
+
+```
+[FIX]   Models/Entities/IDCScanSystem/ApplicationDbContextSSFG.cs — Thêm static constructor gọi Database.SetInitializer<ApplicationDbContextSSFG>(null)
+```
+
+**Root cause:** Chạy debug thật (Visual Studio, có đủ DevExpress) lần đầu trong phiên này thì crash
+ngay ở `Program.cs:35` (`dbContext.TblConfigs.FirstOrDefault()`) với
+`InvalidOperationException: The model backing the 'ApplicationDbContextSSFG' context has changed
+since the database was created`. Không có `Database.SetInitializer` nào được cấu hình cho context
+này (kiểm tra cả `Program.cs`, `ApplicationDbContextSSFG.cs`, `App.config` — không có), nên EF6
+dùng initializer mặc định (`CreateDatabaseIfNotExists`), initializer này so hash của model hiện tại
+với `__MigrationHistory`/`EdmMetadata` trong DB — DB này là DB có sẵn, quản lý ngoài EF (nhiều
+stored procedure, không dùng Code First Migrations), nên kiểm tra hash này sai ngữ cảnh và sẽ vỡ
+bất cứ khi nào có entity class nào đổi (không nhất thiết do session này) mà chưa từng chạy migration.
+**Không liên quan tới các thay đổi trạm Metal/Distribution/Modbus ở trên** — session này không đụng
+tới class entity `tblConfig` (chỉ đụng `ConfigJsonModel`, một POCO thường không được EF map).
+**Fix:** tắt hẳn initializer cho context này (đúng cho app dùng DB-first).
+
+---
+
+### [2026-07-07] — Session: Bỏ trạm scan Distribution + Metal sang Cognex Telnet + Scale I/O sang S7 tags
+
+```
+[BREAK]    frmScaleNewUI.cs                          — Xoá BarcodeScanner3Handle, region "Read scanner using SDK" (InitializeScaner/OnBarcodeEvent/AsciiToString/_cCoreScannerClass) — hết dùng Zebra CoreScanner SDK
+[FEAT]     frmScaleNewUI.cs                          — Thêm _driverTelnetMetal (Cognex Telnet) cho trạm Metal, handler DataEventMetal_EventHandleValueChange gọi BarcodeScanner1Handle
+[BREAK]    frmScaleNewUI.cs                          — Xoá EventHandlerSensorAfterPrintScanner, S_Sorting_FG/S_Sorting_Print tag wiring, EventHandlerPrintPusher, tag P3 wiring — bỏ hẳn phân loại FG/Sơn bằng phần mềm (quyết định của user, không relocate sang trạm 2)
+[BREAK]    frmScaleNewUI.cs                          — Xoá toàn bộ Modbus RTU (region "Ket noi modbus RTU PLC", TaskReadModbusAsync, MyEvent_EventHandleStatusLightPLC, _readHoldingRegisterArr/_writeHoldingRegisterArr)
+[FEAT]     frmScaleNewUI.cs                          — Thêm tag ValueChanged cho Sccale_Value/Sccale_Value_Stable/Scale_Stable_Trigger/S_IN/S_OUT/Delay_Time_To_Print qua _plcRuntime.Tags (Snap7); đèn tháp pass/fail ghi qua tag "Check_Weight_Result" (WriteData2PlcSeimens) thay cho Modbus register 4602
+[FIX]      CognexLibrary_NETFramework/DriverTelnet.cs — Đổi toàn bộ field từ static sang instance — bug ẩn (mọi instance DriverTelnet share chung 1 TCP connection/host), chỉ lộ ra khi thêm instance thứ 2 cho trạm Metal
+[CHORE]    Models/Entities/IDCScanSystem/tblConfig.cs — Thêm IpCognexCamMetal (placeholder default); xoá ScannerIdMetal/ScannerIdPrint/ComPortScale (hết dùng); giữ IsScale (vẫn gate spin-wait chờ cân ổn định)
+[DOCS]     CLAUDE.md                                 — Cập nhật active_context, bản đồ luồng scanner (4.1b), Decision Log (DEC-006..008)
+```
+
+**Bối cảnh:** `next_step` phiên trước (đã bị sửa trực tiếp trong CLAUDE.md, ngoài phiên làm việc của Claude) yêu cầu 2 việc: (1) bỏ Zebra CoreScanner SDK, chuyển trạm Metal sang Cognex Telnet như trạm Scale, bỏ hẳn trạm scan số 3; (2) thay toàn bộ kết nối Modbus RTU bằng `_plc1Client`/`tags.json`. Đã hỏi user cách xử lý logic phân loại FG/Sơn (trước đây chỉ nằm trong `BarcodeScanner3Handle`) — user chọn **bỏ hẳn**, không relocate sang trạm khác.
+
+**Phát hiện quan trọng khi làm:**
+- `CognexLibrary_NETFramework/DriverTelnet.cs` có TOÀN BỘ field là `static` (kể cả `_dataEvent`, `client`, `stream`...). Nếu tạo thêm 1 instance `DriverTelnet` cho trạm Metal mà không sửa, 2 trạm sẽ tranh nhau 1 kết nối TCP/host — đã sửa hết `static` → instance field trước khi wiring trạm Metal.
+- `tags.json` (đang uncommitted, không phải do Claude sửa) đã có sẵn đúng các tag cần cho việc migrate scale I/O (`Sccale_Value`, `Sccale_Value_Stable`, `Scale_Stable_Trigger`, `S_IN`, `S_OUT`, `Check_Weight_Result`, `Delay_Time_To_Print`) — chỉ cần wiring vào code, không cần sửa tags.json.
+- **BUG CÓ SẴN phát hiện được (không do session này gây ra):** code dùng tag `"P4"` (`_plcRuntime.Tags.FirstOrDefault(t => t.Name == "P4")`) nhưng tag này KHÔNG có trong tags.json (cả bản cũ đã commit lẫn bản mới) → `FirstOrDefault` trả `null` → `.ValueChanged +=` ném `NullReferenceException` ngay khi `FrmScale_Load` chạy. Đây là bug tồn tại từ trước, không phải do thay đổi lần này, nhưng sẽ chặn đứng toàn bộ app (kể cả các thay đổi trong session này) nếu không thêm tag "P4" vào tags.json trước khi chạy thử. Xem `blocked_by`.
+- `DelayTimer1-5` (trước ghi xuống PLC Delta qua Modbus holding register 4604-4608) không có tag S7 tương ứng trong `tags.json` hiện tại → đã bỏ ghi các giá trị này thay vì đoán địa chỉ DB1 — cần xác nhận với người phụ trách ladder PLC xem có cần thêm tag hay ladder đã tự xử lý delay.
+- Không build được trong sandbox này (thiếu DevExpress design-time assemblies, lỗi MSB3103 — môi trường, đã ghi nhận từ session trước) nên chưa compile-verify; đã tự grep toàn bộ symbol bị xoá (`_cCoreScannerClass`, `ModbusRTUMaster`, `_scanDataPrint`, `PrintPusher`, `TaskReadModbusAsync`, `ScannerIdMetal`, `ScannerIdPrint`, `ComPortScale`, `_printPusher`, `_readHoldingRegisterArr`...) để đảm bảo không còn tham chiếu treo trong `frmScaleNewUI.cs`.
+- Không sửa `GlobalVariables.cs` (`MyDriver`/`ModbusStatus` giờ không còn được ghi từ `frmScaleNewUI.cs` nhưng để nguyên vì có thể còn dùng ở form khác) và không sửa `CustomEvents.cs` — kiểm tra thấy `frmMain.cs` (form khác, đang active) vẫn đọc `SensorAfterPrintScannerFG`/`SensorAfterPrintScannerPrinting` nên KHÔNG xoá các property này khỏi `CustomEvents.cs`.
+
+---
+
+### [2026-07-07] — Session: Tối ưu tốc độ nút "Get Data WL" (frmMain.cs)
+
+```
+[PERF]   Views/frmMain.cs   — barButtonItemGetDataWL_ItemClick: thay Dapper con.Execute(insertSql, res) (thực thi 1 round-trip riêng cho MỖI dòng trong res) bằng SqlBulkCopy (1 round-trip theo batch 5000 dòng)
+[FIX]    Views/frmMain.cs   — Bọc truncate + bulk insert vào tblWinlineProductsInfo trong 1 SqlTransaction (trước đây không transactional — insert lỗi giữa chừng sẽ để bảng trống vĩnh viễn)
+[PERF]   Views/frmMain.cs   — Query sp_IdcScanScaleGetCoreData: thêm commandTimeout=120 (tránh timeout 30s mặc định nếu SP phía Winline trả nhiều dòng)
+[CHORE]  Views/frmMain.cs   — Thêm using System.Data.SqlClient (cho SqlBulkCopy, SqlConnection)
+```
+
+**Root cause:** `next_step` phiên trước ghi "mỗi lần đọc store để lấy data xong rồi update vào bảng tblWinlineProductsInfo chạy rất là lâu". Đọc code thấy `con.Execute($"Insert into tblWinlineProductsInfo (...) values (...)", res)` với `res` là `List<WinlineDataModel>` — hành vi chuẩn của Dapper khi truyền `IEnumerable` làm tham số cho `Execute` là chạy câu lệnh **một lần cho mỗi phần tử** (N round-trip riêng biệt tới SQL Server), không phải 1 lệnh gộp. `tblWinlineProductsInfo` là bảng master data sản phẩm (có thể vài nghìn dòng mỗi lần đồng bộ từ Winline) nên N round-trip tuần tự chính là nguyên nhân chạy chậm.
+
+**Fix:** Tách logic insert ra hàm riêng `BulkInsertWinlineProductsInfo()`, dùng `SqlBulkCopy` (gửi dữ liệu theo batch, 1 lần round-trip cho toàn bộ dữ liệu thay vì N lần) và bọc chung với `truncate table` trong `SqlTransaction` để đảm bảo atomic — nếu bulk insert lỗi giữa chừng, transaction rollback, bảng KHÔNG bị để ở trạng thái trống (bug tiềm ẩn có sẵn trong code cũ, tiện thể sửa luôn vì cùng chỗ).
+
+**Verify:** Build thành công bằng MSBuild VS2022 Professional tìm thấy trong sandbox (`WeightChecking -> ...\bin\Release\SSFG.exe`), không có lỗi compile, chỉ còn warning có sẵn từ trước (không liên quan thay đổi này). Chưa test chạy thật với DB Winline (không có kết nối DB trong sandbox) — cần verify thủ công trên máy có kết nối DB thật: bấm nút "Get Data WL", kiểm tra thời gian chạy nhanh hơn rõ rệt và số dòng insert khớp với số dòng SP trả về.
+
+---
+
+### [2026-07-07] — Session: Fix NullReferenceException khi refresh frmMasterData
+
+```
+[FIX]    Views/frmMasterData.cs   — Grv_SelectionChanged: null-check GetRowCellValue(gv.FocusedRowHandle, "ProductNumber") trước khi gọi .ToString() (trước đây gọi thẳng, ném NRE khi grid rỗng)
+[FIX]    Views/frmMasterData.cs   — grv_RowClick: null-check cả "ProductNumber" và "CodeItemSize" trước khi gọi .ToString() (cùng pattern lỗi, cùng file)
+```
+
+**Root cause:** User báo lỗi kèm screenshot debugger break tại `Grv_SelectionChanged` dòng 37
+(`NullReferenceException: DevExpress.XtraGrid.Views.Base.ColumnView.GetRowCellValue(...) returned
+null`), xảy ra khi bấm nút refresh (nút "Get Data WL" ở frmMain, hoặc tự động khi mở frmMasterData —
+cả 2 đều set `GlobalVariables.MyEvent.RefreshStatus = true`, kích hoạt `MyEvent_RefreshActionevent`
+trong `frmMasterData.cs`). Hàm này set `grc.DataSource = null` TRƯỚC khi gán data mới (dòng
+150/170) — trong khoảng đó GridView bắn `SelectionChanged` với `FocusedRowHandle` không hợp lệ (grid
+rỗng), `GetRowCellValue(...)` trả về `null`, và code gọi thẳng `.ToString()` trên giá trị đó → NRE.
+Exception này thực ra đã bị nuốt bởi `catch (Exception ex) { }` rỗng có sẵn nên KHÔNG làm crash app
+lúc chạy thật — debugger chỉ break vì cờ "Break when this exception type is thrown" được bật trong
+Visual Studio. Đây là bug tồn tại từ trước (pre-existing), không liên quan đến thay đổi SqlBulkCopy
+ở phần "Get Data WL" phía trên — chỉ trùng thời điểm vì cùng nằm trên đường refresh.
+
+**Fix:** Gán kết quả `GetRowCellValue(...)` vào biến tạm, kiểm tra `!= null` trước khi gọi
+`.ToString()`, dùng `string.Empty` nếu null — áp dụng cho cả `Grv_SelectionChanged` (field
+`ProductNumber`, field `CodeItemSize` đã có sẵn null-check từ trước) và `grv_RowClick` (cả 2 field
+đều thiếu null-check).
+
+**Verify:** Build lại thành công (cùng lệnh MSBuild ở trên), không có lỗi compile. Chưa test chạy
+thật UI (không có màn hình/DB trong sandbox) — cần verify thủ công: mở frmMasterData, bấm refresh
+nhiều lần liên tục trong lúc grid đang load lại, xác nhận không còn NRE (dù có debugger attach hay
+không) và `_productNumber`/`_codeItemZise` fallback về rỗng thay vì giữ giá trị cũ khi grid trống.
 
 ---
 

@@ -105,10 +105,6 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="Interop.CoreScanner">
-      <HintPath>C:\Program Files\Zebra Technologies\Barcode Scanners\Scanner SDK\Scanner SDK\Sample Applications\bin\Interop.CoreScanner.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="Microsoft.Azure.Services.AppAuthentication, Version=1.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.Services.AppAuthentication.1.4.0\lib\net472\Microsoft.Azure.Services.AppAuthentication.dll</HintPath>
     </Reference>
@@ -169,9 +165,6 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="PLCPi">
-      <HintPath>..\..\DLL modbus\PLCPi.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
@@ -182,13 +175,6 @@
     </Reference>
     <Reference Include="Serilog.Sinks.PeriodicBatching, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.PeriodicBatching.2.3.0\lib\net45\Serilog.Sinks.PeriodicBatching.dll</HintPath>
-    </Reference>
-    <Reference Include="Sharp7, Version=1.1.84.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Sharp7.1.1.84\lib\net40\Sharp7.dll</HintPath>
-    </Reference>
-    <Reference Include="snap7.net, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DLL modbus\snap7.net.dll</HintPath>
     </Reference>
     <Reference Include="Snap7Scada.Lib">
       <HintPath>..\..\..\..\..\..\..\..\3.Others\0.Code\202600120_Snap7\Snap7ScadaSolution\Release_Lib\Snap7Scada.Lib.dll</HintPath>
@@ -486,6 +472,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <None Include="tags.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="tags1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

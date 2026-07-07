@@ -64,19 +64,19 @@ namespace CognexLibrary_NETFramework
             }
         }
         #endregion
-        private static string _hostName = "192.168.1.100";
-        private static int _port = 23;
-        private static DataEvent _dataEvent = new DataEvent();
+        private string _hostName = "192.168.1.100";
+        private int _port = 23;
+        private DataEvent _dataEvent = new DataEvent();
 
-        private static bool _isDisconnect = false;
+        private bool _isDisconnect = false;
 
-        private static TcpClient client;
-        private static NetworkStream stream;
-        private static StreamReader reader;
-        private static System.Timers.Timer timer;
+        private TcpClient client;
+        private NetworkStream stream;
+        private StreamReader reader;
+        private System.Timers.Timer timer;
 
-        private static bool isReading = false;
-        private static Task _task;
+        private bool isReading = false;
+        private Task _task;
 
         public async Task ConnectDevices()
         {

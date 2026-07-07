@@ -1,5 +1,4 @@
 ﻿using CognexLibrary_NETFramework;
-using CoreScanner;
 using Dapper;
 using DevExpress.XtraEditors;
 using DevExpress.XtraExport.Xls;

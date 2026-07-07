@@ -4,7 +4,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
 using DevExpress.XtraReports.UI;
-using PLCPiProject;
 
 namespace WeightChecking
 {
@@ -42,8 +41,6 @@ namespace WeightChecking
 
         public static tblUser UserLoginInfo { get; set; } = null;
 
-        public static PLCPi MyDriver = new PLCPi();
-        public static byte[] ReadHoldingArr { get; set; }
         public static bool ModbusStatus { get; set; }
 
         public static string ConveyorStatus { get; set; } = "Bad";

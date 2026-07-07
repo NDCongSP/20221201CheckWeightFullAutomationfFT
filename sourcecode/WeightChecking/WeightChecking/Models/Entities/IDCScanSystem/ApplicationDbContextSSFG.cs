@@ -10,6 +10,14 @@ namespace WeightChecking
 {
     public partial class ApplicationDbContextSSFG : DbContext
     {
+        static ApplicationDbContextSSFG()
+        {
+            // DB này được quản lý bên ngoài EF (schema có sẵn, nhiều stored procedure) - không dùng
+            // Code First Migrations, nên tắt initializer mặc định của EF6 để tránh
+            // InvalidOperationException "model backing the context has changed" mỗi khi model class đổi.
+            Database.SetInitializer<ApplicationDbContextSSFG>(null);
+        }
+
         public ApplicationDbContextSSFG(string connectionString) : base(connectionString)
         {
         }
