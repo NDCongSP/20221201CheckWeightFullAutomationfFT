@@ -264,7 +264,64 @@ const delay = 350; // gán delay bằng 350
 # Cập nhật phần này MỖI KHI kết thúc session làm việc
 active_context:
   current_task: >
-    DONE (Task H) — Xây dựng công cụ giả lập phần cứng ("làm phần mềm giả lập scanner cognex và mays
+    DONE (Task I) — Thêm QR thứ 2 "box info" trên mỗi thùng (Carton: "BoxType,Supplier,BoxWeight" vd
+    "BX1,DKP,987.3Gr"; Plastic: "Name,BoxWeight" vd "G250001,1320") để dùng boxWeight/boxType đọc trực
+    tiếp từ tem vật lý thay cho giá trị suy ra từ master data (`sp_vProductItemInfoGet`). Chỉ áp dụng ở
+    trạm Scale — trạm Metal phải bỏ qua QR này hoàn toàn. Quyết định chốt qua AskUserQuestion (session
+    trước): detect QR2 bằng 2 ký tự đầu KHÔNG khớp `GlobalVariables.OcUsingList` (Main QR luôn khớp) +
+    2-3 field phân cách dấu phẩy, không có `|`; weight luôn là gram, bỏ hậu tố chữ; khi boxType lệch
+    giữa QR2 và master-data thì chỉ log cảnh báo, QR2 luôn thắng vô điều kiện.
+
+    Implementation (`frmScaleNewUI.cs`): helper `TryParseBoxInfoQr()` (parse + detect, dùng
+    `Enum.TryParse<EnumBoxType>` cho Carton, `Regex` lấy phần số đầu chuỗi cho weight); field mới
+    `_boxTypeQR` (nullable `EnumBoxType?`) cạnh field có sẵn nhưng trước đây chết `_boxWeightQR`;
+    `DataEventMetal_EventHandleValueChange` bỏ qua QR2 trước khi chạm bất kỳ guard nào (giống pattern
+    cũ); `BarcodeScanner2Handle` bắt QR2 làm việc đầu tiên, lưu vào field rồi return sớm; sau khối xác
+    định boxWeight/boxType từ master data (cả nhánh Carton lẫn Plastic), có 1 khối override: nếu có
+    `_boxTypeQR` thì ghi đè `_boxType`/`_scanDataWeight.BoxWeight`, log cảnh báo nếu lệch với giá trị
+    master-data.
+
+    Review bằng `hardware-io-reviewer` + `weight-logic-auditor` (chạy song song sau khi build pass lần
+    đầu) phát hiện **2 bug thật cần fix ngay** (không phải nitpick) trước khi coi task xong:
+    1. [weight-logic-auditor, HIGH] `_boxTypeQR`/`_boxWeightQR` chỉ được reset ở nhánh thành công —
+       nếu thùng A có QR2 nhưng xử lý Main QR của A ném exception (SP không tìm thấy sản phẩm, vượt
+       quá số lượng BX1, v.v.) trước khi tới được khối override, field vẫn giữ data của thùng A và sẽ
+       ÂM THẦM lây sang thùng B kế tiếp (không có QR2 riêng) — thùng B bị tính sai NetWeight/Deviation/
+       pass-fail bằng data của thùng A hoàn toàn không liên quan. **Fix:** reset 2 field này vô điều
+       kiện trong khối `finally` của `BarcodeScanner2Handle` (không chỉ ở nhánh thành công) — đã sửa,
+       đồng thời bỏ đoạn reset trùng lặp cũ trong khối override vì `finally` đã bao phủ mọi trường hợp.
+    2. [hardware-io-reviewer, HIGH] `DataEvent_EventHandleValueChange` (Scale sensor handler) set
+       `_readQrStatus[1] = true` VÔ ĐIỀU KIỆN trước khi gọi `BarcodeScanner2Handle` — nếu QR2 (box
+       info) được quét xong nhưng Main QR thật của thùng đó KHÔNG BAO GIỜ scan được (tem hỏng/lệch),
+       watchdog `CheckReadQrWeight()` vẫn thấy `_readQrStatus[1]==true` (do QR2 đã set) nên KHÔNG BAO
+       GIỜ ghi reject (`WeightPusher = 2`) — thùng lọt qua trạm Scale mà không hề được cân/kiểm tra,
+       không bị loại. **Fix:** thêm check `TryParseBoxInfoQr` ngay đầu `DataEvent_EventHandleValueChange`
+       (trước khi set `_scannerIsBussy[1]`/`_readQrStatus[1]`), return sớm nếu là QR2 — đúng pattern đã
+       dùng ở trạm Metal.
+
+    Fix phụ (LOW, tiện thể sửa cùng lúc, không mở rộng phạm vi): nhánh Plastic của khối xác định
+    box-weight/box-type từ master data trước đây KHÔNG BAO GIỜ set `_boxType` (chỉ set label UI text
+    "Plastic") — field persistent này giữ giá trị rác từ thùng trước, gây log cảnh báo lệch giả (false
+    positive) và UI hiển thị sai box type cho thùng Plastic không có QR2 riêng. Đã thêm
+    `_boxType = EnumBoxType.Plastic;` vào đúng nhánh đó. Bọc `try/catch` quanh `InvokeIfRequired` trong
+    khối bắt QR2 sớm ở `BarcodeScanner2Handle` (nằm ngoài `try/catch` chính của hàm) để tránh exception
+    lúc form đang đóng làm Cognex driver reconnect giả.
+
+    **Chưa xử lý (cần xác nhận nghiệp vụ, xem open_questions):** nhánh tolerance (`lowerToleranceOfBox`/
+    `upperToleranceOfBox`) được chọn theo Carton-hay-Plastic TỪ TRƯỚC khối override, không re-sync theo
+    `_boxTypeQR` — nếu QR2 chỉ ra category khác hẳn (Carton↔Plastic, không chỉ khác BX1-4 trong cùng
+    Carton) so với nhánh master-data đã chọn, dải tolerance áp dụng sẽ không khớp category thật đang
+    dùng. Chưa rõ tình huống này có xảy ra thật trong sản xuất không (một OC/product có thể đổi giữa
+    2 category qua QR2 không, hay chỉ đổi trong nội bộ BX1-4).
+
+    Build verify: `MSBuild WeightChecking.csproj /p:Configuration=Release /p:Platform=AnyCPU` → 0 lỗi,
+    4 lần build liên tiếp trong lúc sửa (implement ban đầu → sau khi bỏ đoạn `else` mồ côi không liên
+    quan chặn build → sau khi fix 2 bug HIGH → sau khi bọc try/catch) đều pass, sinh `bin\Release\
+    SSFG.exe` thành công. Chưa test chạy thật với hardware/GUI (không có trong sandbox) — xem
+    `next_step`.
+
+    ---
+    (Task H — DONE) — Xây dựng công cụ giả lập phần cứng ("làm phần mềm giả lập scanner cognex và mays
     in để test debug"): project WinForms mới `WeightChecking/HardwareSimulator/` đóng vai "phía
     server" cho 2 camera Cognex (Metal + Scale, Telnet/TCP) và máy in AnserU2 (TCP), để dev/tester
     chạy được app chính (`SSFG.exe`) mà không cần hardware thật.
@@ -468,6 +525,7 @@ active_context:
     để biết chi tiết, không lặp lại ở đây.)
 
   related_files:
+    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task I: TryParseBoxInfoQr() helper (~dòng 1016), field _boxTypeQR (~141), DataEventMetal_EventHandleValueChange bỏ qua QR2 (~918), DataEvent_EventHandleValueChange bỏ qua QR2 trước khi set guard (~879), BarcodeScanner2Handle bắt QR2 + khối override (~1685, ~2031-2049), reset _boxTypeQR/_boxWeightQR trong finally (~2497)
     - "WeightChecking/HardwareSimulator/HardwareSimulator.csproj"  # Task H: project mới, .NET Framework 4.7.2, plain WinForms (không DevExpress)
     - "WeightChecking/HardwareSimulator/ScannerSimulatorControl.cs" # Task H: TCP line server giả lập Cognex Telnet (dùng chung cho tab Metal + Scale)
     - "WeightChecking/HardwareSimulator/PrinterSimulatorControl.cs" # Task H: TCP STX/ETX frame server giả lập máy in AnserU2, có Auto ACK
@@ -485,7 +543,13 @@ active_context:
     - "WeightChecking/WeightChecking/StaticClass/AutoPostingHelper.cs" # (Task E) Debug.WriteLine + return string trong AutoTransfer/AutoStockIn/AutoStockOut dịch sang tiếng Anh
 
   blocked_by: >
-    KHÔNG blocked. Task H (project HardwareSimulator giả lập Cognex scanner + máy in AnserU2) đã build
+    KHÔNG blocked. Task I (2 QR/thùng — QR2 box info tại trạm Scale) đã build verify thành công qua 3
+    lần rebuild liên tiếp (0 lỗi CS mỗi lần) sau khi áp dụng cả implementation gốc lẫn 4 fix từ 2
+    subagent review (`hardware-io-reviewer` + `weight-logic-auditor`, chạy song song theo đúng yêu cầu
+    Verification bước 2 của plan). Việc còn lại duy nhất là test thật với `IsTest=true` + fake data
+    (không có GUI tương tác trong sandbox) — xem next_step. Còn 1 open question (MEDIUM, tolerance
+    category không tự sync theo QR2) cần user xác nhận trước khi quyết định có sửa thêm không.
+    Task H (project HardwareSimulator giả lập Cognex scanner + máy in AnserU2) đã build
     verify thành công: build riêng `HardwareSimulator.csproj` → 0 lỗi; build full solution → thành
     công cho WeightChecking/AnserU2_cSharp/WindowsFormsApp1/HardwareSimulator (chỉ `CognexLibrary.csproj`
     lỗi CS0579, xác nhận là vấn đề pre-existing/không liên quan — xem CHANGELOG). Việc còn lại duy nhất
@@ -499,6 +563,23 @@ active_context:
     nhận hardware thật, chưa có phản hồi từ user.
 
   next_step: >
+    - [Task I] Test bằng fake data (`IsTest=true`, theo CLAUDE.md §6.2) trong `FrmScale_Load`: gọi
+    `BarcodeScanner2Handle(2, "BX1,DKP,987.3Gr")` một mình → xác nhận không exception, `_boxTypeQR`/
+    `_boxWeightQR` được set, UI không đổi gì khác ngoài `labQrScale.Text`; sau đó gọi
+    `BarcodeScanner2Handle(2, "<Main QR thật>")` → xác nhận `_scanDataWeight.BoxWeight == 987.3` (không
+    phải giá trị từ master data) và `_labBoxType.Text == "BX1"`.
+    - [Task I] Test case mismatch: QR2 nói BX1 nhưng quantity/master-data sẽ tính ra BX2 → xác nhận có
+    dòng Debug.WriteLine cảnh báo mismatch, và BX1/987.3 (từ QR2) vẫn thắng.
+    - [Task I] Test tại trạm Metal: gọi `BarcodeScanner1Handle(1, "BX1,DKP,987.3Gr")` → xác nhận early
+    return, không có dòng `tblScanDataReject`, không ghi `MetalPusher`, không đổi UI.
+    - [Task I] **Quan trọng — verify riêng fix HIGH vừa thêm cho guard bypass:** giả lập trường hợp QR2
+    đến trước rồi Main QR KHÔNG BAO GIỜ đến (thùng dán tem QR2 nhưng tem Main QR bị mờ/hỏng) → xác nhận
+    `CheckReadQrWeight()` watchdog vẫn bắn `WeightPusher = 2` (reject) đúng sau `TimerCheckQrScale`
+    giây, KHÔNG bị QR2 làm im lặng. Đây là bug HIGH vừa được `hardware-io-reviewer` phát hiện và sửa
+    trong session này (xem CHANGELOG) — cần verify kỹ trên hardware thật vì sandbox không test được.
+    - [Task I] Verify state không bị rò rỉ giữa các thùng: cho 1 thùng có QR2 đi qua thành công, rồi
+    ngay sau đó cho 1 thùng KHÔNG có QR2 đi qua → xác nhận thùng thứ 2 dùng đúng box weight/type từ
+    master data (không bị dính giá trị QR2 của thùng trước, nhờ fix reset trong `finally`).
     - [Task H] Chạy `HardwareSimulator.exe`, bấm Listen ở cả 3 tab (Metal `127.0.0.2:23`, Scale
     `127.0.0.3:23`, Printer `127.0.0.1:4001` — hoặc IP/port khác tuỳ chọn trên UI).
     - [Task H] Trỏ `IpCognexCamMetal`/`IpCognexCamScale`/`IpPrinter`/`PortPrinter` trong `frmSettings`
@@ -544,6 +625,14 @@ active_context:
   last_session: "2026-07-09"
 
   open_questions:
+    - "[Task I, MEDIUM — từ weight-logic-auditor] `lowerToleranceOfBox`/`upperToleranceOfBox` được
+      chọn dựa trên nhánh Carton-vs-Plastic suy ra từ master data, TRƯỚC khi khối override QR2 chạy —
+      nếu QR2 chỉ ra loại bao bì KHÁC HẲN nhóm (vd. master data tính ra Carton nhưng QR2 lại là
+      Plastic, không chỉ khác BX1↔BX4 trong cùng nhóm Carton), tolerance đang dùng sẽ không được tính
+      lại theo nhóm mới từ QR2. Thùng có thể VẬT LÝ đổi hẳn từ đóng thùng Carton sang túi Plastic (hay
+      ngược lại) không, hay chỉ đổi cỡ thùng trong cùng 1 nhóm (BX1-4)? Nếu có thể đổi nhóm, cần sửa để
+      tolerance selection cũng dựa theo `_boxTypeQR` khi có, thay vì giữ nguyên nhánh master-data đã
+      chọn trước đó."
     - "[Task H] Simulator không hardcode preset barcode giả (định dạng QR phụ thuộc OC/product code
       thật lấy từ DB, giả không đúng định dạng sẽ chỉ test được path lỗi) — tester cần tự dán chuỗi QR
       thật lấy từ DB/log cũ vào textbox Send. Có cần bổ sung 1 vài preset mẫu (ví dụ từ tblScanData cũ)
@@ -1136,6 +1225,49 @@ quan. Chưa test được trên PLC/sensor thật (không có kết nối hardwa
 công: xác nhận thùng đọc QR thành công vẫn pass bình thường (không bị ảnh hưởng bởi guard mới), và
 thùng không đọc được QR chỉ ghi `WeightPusher = 2` đúng 1 lần thay vì lặp lại liên tục. Xem
 `active_context.next_step` để biết chi tiết bước verify trên hardware.
+
+---
+
+### [2026-07-09] — Session: Thêm QR2 (box info) tại trạm Scale — đọc box weight/type từ label thay vì master data
+
+```
+[FEAT]     WeightChecking/WeightChecking/frmScaleNewUI.cs   — Thêm helper TryParseBoxInfoQr() (~dòng 1016): phân biệt QR2 "box info" (Carton "BoxType,Supplier,BoxWeight" hoặc Plastic "Name,BoxWeight") với Main QR bằng prefix 2 ký tự đầu KHÔNG khớp GlobalVariables.OcUsingList + không chứa "|" + 2-3 field comma-split
+[FEAT]     WeightChecking/WeightChecking/frmScaleNewUI.cs   — Thêm field `_boxTypeQR` (EnumBoxType?), dùng chung với field có sẵn `_boxWeightQR`
+[FEAT]     WeightChecking/WeightChecking/frmScaleNewUI.cs   — DataEventMetal_EventHandleValueChange: bỏ qua hoàn toàn QR2 (early return trước khi chạm guard `_scannerIsBussy[0]`) — trạm Metal không phản ứng gì với QR2
+[FEAT]     WeightChecking/WeightChecking/frmScaleNewUI.cs   — BarcodeScanner2Handle: bắt QR2 vào `_boxTypeQR`/`_boxWeightQR` (early return, không đụng `_scanDataWeight`/`_approvePrint`); khối override sau khi xác định box weight/type từ master data — ghi đè bằng giá trị QR2 khi có, log warning nếu mismatch, QR2 luôn thắng
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs   — (HIGH, từ hardware-io-reviewer) DataEvent_EventHandleValueChange: thêm early-return cho QR2 TRƯỚC khi set `_scannerIsBussy[1]`/`_readQrStatus[1]` — trước đây 1 QR2 scan (không kèm Main QR đọc được) tự động thoả mãn watchdog `CheckReadQrWeight()`, khiến thùng không đọc được Main QR thật bị lọt qua reject/timeout an toàn
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs   — (HIGH, từ weight-logic-auditor) `finally` block của BarcodeScanner2Handle: thêm reset vô điều kiện `_boxTypeQR = null; _boxWeightQR = 0;` — trước đây chỉ reset ở nhánh thành công, nên nếu thùng có QR2 bị reject/exception TRƯỚC khi tới khối override, dữ liệu QR2 sẽ rò rỉ sang thùng kế tiếp không có QR2 riêng
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs   — (LOW, từ weight-logic-auditor) Nhánh Plastic của khối xác định box weight: thêm `_boxType = EnumBoxType.Plastic;` (trước đây chỉ set UI label "Plastic", field `_boxType` giữ giá trị cũ từ thùng trước — gây cảnh báo mismatch giả và label cũ hiển thị sai)
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs   — (LOW, từ hardware-io-reviewer) Bọc try/catch quanh `InvokeIfRequired` trong nhánh early-return QR2 của BarcodeScanner2Handle — block này nằm ngoài try/catch chính của method, exception ở đây (vd. lúc đóng form) sẽ leak lên `DriverTelnet.ReadData` và ép Telnet reconnect không cần thiết
+[DOCS]     CLAUDE.md                                        — Cập nhật active_context (Task I), thêm entry CHANGELOG này
+```
+
+**Bối cảnh:** Tiếp tục plan đã duyệt từ session trước (`concurrent-stirring-fiddle.md`, không sửa gì
+so với bản duyệt) — mỗi thùng giờ mang 2 tem QR vật lý: Main QR (như cũ, drive lookup master data) +
+QR2 "box info" ghi loại/khối lượng bao bì THẬT đang dùng. Yêu cầu: khối lượng bao bì đọc từ QR2 phải
+ghi đè giá trị suy ra từ master data khi có, chỉ tại trạm Scale — trạm Metal bỏ qua hoàn toàn QR2.
+
+**Quy trình thực hiện:** Code chính (helper + field + 2 điểm tích hợp Metal/Scale) đã viết ở session
+trước. Session này: (1) xác nhận build thành công; (2) chạy song song 2 subagent theo đúng yêu cầu
+Verification bước 2 của plan — `hardware-io-reviewer` (điểm chạm PLC/scanner event handler) và
+`weight-logic-auditor` (BoxWeight ảnh hưởng trực tiếp pass/fail); (3) sửa tất cả finding HIGH/LOW có
+hướng sửa rõ ràng (4 fix liệt kê trên); (4) build lại 3 lần liên tiếp xác nhận không lỗi và các fix
+không xung đột nhau.
+
+**Không tự sửa (để lại open_questions, cần user xác nhận):** finding MEDIUM của weight-logic-auditor
+— `lowerToleranceOfBox`/`upperToleranceOfBox` được chọn theo nhánh Carton/Plastic suy ra từ master
+data TRƯỚC khi override QR2 chạy, không tự đồng bộ lại nếu QR2 chỉ ra nhóm bao bì khác hẳn (không chỉ
+khác cỡ BX1-4 mà đổi hẳn Carton↔Plastic) — cần xác nhận tình huống này có khả thi vật lý không trước
+khi quyết định sửa. Cũng không sửa finding cosmetic của hardware-io-reviewer (dòng `tblLog` "Scanner
+trigger" vẫn ghi kể cả khi barcode là QR2 bị bỏ qua) — chính reviewer xác nhận đây chỉ là vấn đề thẩm
+mỹ, không bắt buộc sửa.
+
+**Verify:** Build bằng MSBuild VS2022 Professional (Release|AnyCPU) → 3 lần rebuild liên tiếp sau mỗi
+đợt fix đều 0 lỗi CS, sinh `bin\Release\SSFG.exe` thành công. Chưa test thật với PLC/scanner hardware
+hay qua fake-data harness `IsTest=true` (không có GUI tương tác trong sandbox) — xem
+`active_context.next_step` để biết các bước verify thủ công cần làm, đặc biệt bước verify riêng cho
+fix HIGH của `DataEvent_EventHandleValueChange` (guard bypass) vì đây là bug an toàn quan trọng nhất
+tìm được trong session này.
 
 ---
 

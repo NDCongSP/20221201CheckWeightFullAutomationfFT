@@ -15,11 +15,13 @@ using System.Data;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Net.Sockets;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -136,6 +138,7 @@ namespace WeightChecking
         /// giá trị boxWeightQR này sẽ lấy từ QR code trên thùng, nếu ko có thông tin này thì sẽ lấy boxWeight trên masterData.
         /// </summary>
         private double _boxWeightQR = 0;
+        private EnumBoxType? _boxTypeQR;
 
         public frmScaleNewUI()
         {
@@ -876,7 +879,14 @@ namespace WeightChecking
         private void DataEvent_EventHandleValueChange(object sender, ValueChangeEventArgs e)
         {
             Debug.WriteLine($"[{DateTime.Now}]: {e.NewValue}|{e.OldValue}");
-            //if (!_scannerIsBussy[1])
+
+            if (TryParseBoxInfoQr(e.NewValue, out _, out _))
+            {
+                Debug.WriteLine($"Box info QR ignored at Scale sensor handler (handled separately in BarcodeScanner2Handle): {e.NewValue}");
+                return;
+            }
+
+            if (!_scannerIsBussy[1])
             {
                 GlobalVariables.AutoPostingStatus3 = string.Empty;
 
@@ -903,19 +913,6 @@ namespace WeightChecking
                     dbContext.SaveChanges();
                 }
             }
-            else
-            {
-                Log.Error("The sensor clears the busy flag, it is not active", "Scale form error");
-
-                //MessageBox.Show($"Quantity over the BX1 box limit ({res.BoxQtyBx1}).", "WARNING", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                GlobalVariables.InvokeIfRequired(this, () =>
-                {
-                    _labResultMessage.Text = "The sensor clears the busy flag, it is not active.";
-                    _labResult.Text = "FAILED";
-                    _labResult.BackColor = Color.Red;
-                    _labResult.ForeColor = Color.White;
-                });
-            }
         }
 
 
@@ -928,6 +925,13 @@ namespace WeightChecking
         private void DataEventMetal_EventHandleValueChange(object sender, ValueChangeEventArgs e)
         {
             Debug.WriteLine($"[{DateTime.Now}] Metal Cognex: {e.NewValue}|{e.OldValue}");
+
+            if (TryParseBoxInfoQr(e.NewValue, out _, out _))
+            {
+                Debug.WriteLine($"Box info QR ignored at Metal station: {e.NewValue}");
+                return;
+            }
+
             if (!_scannerIsBussy[0])
             {
                 //bật biến báo bận lên ko cho scan tiếp, chặn trường hợp thùng dán 2 tem.
@@ -1010,6 +1014,51 @@ namespace WeightChecking
         }
 
         #region Barcode handle
+
+        /// <summary>
+        /// Nhận diện QR thứ 2 (box info) trên thùng: Carton "BoxType,Supplier,BoxWeight" (vd "BX1,DKP,987.3Gr")
+        /// hoặc Plastic "Name,BoxWeight" (vd "G250001,1320"). Khác với QR chính (Main QR) luôn có 2 ký tự đầu
+        /// khớp GlobalVariables.OcUsingList — QR box info thì không.
+        /// </summary>
+        private bool TryParseBoxInfoQr(string barcodeString, out EnumBoxType boxType, out double boxWeightGrams)
+        {
+            boxType = default;
+            boxWeightGrams = 0;
+
+            if (string.IsNullOrEmpty(barcodeString) || barcodeString.Contains("|"))
+                return false;
+
+            var tokens = barcodeString.Split(',');
+            if (tokens.Length != 2 && tokens.Length != 3)
+                return false;
+
+            var prefix = barcodeString.Length >= 2 ? barcodeString.Substring(0, 2) : barcodeString;
+            if (GlobalVariables.OcUsingList.Any(x => x.OcFirstChar == prefix))
+                return false; // khớp OC thật -> đây là Main QR, không phải box info
+
+            string weightToken;
+            if (tokens.Length == 3)
+            {
+                // Carton: BoxType,Supplier,BoxWeight
+                if (!Enum.TryParse(tokens[0].Trim(), true, out boxType))
+                    return false;
+                weightToken = tokens[2];
+            }
+            else
+            {
+                // Plastic: Name,BoxWeight
+                boxType = EnumBoxType.Plastic;
+                weightToken = tokens[1];
+            }
+
+            var numericPart = Regex.Match(weightToken.Trim(), @"^[0-9]+(\.[0-9]+)?");
+            if (!numericPart.Success)
+                return false;
+
+            boxWeightGrams = double.Parse(numericPart.Value, CultureInfo.InvariantCulture);
+            return true;
+        }
+
         private void BarcodeScanner1Handle(int station, string barcodeString)
         {
             GlobalVariables.AutoPostingStatus1 = string.Empty;
@@ -1635,6 +1684,28 @@ namespace WeightChecking
 
         private void BarcodeScanner2Handle(int station, string barcodeString)
         {
+            if (TryParseBoxInfoQr(barcodeString, out var boxTypeFromQr, out var boxWeightFromQr))
+            {
+                _boxTypeQR = boxTypeFromQr;
+                _boxWeightQR = boxWeightFromQr;
+
+                Debug.WriteLine($"Box info QR read at Scale station: boxType={boxTypeFromQr}, boxWeight={boxWeightFromQr}g");
+
+                try
+                {
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        labQrScale.Text = barcodeString;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.ToString(), "Scale form error updating labQrScale for box info QR.");
+                }
+
+                return;
+            }
+
             GlobalVariables.AutoPostingStatus3 = string.Empty;
             var errorFlag = false;
 
@@ -1963,11 +2034,28 @@ namespace WeightChecking
                                 }
 
                                 _scanDataWeight.BoxWeight = (double)res.PlasticBoxWeight;
+                                _boxType = EnumBoxType.Plastic;
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {
                                     _labPrinting.Text = _scanDataWeight.Decoration == 0 ? "NO" : "YES";
                                     _labBoxType.Text = "Plastic";
+                                });
+                            }
+
+                            if (_boxTypeQR.HasValue)
+                            {
+                                if (_boxTypeQR.Value != _boxType)
+                                {
+                                    Debug.WriteLine($"Box type mismatch: label/master-data={_boxType}, QR box info={_boxTypeQR.Value}. Using QR box info value.");
+                                }
+
+                                _boxType = _boxTypeQR.Value;
+                                _scanDataWeight.BoxWeight = _boxWeightQR;
+
+                                GlobalVariables.InvokeIfRequired(this, () =>
+                                {
+                                    _labBoxType.Text = _boxType.ToString();
                                 });
                             }
 
@@ -2424,6 +2512,10 @@ namespace WeightChecking
 
                 _scanDataWeight = new tblScanData();
                 _resetUI = true;
+
+                //đảm bảo QR box info không bị rò rỉ sang thùng kế tiếp nếu thùng hiện tại bị reject/exception trước khi tới được đoạn override
+                _boxTypeQR = null;
+                _boxWeightQR = 0;
             }
         }
 
