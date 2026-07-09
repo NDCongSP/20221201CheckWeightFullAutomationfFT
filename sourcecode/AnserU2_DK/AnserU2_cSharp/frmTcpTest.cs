@@ -37,7 +37,7 @@ namespace AnserU2_cSharp
         {
             if (!int.TryParse(txtPort.Text.Trim(), out int port))
             {
-                MessageBox.Show("Port không hợp lệ.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Invalid port.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -97,17 +97,17 @@ namespace AnserU2_cSharp
 
             if (rcvArr[4] == 0x30) // in thành công
             {
-                AppendLog("In thành công!");
+                AppendLog("Print successful!");
                 SendDynamicString(" ", " ", " ", " ");
             }
             else if (rcvArr[4] == 0x4F) // lệnh được chấp nhận
             {
-                AppendLog("Gửi lệnh thành công.");
+                AppendLog("Command sent successfully.");
             }
             else if (rcvArr[4] == 0x31) // lỗi
             {
                 string errCode = rcvArr.Length > 5 ? rcvArr[5].ToString() : "?";
-                AppendLog($"Lỗi. Error code: {errCode}");
+                AppendLog($"Error. Error code: {errCode}");
                 // Stop print không cần UI thread
                 byte[] stopCmd = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x4C, 0x3 };
                 _driver?.Write(stopCmd);

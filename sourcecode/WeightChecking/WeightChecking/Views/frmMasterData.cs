@@ -34,8 +34,11 @@ namespace WeightChecking
             GridView gv = (GridView)sender;
             try
             {
-                _productNumber = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber").ToString();
-                _codeItemZise = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize") != null ? gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize").ToString() : string.Empty;
+                var productNumberValue = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber");
+                _productNumber = productNumberValue != null ? productNumberValue.ToString() : string.Empty;
+
+                var codeItemSizeValue = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize");
+                _codeItemZise = codeItemSizeValue != null ? codeItemSizeValue.ToString() : string.Empty;
             }
             catch (Exception ex)
             {
@@ -60,7 +63,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi Get Data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("Get Data Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -76,7 +79,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi MixingLisr: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("MixingLisr Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -87,7 +90,7 @@ namespace WeightChecking
                 using (SaveFileDialog sfd = new SaveFileDialog())
                 {
                     sfd.Filter = "Excel File|*.xlsx";
-                    sfd.Title = "Chọn chổ để lưu.";
+                    sfd.Title = "Choose a location to save.";
                     sfd.FileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}MasterData.xlsx";
                     if (sfd.ShowDialog() == DialogResult.OK)
                     {
@@ -127,7 +130,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi MixingLisr: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("MixingLisr Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -195,8 +198,11 @@ namespace WeightChecking
             GridView gv = (GridView)sender;
             try
             {
-                _productNumber = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber").ToString();
-                _codeItemZise = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize").ToString();
+                var productNumberValue = gv.GetRowCellValue(gv.FocusedRowHandle, "ProductNumber");
+                _productNumber = productNumberValue != null ? productNumberValue.ToString() : string.Empty;
+
+                var codeItemSizeValue = gv.GetRowCellValue(gv.FocusedRowHandle, "CodeItemSize");
+                _codeItemZise = codeItemSizeValue != null ? codeItemSizeValue.ToString() : string.Empty;
             }
             catch (Exception ex)
             {

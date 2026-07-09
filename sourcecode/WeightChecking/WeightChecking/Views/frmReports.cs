@@ -70,7 +70,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi Get Data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("Get Data Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }        
 
@@ -100,7 +100,7 @@ namespace WeightChecking
             try
             {
                 SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                 SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                 using (var connection = GlobalVariables.GetDbConnection())
@@ -209,8 +209,8 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Lỗi Report exception.");
-                XtraMessageBox.Show("Lỗi Report: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error(ex, "Report Error exception.");
+                XtraMessageBox.Show("Report Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {

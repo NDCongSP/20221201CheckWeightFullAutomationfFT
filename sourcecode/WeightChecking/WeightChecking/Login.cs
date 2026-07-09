@@ -130,7 +130,7 @@ namespace WeightChecking
             }
             else
             {
-                XtraMessageBox.Show("Nhập thiếu thông tin, vui lòng nhập lại đầy đủ thông tin.", "CẢNH BÁO", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                XtraMessageBox.Show("Missing information, please re-enter all required information.", "WARNING", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }

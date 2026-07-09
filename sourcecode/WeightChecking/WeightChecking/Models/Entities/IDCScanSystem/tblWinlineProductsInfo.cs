@@ -13,8 +13,8 @@ namespace WeightChecking
     {
         [Key]
         public Guid Id { get; set; }
-        public string Code_infoSize { get; set; }
-        public string ProductNunmber { get; set; }
+        public string CodeItemSize { get; set; }
+        public string ProductNumber { get; set; }
         public int ProductCategory { get; set; }//=1 la heel counter
         public string ProductName { get; set; }
         public string Brand { get; set; }

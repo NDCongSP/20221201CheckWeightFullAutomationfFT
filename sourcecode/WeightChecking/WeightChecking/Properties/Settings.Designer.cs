@@ -25,9 +25,9 @@ namespace WeightChecking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fEdyTkRahthFaw5rgRANFJAqzdmDARWkLD63Cea70BSFky7kKpt5LwUU+FZoVZQVjuywfnyo" +
-            "qCKGd7550u0pivvDn9a2A0YnYbV4b0DQMUyZLDKxlhpm1Ff1HYFBQNdPNiwysZYaZtRX9DZLTDZT5PaI" +
-            "uRPYhOEM04idrNFWS7gbAqtj4mi2pG4sMmXuY44vZCUb2tKdkADUg==")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ed3YbBgz3fEdyTkRahthFZQybJoLW8i7KQ3iME8B8ooQTkdsvUtAX21xE6NORw6ZjeFRNfYstnY3i+gaW" +
+            "i1klpA8bFi+MgR9ITgqnLzeiyws1GWRrQCFxMtL71X8AXE2sTWqjj1sbO8CdlS+bVSjejV8+oAfmvCtC" +
+            "aJH8xlBbRgT+ESojwoFaqoSJkl4TwNu38HDUfxMcKGHrLYKpkEvPg==")]
         public string conString {
             get {
                 return ((string)(this["conString"]));

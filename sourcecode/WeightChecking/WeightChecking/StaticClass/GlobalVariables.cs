@@ -4,7 +4,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
 using DevExpress.XtraReports.UI;
-using PLCPiProject;
 
 namespace WeightChecking
 {
@@ -42,8 +41,6 @@ namespace WeightChecking
 
         public static tblUser UserLoginInfo { get; set; } = null;
 
-        public static PLCPi MyDriver = new PLCPi();
-        public static byte[] ReadHoldingArr { get; set; }
         public static bool ModbusStatus { get; set; }
 
         public static string ConveyorStatus { get; set; } = "Bad";
@@ -64,7 +61,7 @@ namespace WeightChecking
         public static string PrintResult { get; set; } = "";//ket qua tra ve khi thuc hien in
         public static string PrintedResult { get; set; } = "";//ket qua tra ve khi thuc hien in
         //public static string  UpdatePath { get; set; }
-        public static string AppStatus { get; set; } = "DANG KHỞI ĐỘNG...";
+        public static string AppStatus { get; set; } = "STARTING...";
         //public static bool IsTest { get; set; } = false;//biến báo đang ở chế độ test hay chạy chính
         public static bool IsOutsoleMode { get; set; } = true;
 
@@ -111,6 +108,7 @@ namespace WeightChecking
 
         #region Cognex
         //public static string IpCognexCam_2 { get; set; } = "192.168.80.4";
+        public static string CognexCam_1Status { get; set; }
         public static string CognexCam_2Status { get; set; }
         #endregion
 

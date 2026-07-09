@@ -19,6 +19,7 @@ using System.Windows.Forms;
 using AutoUpdaterDotNET;
 using System.Diagnostics;
 using DevExpress.XtraPrinting;
+using System.Data.SqlClient;
 
 namespace WeightChecking
 {
@@ -141,7 +142,7 @@ namespace WeightChecking
                 }
                 catch (Exception ex)
                 {
-                    XtraMessageBox.Show("Lỗi MainForm: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    XtraMessageBox.Show("MainForm Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
             };
@@ -397,13 +398,13 @@ namespace WeightChecking
                 using (SaveFileDialog sfd = new SaveFileDialog())
                 {
                     sfd.Filter = "Excel File|*.xlsx";
-                    sfd.Title = "Chọn chổ để xuất";
+                    sfd.Title = "Choose a location to export";
                     sfd.FileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}SSFGReportMissItem.xlsx";
                     if (sfd.ShowDialog() == DialogResult.OK)
                     {
 
                         SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                        SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                        SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                         SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                         var fromDate = (DateTime)_barEditItemFromDate.EditValue;
@@ -464,8 +465,8 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Lỗi Report exception.");
-                XtraMessageBox.Show("Lỗi Report: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error(ex, "Report Error exception.");
+                XtraMessageBox.Show("Report Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -478,7 +479,7 @@ namespace WeightChecking
             using (SaveFileDialog sfd = new SaveFileDialog())
             {
                 sfd.Filter = "Excel File|*.xlsx";
-                sfd.Title = "Chọn chổ để xuất";
+                sfd.Title = "Choose a location to export";
                 sfd.FileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}FinalToBuy.xlsx";
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
@@ -529,13 +530,13 @@ namespace WeightChecking
                 using (SaveFileDialog sfd = new SaveFileDialog())
                 {
                     sfd.Filter = "Excel File|*.xlsx";
-                    sfd.Title = "Chọn chổ để xuất";
+                    sfd.Title = "Choose a location to export";
                     sfd.FileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}SSFGReport.xlsx";
                     if (sfd.ShowDialog() == DialogResult.OK)
                     {
 
                         SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                        SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                        SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                         SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                         var fromDate = (DateTime)_barEditItemFromDate.EditValue;
@@ -859,8 +860,8 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Lỗi Report exception.");
-                XtraMessageBox.Show("Lỗi Report: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error(ex, "Report Error exception.");
+                XtraMessageBox.Show("Report Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -880,7 +881,7 @@ namespace WeightChecking
                     _report = "Actived";
 
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                     _frmReports = new frmReports();
@@ -903,8 +904,8 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Lỗi MainForm ReFresh masterData exception.");
-                XtraMessageBox.Show("Lỗi MainForm: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error(ex, "MainForm Refresh masterData Error exception.");
+                XtraMessageBox.Show("MainForm Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -977,7 +978,7 @@ namespace WeightChecking
                 //    _settings = "Actived";
 
                 //    SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                //    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                //    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                 //    SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                 //    _frmSettings = new frmSettings();
@@ -999,7 +1000,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi MainForm: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("MainForm Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1012,7 +1013,7 @@ namespace WeightChecking
                     _scale = "Actived";
 
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                     //_frmScale = new frmScale();
@@ -1028,7 +1029,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi MainForm: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("MainForm Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1055,34 +1056,24 @@ namespace WeightChecking
                 using (var connection = GlobalVariables.GetDbConnectionWinline())
                 {
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
-                    var res = connection.Query<WinlineDataModel>("sp_IdcScanScaleGetCoreData").ToList();
+                    var res = connection.Query<WinlineDataModel>("sp_IdcScanScaleGetCoreData", commandTimeout: 120).ToList();
 
                     if (res != null && res.Count > 0)
                     {
-                        using (var con = GlobalVariables.GetDbConnection())
+                        var insertedCount = BulkInsertWinlineProductsInfo(res);
+
+                        if (insertedCount == res.Count)
                         {
-                            //truncate data
-                            con.Execute("truncate table tblWinlineProductsInfo");
-
-                            var _insertCount = con.Execute($"Insert into tblWinlineProductsInfo (CodeItemSize,ProductNumber," +
-                            $"ProductName,ProductCategory,Brand,Decoration,MainProductNo,MainProductName,Color,SizeCode," +
-                            $"SizeName,Weight,LeftWeight,RightWeight,BoxType,ToolingNo,PackingBoxType,CustomeUsePb) " +
-                       $"values (@CodeItemSize,@ProductNumber,@ProductName,@ProductCategory,@Brand,@Decoration,@MainProductNo," +
-                       $"@MainProductName,@Color,@SizeCode,@SizeName,@Weight,@LeftWeight,@RightWeight,@BoxType,@ToolingNo" +
-                       $",@PackingBoxType,@CustomeUsePb)", res);
-
-                            if (_insertCount == res.Count)
-                            {
-                                XtraMessageBox.Show($"Get data from winline Ok.  Rows inserted {_insertCount}/{res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            }
-                            else
-                            {
-                                XtraMessageBox.Show($"Get data from winline fail. Rows inserted {_insertCount}/{res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            }
+                            XtraMessageBox.Show($"Get data from winline Ok.  Rows inserted {insertedCount}/{res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
+                        else
+                        {
+                            XtraMessageBox.Show($"Get data from winline fail. Rows inserted {insertedCount}/{res.Count}.", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+
                         GlobalVariables.MyEvent.RefreshStatus = true;
                     }
                 }
@@ -1090,12 +1081,96 @@ namespace WeightChecking
             catch (Exception ex)
             {
                 Log.Error(ex, "Get data from winline exception.");
-                XtraMessageBox.Show("Lỗi MainForm Get data from winline: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("MainForm Error Get data from winline: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 SplashScreenManager.CloseForm(false);
                 GlobalVariables.MyEvent.RefreshStatus = true;
+            }
+        }
+
+        // Truncate + bulk insert trong cùng 1 transaction (thay vì Dapper Execute(sql, IEnumerable)
+        // vốn gửi 1 round-trip riêng cho MỖI dòng — với vài nghìn sản phẩm từ Winline thì rất chậm).
+        private int BulkInsertWinlineProductsInfo(List<WinlineDataModel> res)
+        {
+            using (var con = (SqlConnection)GlobalVariables.GetDbConnection())
+            {
+                con.Open();
+
+                using (var tran = con.BeginTransaction())
+                {
+                    try
+                    {
+                        con.Execute("truncate table tblWinlineProductsInfo", transaction: tran);
+
+                        var table = new DataTable();
+                        table.Columns.Add("CodeItemSize", typeof(string));
+                        table.Columns.Add("ProductNumber", typeof(string));
+                        table.Columns.Add("ProductName", typeof(string));
+                        table.Columns.Add("ProductCategory", typeof(int));
+                        table.Columns.Add("Brand", typeof(string));
+                        table.Columns.Add("Decoration", typeof(int));
+                        table.Columns.Add("MainProductNo", typeof(string));
+                        table.Columns.Add("MainProductName", typeof(string));
+                        table.Columns.Add("Color", typeof(string));
+                        table.Columns.Add("SizeCode", typeof(int));
+                        table.Columns.Add("SizeName", typeof(string));
+                        table.Columns.Add("Weight", typeof(double));
+                        table.Columns.Add("LeftWeight", typeof(double));
+                        table.Columns.Add("RightWeight", typeof(double));
+                        table.Columns.Add("BoxType", typeof(string));
+                        table.Columns.Add("ToolingNo", typeof(string));
+                        table.Columns.Add("PackingBoxType", typeof(string));
+                        table.Columns.Add("CustomeUsePb", typeof(string));
+
+                        foreach (var item in res)
+                        {
+                            table.Rows.Add(
+                                (object)item.CodeItemSize ?? DBNull.Value,
+                                (object)item.ProductNumber ?? DBNull.Value,
+                                (object)item.ProductName ?? DBNull.Value,
+                                item.ProductCategory,
+                                (object)item.Brand ?? DBNull.Value,
+                                (int)(item.Decoration ?? 0),
+                                (object)item.MainProductNo ?? DBNull.Value,
+                                (object)item.MainProductName ?? DBNull.Value,
+                                (object)item.Color ?? DBNull.Value,
+                                item.SizeCode,
+                                (object)item.SizeName ?? DBNull.Value,
+                                item.Weight ?? 0,
+                                item.LeftWeight ?? 0,
+                                item.RightWeight ?? 0,
+                                (object)item.BoxType ?? DBNull.Value,
+                                (object)item.ToolingNo ?? DBNull.Value,
+                                (object)item.PackingBoxType ?? DBNull.Value,
+                                (object)item.CustomeUsePb ?? DBNull.Value);
+                        }
+
+                        using (var bulkCopy = new SqlBulkCopy(con, SqlBulkCopyOptions.Default, tran))
+                        {
+                            bulkCopy.DestinationTableName = "tblWinlineProductsInfo";
+                            bulkCopy.BulkCopyTimeout = 120;
+                            bulkCopy.BatchSize = 5000;
+
+                            foreach (DataColumn col in table.Columns)
+                            {
+                                bulkCopy.ColumnMappings.Add(col.ColumnName, col.ColumnName);
+                            }
+
+                            bulkCopy.WriteToServer(table);
+                        }
+
+                        tran.Commit();
+
+                        return table.Rows.Count;
+                    }
+                    catch
+                    {
+                        tran.Rollback();
+                        throw;
+                    }
+                }
             }
         }
 
@@ -1108,7 +1183,7 @@ namespace WeightChecking
                     _masterData = "Actived";
 
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                     _frmMasterData = new frmMasterData();
@@ -1123,8 +1198,8 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Lỗi MainForm ReFresh masterData exception.");
-                XtraMessageBox.Show("Lỗi MainForm: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error(ex, "MainForm Refresh masterData Error exception.");
+                XtraMessageBox.Show("MainForm Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -1160,7 +1235,7 @@ namespace WeightChecking
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
                     List<tblCoreDataCodeItemSize> coreData = new List<tblCoreDataCodeItemSize>();
 
@@ -1302,7 +1377,7 @@ namespace WeightChecking
                 DialogResult dialogResult;
                 dialogResult =
                         MessageBox.Show(
-                            $@"SSFG App có phiên bản mới {args.CurrentVersion}. SSFG App bản hiện tại là {args.InstalledVersion}. Bạn có muốn lên phiên bản mới không?", @"Thông Báo",
+                            $@"SSFG App has a new version {args.CurrentVersion}. The current SSFG App version is {args.InstalledVersion}. Do you want to update to the new version?", @"Notice",
                             MessageBoxButtons.YesNo,
                             MessageBoxIcon.Information);
 
@@ -1336,7 +1411,7 @@ namespace WeightChecking
             {
                 if (isUpdateClicked)
                 {
-                    MessageBox.Show(@"SSFG App đang chạy phiên bản mới nhất.", @"Thông Báo",
+                    MessageBox.Show(@"SSFG App is already running the latest version.", @"Notice",
                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
