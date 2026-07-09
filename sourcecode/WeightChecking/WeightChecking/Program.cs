@@ -27,101 +27,105 @@ namespace WeightChecking
         [STAThread]
         static void Main()
         {
-            #region Đọc các thông số cấu hình ban đầu từ settings
-            GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");//0-trước in; 1-sau in
-
-            using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
+            try
             {
-                var c = dbContext.TblConfigs.FirstOrDefault();
+                #region Đọc các thông số cấu hình ban đầu từ settings
+                GlobalVariables.ConnectionString = EncodeMD5.DecryptString(Properties.Settings.Default.conString, "ITFramasBDVN");//0-trước in; 1-sau in
 
-                if (c != null) GlobalVariables.ConfigJson = JsonConvert.DeserializeObject<ConfigJsonModel>(c.ConfigJson);
-                else
+                using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
                 {
-                    GlobalVariables.ConfigJson = new ConfigJsonModel();
-                    dbContext.TblConfigs.Add(new tblConfig()
+                    var c = dbContext.TblConfigs.FirstOrDefault();
+
+                    if (c != null) GlobalVariables.ConfigJson = JsonConvert.DeserializeObject<ConfigJsonModel>(c.ConfigJson);
+                    else
                     {
-                        Id = Guid.NewGuid(),
-                        ConfigJson = JsonConvert.SerializeObject(GlobalVariables.ConfigJson),
-                        CreatedBy = Environment.UserName,
-                        CreatedDate = DateTime.Now,
-                        CreatedMachine = Environment.MachineName,
-                        Location = EnumFactory.framas1
-                    });
-                    dbContext.SaveChanges();
+                        GlobalVariables.ConfigJson = new ConfigJsonModel();
+                        dbContext.TblConfigs.Add(new tblConfig()
+                        {
+                            Id = Guid.NewGuid(),
+                            ConfigJson = JsonConvert.SerializeObject(GlobalVariables.ConfigJson),
+                            CreatedBy = Environment.UserName,
+                            CreatedDate = DateTime.Now,
+                            CreatedMachine = Environment.MachineName,
+                            Location = EnumFactory.framas1
+                        });
+                        dbContext.SaveChanges();
+                    }
+
+
+                    GlobalVariables.ConfigJson.ConStringWL = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringWL, "ITFramasBDVN");
+                    GlobalVariables.ConfigJson.ConStringTest = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringTest, "ITFramasBDVN");
+
+                    //Đọc DB lấy danh sách specialCase
+                    GlobalVariables.SpecialCaseList = dbContext.TblSpecialCases.ToList();
                 }
 
+                Console.WriteLine($"Path app: {Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
 
-                GlobalVariables.ConfigJson.ConStringWL = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringWL, "ITFramasBDVN");
-                GlobalVariables.ConfigJson.ConStringTest = EncodeMD5.DecryptString(GlobalVariables.ConfigJson.ConStringTest, "ITFramasBDVN");
+                GlobalVariables.RememberInfo = JsonConvert.DeserializeObject<RememberInfo>(File.ReadAllText(@"./RememberInfo.json"));
 
-                //Đọc DB lấy danh sách specialCase
-                GlobalVariables.SpecialCaseList = dbContext.TblSpecialCases.ToList();
+                if (GlobalVariables.RememberInfo.Remember)
+                {
+                    GlobalVariables.RememberInfo.UserName = EncodeMD5.DecryptString(GlobalVariables.RememberInfo.UserName, "ITFramasBDVN");
+                    GlobalVariables.RememberInfo.Pass = EncodeMD5.DecryptString(GlobalVariables.RememberInfo.Pass, "ITFramasBDVN");
+                }
+
+                #endregion
+
+                #region Get danh sách tất cả các OC đang sử dụng
+                using (var dbContext = new ApplicationDbContextWL(GlobalVariables.ConfigJson.ConStringWL))
+                {
+                    //GlobalVariables.OcUsingList = connection.Query<OcUsingModel>("sp_IdcGetListOcName").ToList();
+                    var ocWL = dbContext.Database.SqlQuery<OcUsingModel>("sp_IdcGetListOcName").ToList();
+
+                    GlobalVariables.OcUsingList.AddRange(ocWL);
+                }
+                #endregion
+
+
+
+                //Log các hành động của user thì tự log bằng tay vào bảng tblLog
+                //tạo serilog để log Error exception.
+                MSSqlServerSinkOptions sinkOption = new MSSqlServerSinkOptions()
+                {
+                    TableName = "tblLog",
+                    AutoCreateSqlTable = true,
+                };
+                Log.Logger = new LoggerConfiguration().WriteTo.MSSqlServer(
+
+                  connectionString: GlobalVariables.ConnectionString,
+                  sinkOptions: sinkOption
+
+                  ).MinimumLevel.Error().CreateLogger();
+
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+
+                bool createdNew;
+
+                Mutex m = new Mutex(true, "SSFG", out createdNew);
+
+                if (!createdNew)
+                {
+                    // myApp is already running...
+                    MessageBox.Show("The Application is opening, please waiting.", "Info", MessageBoxButtons.OK,
+                              MessageBoxIcon.Information);
+                    return;
+                }
+                else
+                {
+                    AutoUpdater.RunUpdateAsAdmin = false;
+                    AutoUpdater.DownloadPath = Environment.CurrentDirectory;
+                    AutoUpdater.ApplicationExitEvent += AutoUpdater_ApplicationExitEvent;
+                    AutoUpdater.CheckForUpdateEvent += AutoUpdater_CheckForUpdateEvent;
+                    AutoUpdater.Start(GlobalVariables.ConfigJson.UpdatePath);
+                    Application.Run(new Login());
+
+                }
             }
-
-            GlobalVariables.CognexCam_2Status = Properties.Settings.Default.IpCognexCam_2;
-
-
-            Console.WriteLine($"Path app: {Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
-
-            GlobalVariables.RememberInfo = JsonConvert.DeserializeObject<RememberInfo>(File.ReadAllText(@"./RememberInfo.json"));
-
-            if (GlobalVariables.RememberInfo.Remember)
+            catch (Exception ex)
             {
-                GlobalVariables.RememberInfo.UserName = EncodeMD5.DecryptString(GlobalVariables.RememberInfo.UserName, "ITFramasBDVN");
-                GlobalVariables.RememberInfo.Pass = EncodeMD5.DecryptString(GlobalVariables.RememberInfo.Pass, "ITFramasBDVN");
-            }
-
-            #endregion
-
-            #region Get danh sách tất cả các OC đang sử dụng
-            using (var dbContext = new ApplicationDbContextWL(GlobalVariables.ConfigJson.ConStringWL))
-            {
-                //GlobalVariables.OcUsingList = connection.Query<OcUsingModel>("sp_IdcGetListOcName").ToList();
-                var ocWL = dbContext.Database.SqlQuery<OcUsingModel>("sp_IdcGetListOcName").ToList();
-
-                GlobalVariables.OcUsingList.AddRange(ocWL);
-            }
-            #endregion
-
-
-
-            //Log các hành động của user thì tự log bằng tay vào bảng tblLog
-            //tạo serilog để log Error exception.
-            MSSqlServerSinkOptions sinkOption = new MSSqlServerSinkOptions()
-            {
-                TableName = "tblLog",
-                AutoCreateSqlTable = true,
-            };
-            Log.Logger = new LoggerConfiguration().WriteTo.MSSqlServer(
-
-              connectionString: GlobalVariables.ConnectionString,
-              sinkOptions: sinkOption
-
-              ).MinimumLevel.Error().CreateLogger();
-
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
-            bool createdNew;
-
-            Mutex m = new Mutex(true, "SSFG", out createdNew);
-
-            if (!createdNew)
-            {
-                // myApp is already running...
-                MessageBox.Show("The Application is opening, please waiting.", "Info", MessageBoxButtons.OK,
-                          MessageBoxIcon.Information);
-                return;
-            }
-            else
-            {
-                AutoUpdater.RunUpdateAsAdmin = false;
-                AutoUpdater.DownloadPath = Environment.CurrentDirectory;
-                AutoUpdater.ApplicationExitEvent += AutoUpdater_ApplicationExitEvent;
-                AutoUpdater.CheckForUpdateEvent += AutoUpdater_CheckForUpdateEvent;
-                AutoUpdater.Start(GlobalVariables.ConfigJson.UpdatePath);
-                Application.Run(new Login());
-
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -132,14 +136,14 @@ namespace WeightChecking
                 DialogResult dialogResult;
                 dialogResult =
                         MessageBox.Show(
-                            $@"SSFG App có phiên bản mới {args.CurrentVersion}. Phiên bản đang sử dụng hiện tại  {args.InstalledVersion}. Bạn có muốn cập nhật phần mềm không?", @"Cập nhật phần mềm",
+                            $@"SSFG App has a new version {args.CurrentVersion}. The current version in use is {args.InstalledVersion}. Do you want to update the software?", @"Software Update",
                             MessageBoxButtons.YesNo,
                             MessageBoxIcon.Information);
 
                 if (dialogResult.Equals(DialogResult.Yes) || dialogResult.Equals(DialogResult.OK))
                 {
                     SplashScreenManager.ShowForm(null, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Updating...");
 
                     try
@@ -160,7 +164,7 @@ namespace WeightChecking
                         else
                         {
                             SplashScreenManager.ShowForm(null, typeof(WaitForm1), true, true, false);
-                            SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                            SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                             SplashScreenManager.Default.SetWaitFormDescription("Updating...");
                         }
                     }

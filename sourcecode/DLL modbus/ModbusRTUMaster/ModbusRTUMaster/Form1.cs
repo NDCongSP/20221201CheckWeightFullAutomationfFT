@@ -73,7 +73,7 @@ namespace ModbusRTUMaster
             {
                 label3.BackColor = Color.Green;
 
-                Console.WriteLine("doc nhiet do thanh cong{0};{1};{2}", myPLC.GetShortAt(Mang, 0), myPLC.GetShortAt(Mang, 2), myPLC.GetShortAt(Mang, 4));
+                Console.WriteLine("read temperature successfully{0};{1};{2}", myPLC.GetShortAt(Mang, 0), myPLC.GetShortAt(Mang, 2), myPLC.GetShortAt(Mang, 4));
             }
             else
             {

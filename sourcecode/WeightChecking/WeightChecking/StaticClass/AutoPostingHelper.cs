@@ -120,19 +120,19 @@ namespace WeightChecking.StaticClass
 
                     if (resInsertTransferRackStorage > 0)
                     {
-                        Debug.WriteLine($"ProductNumber: {productNumber} đã cập nhật kho.");
+                        Debug.WriteLine($"ProductNumber: {productNumber} updated warehouse.");
                         return $"OK. Transfer from {fromWH} to {toWH}";
                     }
                     else
                     {
-                        Debug.WriteLine($"ProductNumber: {productNumber} cập nhật kho thất bại.");
+                        Debug.WriteLine($"ProductNumber: {productNumber} failed to update warehouse.");
                         return $"Fail. Transfer from {fromWH} to {toWH}";
                     }
 
                 }
                 else
                 {
-                    Debug.WriteLine($"Thông tin không hợp lệ: {validateLabel?.Message}");
+                    Debug.WriteLine($"Invalid information: {validateLabel?.Message}");
                     return $"Fail. Transfer from {fromWH} to {toWH} - {validateLabel?.Message}";
 
                 }
@@ -227,19 +227,19 @@ namespace WeightChecking.StaticClass
 
                     if (resInsertTransferRackStorage > 0)
                     {
-                        Debug.WriteLine($"ProductNumber: {productNumber} đã cập nhật kho.");
+                        Debug.WriteLine($"ProductNumber: {productNumber} updated warehouse.");
                         return $"OK. Stock in to {toWH}.";
                     }
                     else
                     {
-                        Debug.WriteLine($"ProductNumber: {productNumber} cập nhật kho thất bại.");
+                        Debug.WriteLine($"ProductNumber: {productNumber} failed to update warehouse.");
                         return $"Fail. Stock in to {toWH}";
                     }
 
                 }
                 else
                 {
-                    Debug.WriteLine($"Thông tin không hợp lệ: {Message}");
+                    Debug.WriteLine($"Invalid information: {Message}");
                     return $"Fail. Stock in to {toWH} - {Message}";
 
                 }
@@ -299,20 +299,20 @@ namespace WeightChecking.StaticClass
                 var resInsertTransferRackStorage = connection.Execute("DOGE_WH.dbo.sp_lmpScannerClient_ScannedLabel_Insert", para, commandType: CommandType.StoredProcedure);
                 if (resInsertTransferRackStorage > 0)
                 {
-                    Debug.WriteLine($"ProductNumber: {productNumber} đã cập nhật kho.");
-                    return $"ProductNumber: {productNumber} đã cập nhật kho.";
+                    Debug.WriteLine($"ProductNumber: {productNumber} updated warehouse.");
+                    return $"ProductNumber: {productNumber} updated warehouse.";
                 }
                 else
                 {
-                    Debug.WriteLine($"ProductNumber: {productNumber} cập nhật kho thất bại.");
-                    return $"ProductNumber: {productNumber} cập nhật kho thất bại.";
+                    Debug.WriteLine($"ProductNumber: {productNumber} failed to update warehouse.");
+                    return $"ProductNumber: {productNumber} failed to update warehouse.";
                 }
 
             }
             else
             {
-                Debug.WriteLine($"Thông tin không hợp lệ: {Message}");
-                return $"Thông tin không hợp lệ: {Message}";
+                Debug.WriteLine($"Invalid information: {Message}");
+                return $"Invalid information: {Message}";
 
             }
         }

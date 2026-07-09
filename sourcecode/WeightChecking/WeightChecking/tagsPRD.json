@@ -1,48 +1,48 @@
 [
   {
     "Name": "PLC_1",
-    "Host": "phucthinhautomation.ddns.net",
+    "Host": "192.168.4.200",
     "Rack": 0,
     "Slot": 1,
     "Tags": [
       {
         "Name": "S1",
-        "Address": "DB1.DBW0",
+        "Address": "DB22.DBW0",
         "DataType": "Int"
       },
       {
         "Name": "RJ1",
-        "Address": "DB1.DBW2",
+        "Address": "DB22.DBW2",
         "DataType": "Word"
       },
       {
         "Name": "S2",
-        "Address": "DB1.DBW4",
+        "Address": "DB22.DBW4",
         "DataType": "Word"
       },
       {
         "Name": "Metal_Result",
-        "Address": "DB1.DBW6",
+        "Address": "DB22.DBW6",
         "DataType": "Word"
       },
       {
         "Name": "S_MD_OUT",
-        "Address": "DB1.DBW8",
+        "Address": "DB22.DBW8",
         "DataType": "Word"
       },
       {
         "Name": "S3",
-        "Address": "DB1.DBW10",
+        "Address": "DB22.DBW10",
         "DataType": "Word"
       },
       {
         "Name": "S5",
-        "Address": "DB1.DBW12",
+        "Address": "DB22.DBW12",
         "DataType": "Word"
       },
       {
         "Name": "Scale_Value",
-        "Address": "DB1.DBD14",
+        "Address": "DB22.DBD14",
         "DataType": "Real",
         "Deadband": 0.00,
         "OffsetValue": 0,
@@ -51,12 +51,12 @@
       },
       {
         "Name": "Scale_Stable_Trigger",
-        "Address": "DB1.DBW18",
+        "Address": "DB22.DBW18",
         "DataType": "Word"
       },
       {
         "Name": "Scale_Value_Stable",
-        "Address": "DB1.DBD20",
+        "Address": "DB22.DBD20",
         "DataType": "Real",
         "Deadband": 0.00,
         "OffsetValue": 0,
@@ -65,22 +65,22 @@
       },
       {
         "Name": "Check_Weight_Result",
-        "Address": "DB1.DBW24",
+        "Address": "DB22.DBW24",
         "DataType": "Word"
       },
       {
         "Name": "S6",
-        "Address": "DB1.DBW26",
+        "Address": "DB22.DBW26",
         "DataType": "Word"
       },
       {
         "Name": "Delay_Time_To_Print",
-        "Address": "DB1.DBW28",
+        "Address": "DB22.DBW28",
         "DataType": "Word"
       },
       {
         "Name": "Box_On_Scale",
-        "Address": "DB1.DBW30",
+        "Address": "DB22.DBW30",
         "DataType": "Word"
       }
     ]

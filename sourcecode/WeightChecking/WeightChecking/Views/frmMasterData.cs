@@ -63,7 +63,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi Get Data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("Get Data Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -79,7 +79,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi MixingLisr: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("MixingLisr Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -90,7 +90,7 @@ namespace WeightChecking
                 using (SaveFileDialog sfd = new SaveFileDialog())
                 {
                     sfd.Filter = "Excel File|*.xlsx";
-                    sfd.Title = "Chọn chổ để lưu.";
+                    sfd.Title = "Choose a location to save.";
                     sfd.FileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}MasterData.xlsx";
                     if (sfd.ShowDialog() == DialogResult.OK)
                     {
@@ -130,7 +130,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi MixingLisr: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("MixingLisr Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

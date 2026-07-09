@@ -209,7 +209,7 @@ namespace WeightChecking
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Quét sai mã QR. Mời quét lại.","CẢNH BÁO",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                    MessageBox.Show("Wrong QR code scanned. Please scan again.","WARNING",MessageBoxButtons.OK,MessageBoxIcon.Warning);
                 }
             }
         }
@@ -249,9 +249,9 @@ namespace WeightChecking
                                 //trường hợp xác định là false alarm, cho in lại tem và cập nhật ApprovedBy vào bảng tblScanData
                                 if (scandataDetail.ApprovedBy == Guid.Empty && scandataDetail.Pass == 0 && _actualDeviation == 0)
                                 {
-                                    var dialogResult = MessageBox.Show($"Bạn có chắc chắn xác nhận thùng với thông tin sau:" +
+                                    var dialogResult = MessageBox.Show($"Are you sure you want to confirm the box with the following information:" +
                                          $"{Environment.NewLine}{scandataDetail.IdLabel}|{scandataDetail.OcNo}|{scandataDetail.BoxNo}{Environment.NewLine}" +
-                                         $" là cảnh báo sai và in lại tem?", "CẢNH BÁO", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                                         $" is a false alarm and reprint the label?", "WARNING", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                                     if (dialogResult == DialogResult.Yes)
                                     {
@@ -275,9 +275,9 @@ namespace WeightChecking
                                 //trường hợp này là true alarm, nhưng vào chỉnh sửa lại chênh lêch thực tế (actual deviation)
                                 else if (scandataDetail.ApprovedBy == Guid.Empty && scandataDetail.Pass == 0 && _actualDeviation != 0)
                                 {
-                                    var dialogResult = MessageBox.Show($"Bạn có chắc chắn xác nhận cập nhật số lượng chênh lệch thực tế cho thùng với thông tin sau:" +
+                                    var dialogResult = MessageBox.Show($"Are you sure you want to confirm updating the actual deviation quantity for the box with the following information:" +
                                          $"{Environment.NewLine}{scandataDetail.IdLabel}|{scandataDetail.OcNo}|{scandataDetail.BoxNo}.{Environment.NewLine}" +
-                                         $"Số lượng lệch thực tế là: {_actualDeviation}?", "CẢNH BÁO", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                                         $"The actual deviation quantity is: {_actualDeviation}?", "WARNING", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                                     if (dialogResult == DialogResult.Yes)
                                     {
@@ -335,13 +335,13 @@ namespace WeightChecking
                         }
                         else
                         {
-                            MessageBox.Show("Bạn không có quyền thực hiện chức năng này", "THÔNG BÁO", MessageBoxButtons.OK
+                            MessageBox.Show("You do not have permission to perform this function", "NOTICE", MessageBoxButtons.OK
                                 , MessageBoxIcon.Warning);
                         }
                     }
                     else
                     {
-                        MessageBox.Show("Không tìm thấy thông tin.", "THÔNG BÁO", MessageBoxButtons.OK
+                        MessageBox.Show("Information not found.", "NOTICE", MessageBoxButtons.OK
                             , MessageBoxIcon.Warning);
                     }
                 }

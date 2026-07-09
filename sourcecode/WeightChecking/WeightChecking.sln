@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CognexLibrary_NETFramework"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApp1", "WindowsFormsApp1\WindowsFormsApp1.csproj", "{365D88BC-8F68-4AB1-8C15-8409AB9DBC09}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardwareSimulator", "HardwareSimulator\HardwareSimulator.csproj", "{7F3B6E3E-4E31-4C6E-9C7B-0B7A6B6EAB01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{365D88BC-8F68-4AB1-8C15-8409AB9DBC09}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{365D88BC-8F68-4AB1-8C15-8409AB9DBC09}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{365D88BC-8F68-4AB1-8C15-8409AB9DBC09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F3B6E3E-4E31-4C6E-9C7B-0B7A6B6EAB01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F3B6E3E-4E31-4C6E-9C7B-0B7A6B6EAB01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F3B6E3E-4E31-4C6E-9C7B-0B7A6B6EAB01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F3B6E3E-4E31-4C6E-9C7B-0B7A6B6EAB01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

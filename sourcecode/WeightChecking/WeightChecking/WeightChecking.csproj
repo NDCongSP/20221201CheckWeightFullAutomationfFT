@@ -176,6 +176,9 @@
     <Reference Include="Serilog.Sinks.PeriodicBatching, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.PeriodicBatching.2.3.0\lib\net45\Serilog.Sinks.PeriodicBatching.dll</HintPath>
     </Reference>
+    <Reference Include="Sharp7, Version=1.1.84.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sharp7.1.1.84\lib\net40\Sharp7.dll</HintPath>
+    </Reference>
     <Reference Include="Snap7Scada.Lib">
       <HintPath>..\..\..\..\..\..\..\..\3.Others\0.Code\202600120_Snap7\Snap7ScadaSolution\Release_Lib\Snap7Scada.Lib.dll</HintPath>
     </Reference>
@@ -471,10 +474,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="tags.json">
+    <None Include="tagsPRD.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="tags1.json">
+    <None Include="tags.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -527,7 +530,7 @@
   <PropertyGroup>
     <Dir>$(OutputPath)\..\Update</Dir>
     <!--98_Public_Share\99_Shared\05_IT\01_Update\21- IDCScaleSystem-->
-    <DeployDir>\\10.40.10.9\Public$\98_Public_Share\99_Shared\05_IT\01_Update\21- IDCScaleSystem\Update.zip</DeployDir>
+    <DeployDir>\\192.168.3.19\general\update-program\01-UpdatedApp\7-IDCScaleSystem\Update.zip</DeployDir>
     <!--<FVNDeployContent Include="%(LineFVN.Text)" />
     <FFTDeployContent Include="%(LineFFT.Text)" />-->
   </PropertyGroup>

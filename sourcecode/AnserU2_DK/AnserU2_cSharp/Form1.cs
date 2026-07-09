@@ -82,18 +82,18 @@ namespace AnserU2_cSharp
                 //Printed event
                 if (rcvArr[4] == 0x30)
                 {
-                    Console.WriteLine($"in thanh cong!!!");
+                    Console.WriteLine($"Print successful!!!");
 
                     //xoa string
                     SendDynamicString(" ", " ", " ", " ");
                 }
                 else if (rcvArr[4] == 0x4F)
                 {
-                    Console.WriteLine($"Gui lenh xuong may in thanh cong!!!");
+                    Console.WriteLine($"Command sent to printer successfully!!!");
                 }
                 else if (rcvArr[4] == 0x31)
                 {
-                    Console.WriteLine($"Loi. Error Code: {rcvArr[5]}");
+                    Console.WriteLine($"Error. Error Code: {rcvArr[5]}");
                     MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                     btn_stopprint_Click(new object(), new EventArgs());

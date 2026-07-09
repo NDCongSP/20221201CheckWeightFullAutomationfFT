@@ -143,7 +143,7 @@ namespace WeightChecking
                 }
                 catch (Exception ex)
                 {
-                    XtraMessageBox.Show("Lỗi MainForm: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    XtraMessageBox.Show("MainForm Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
             };
@@ -399,13 +399,13 @@ namespace WeightChecking
                 using (SaveFileDialog sfd = new SaveFileDialog())
                 {
                     sfd.Filter = "Excel File|*.xlsx";
-                    sfd.Title = "Chọn chổ để xuất";
+                    sfd.Title = "Choose a location to export";
                     sfd.FileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}SSFGReportMissItem.xlsx";
                     if (sfd.ShowDialog() == DialogResult.OK)
                     {
 
                         SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                        SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                        SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                         SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                         var fromDate = (DateTime)_barEditItemFromDate.EditValue;
@@ -466,8 +466,8 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Lỗi Report exception.");
-                XtraMessageBox.Show("Lỗi Report: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error(ex, "Report Error exception.");
+                XtraMessageBox.Show("Report Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -480,7 +480,7 @@ namespace WeightChecking
             using (SaveFileDialog sfd = new SaveFileDialog())
             {
                 sfd.Filter = "Excel File|*.xlsx";
-                sfd.Title = "Chọn chổ để xuất";
+                sfd.Title = "Choose a location to export";
                 sfd.FileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}FinalToBuy.xlsx";
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
@@ -531,13 +531,13 @@ namespace WeightChecking
                 using (SaveFileDialog sfd = new SaveFileDialog())
                 {
                     sfd.Filter = "Excel File|*.xlsx";
-                    sfd.Title = "Chọn chổ để xuất";
+                    sfd.Title = "Choose a location to export";
                     sfd.FileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}SSFGReport.xlsx";
                     if (sfd.ShowDialog() == DialogResult.OK)
                     {
 
                         SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                        SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                        SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                         SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                         var fromDate = (DateTime)_barEditItemFromDate.EditValue;
@@ -861,8 +861,8 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Lỗi Report exception.");
-                XtraMessageBox.Show("Lỗi Report: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error(ex, "Report Error exception.");
+                XtraMessageBox.Show("Report Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -882,7 +882,7 @@ namespace WeightChecking
                     _report = "Actived";
 
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                     _frmReports = new frmReports();
@@ -905,8 +905,8 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Lỗi MainForm ReFresh masterData exception.");
-                XtraMessageBox.Show("Lỗi MainForm: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error(ex, "MainForm Refresh masterData Error exception.");
+                XtraMessageBox.Show("MainForm Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -979,7 +979,7 @@ namespace WeightChecking
                 //    _settings = "Actived";
 
                 //    SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                //    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                //    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                 //    SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                 //    _frmSettings = new frmSettings();
@@ -1001,7 +1001,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi MainForm: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("MainForm Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1014,7 +1014,7 @@ namespace WeightChecking
                     _scale = "Actived";
 
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                     _frmScale = new frmScale();
@@ -1030,7 +1030,7 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                XtraMessageBox.Show("Lỗi MainForm: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("MainForm Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1057,7 +1057,7 @@ namespace WeightChecking
                 using (var connection = GlobalVariables.GetDbConnectionWinline())
                 {
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                     var res = connection.Query<WinlineDataModel>("sp_IdcScanScaleGetCoreData", commandTimeout: 120).ToList();
@@ -1082,7 +1082,7 @@ namespace WeightChecking
             catch (Exception ex)
             {
                 Log.Error(ex, "Get data from winline exception.");
-                XtraMessageBox.Show("Lỗi MainForm Get data from winline: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                XtraMessageBox.Show("MainForm Error Get data from winline: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -1184,7 +1184,7 @@ namespace WeightChecking
                     _masterData = "Actived";
 
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
 
                     _frmMasterData = new frmMasterData();
@@ -1199,8 +1199,8 @@ namespace WeightChecking
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Lỗi MainForm ReFresh masterData exception.");
-                XtraMessageBox.Show("Lỗi MainForm: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error(ex, "MainForm Refresh masterData Error exception.");
+                XtraMessageBox.Show("MainForm Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -1236,7 +1236,7 @@ namespace WeightChecking
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
                     SplashScreenManager.ShowForm(this, typeof(WaitForm1), true, true, false);
-                    SplashScreenManager.Default.SetWaitFormCaption("Vui lòng chờ trong giây lát");
+                    SplashScreenManager.Default.SetWaitFormCaption("Please wait a moment");
                     SplashScreenManager.Default.SetWaitFormDescription("Loading...");
                     List<tblCoreDataCodeItemSize> coreData = new List<tblCoreDataCodeItemSize>();
 
@@ -1378,7 +1378,7 @@ namespace WeightChecking
                 DialogResult dialogResult;
                 dialogResult =
                         MessageBox.Show(
-                            $@"SSFG App có phiên bản mới {args.CurrentVersion}. SSFG App bản hiện tại là {args.InstalledVersion}. Bạn có muốn lên phiên bản mới không?", @"Thông Báo",
+                            $@"SSFG App has a new version {args.CurrentVersion}. The current SSFG App version is {args.InstalledVersion}. Do you want to update to the new version?", @"Notice",
                             MessageBoxButtons.YesNo,
                             MessageBoxIcon.Information);
 
@@ -1412,7 +1412,7 @@ namespace WeightChecking
             {
                 if (isUpdateClicked)
                 {
-                    MessageBox.Show(@"SSFG App đang chạy phiên bản mới nhất.", @"Thông Báo",
+                    MessageBox.Show(@"SSFG App is already running the latest version.", @"Notice",
                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
