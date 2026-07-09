@@ -2771,7 +2771,10 @@ namespace WeightChecking
         private void SendDynamicString(string idLabel, string grossWeight, string createdDate)
         {
             try
-            {
+            { 
+                //hiện tại yêu cầu bỏ hết thông tin ngày tháng khi in tem.
+                createdDate = " ";
+
                 int i = 0, j = 0, k = 0;
                 int chkSUM = 0;
 
