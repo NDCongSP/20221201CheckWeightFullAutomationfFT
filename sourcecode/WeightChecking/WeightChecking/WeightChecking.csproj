@@ -186,10 +186,6 @@
     <Reference Include="Sharp7, Version=1.1.84.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Sharp7.1.1.84\lib\net40\Sharp7.dll</HintPath>
     </Reference>
-    <Reference Include="snap7.net, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DLL modbus\snap7.net.dll</HintPath>
-    </Reference>
     <Reference Include="Snap7Scada.Lib">
       <HintPath>..\..\..\..\..\..\..\..\3.Others\0.Code\202600120_Snap7\Snap7ScadaSolution\Release_Lib\Snap7Scada.Lib.dll</HintPath>
     </Reference>
