@@ -135,7 +135,7 @@ namespace WeightChecking
         private int _checkWeightResult;
 
         /// <summary>
-        /// giá trị boxWeightQR này sẽ lấy từ QR code trên thùng, nếu ko có thông tin này thì sẽ lấy boxWeight trên masterData.
+        /// giá trị boxWeightQR này sẽ lấy từ QR code trên thùng, nếu ko có thông tin này thì báo reject.
         /// </summary>
         private double _boxWeightQR = 0;
         private EnumBoxType? _boxTypeQR;
@@ -1056,6 +1056,7 @@ namespace WeightChecking
                 return false;
 
             boxWeightGrams = double.Parse(numericPart.Value, CultureInfo.InvariantCulture);
+            _boxWeightQR = boxWeightGrams;
             return true;
         }
 

@@ -16,7 +16,7 @@ namespace WeightChecking
     public partial class frmUpdateTolerance : DevExpress.XtraEditors.XtraForm
     {
         public string ProductNumber { get; set; }
-        public string CodeItemInfoSize { get; set; }
+        public string Code_infoSize { get; set; }
 
         public ProductInfoModel ItemInfo = new ProductInfoModel();
 
@@ -45,14 +45,19 @@ namespace WeightChecking
                     labSize.Text = ItemInfo.SizeName;
                     txtAveWeight.Text = ItemInfo.AveWeight1Prs.ToString();
                     txtBoxQtyBx1.Text = ItemInfo.BoxQtyBx1.ToString();
+                    txtBoxQtyBx1A.Text = ItemInfo.BoxQtyBx1A.ToString();
                     txtBoxQtyBx2.Text = ItemInfo.BoxQtyBx2.ToString();
                     txtBoxQtyBx3.Text = ItemInfo.BoxQtyBx3.ToString();
                     txtBoxQtyBx4.Text = ItemInfo.BoxQtyBx4.ToString();
                     txtBoxWeightBx1.Text = ItemInfo.BoxWeightBx1.ToString();
+                    txtBoxWeightBx1A.Text = ItemInfo.BoxWeightBx1A.ToString();
                     txtBoxWeightBx2.Text = ItemInfo.BoxWeightBx2.ToString();
                     txtBoxWeightBx3.Text = ItemInfo.BoxWeightBx3.ToString();
                     txtBoxWeightBx4.Text = ItemInfo.BoxWeightBx4.ToString();
                     txtPartitionQty.Text = ItemInfo.PartitionQty.ToString();
+                    txtPartitionQtyBx1A.Text = ItemInfo.PartitionQtyOfBX1A.ToString();
+                    txtPartitionQtyBx2.Text = ItemInfo.PartitionQtyOfBX2.ToString();
+                    txtPartitionQtyBx3.Text = ItemInfo.PartitionQtyOfBX3.ToString();
                     txtPartitionWeight.Text = ItemInfo.PartitionWeight.ToString();
                     txtPlasicBag1Qty.Text = ItemInfo.PlasticBag1Qty.ToString();
                     txtPlasicBag1Weight.Text = ItemInfo.PlasticBag1Weight.ToString();
@@ -97,7 +102,15 @@ namespace WeightChecking
                 TextEdit t = (TextEdit)s;
                 if (!string.IsNullOrEmpty(t.Text))
                 {
-                    ItemInfo.BoxQtyBx1 = int.TryParse(t.Text, out int value) ? value : 0;
+                    ItemInfo.BoxQtyBx1 = double.TryParse(t.Text, out double value) ? value : 0;
+                }
+            };
+            this.txtBoxQtyBx1A.TextChanged += (s, o) =>
+            {
+                TextEdit t = (TextEdit)s;
+                if (!string.IsNullOrEmpty(t.Text))
+                {
+                    ItemInfo.BoxQtyBx1A = double.TryParse(t.Text, out double value) ? value : 0;
                 }
             };
             this.txtBoxQtyBx2.TextChanged += (s, o) =>
@@ -105,7 +118,7 @@ namespace WeightChecking
                 TextEdit t = (TextEdit)s;
                 if (!string.IsNullOrEmpty(t.Text))
                 {
-                    ItemInfo.BoxQtyBx2 = int.TryParse(t.Text, out int value) ? value : 0;
+                    ItemInfo.BoxQtyBx2 = double.TryParse(t.Text, out double value) ? value : 0;
                 }
             };
             this.txtBoxQtyBx3.TextChanged += (s, o) =>
@@ -113,7 +126,7 @@ namespace WeightChecking
                 TextEdit t = (TextEdit)s;
                 if (!string.IsNullOrEmpty(t.Text))
                 {
-                    ItemInfo.BoxQtyBx3 = int.TryParse(t.Text, out int value) ? value : 0;
+                    ItemInfo.BoxQtyBx3 = double.TryParse(t.Text, out double value) ? value : 0;
                 }
             };
             this.txtBoxQtyBx4.TextChanged += (s, o) =>
@@ -121,7 +134,7 @@ namespace WeightChecking
                 TextEdit t = (TextEdit)s;
                 if (!string.IsNullOrEmpty(t.Text))
                 {
-                    ItemInfo.BoxQtyBx4 = int.TryParse(t.Text, out int value) ? value : 0;
+                    ItemInfo.BoxQtyBx4 = double.TryParse(t.Text, out double value) ? value : 0;
                 }
             };
 
@@ -131,6 +144,14 @@ namespace WeightChecking
                 if (!string.IsNullOrEmpty(t.Text))
                 {
                     ItemInfo.BoxWeightBx1 = double.TryParse(t.Text, out double value) ? value : 0;
+                }
+            };
+            this.txtBoxWeightBx1A.TextChanged += (s, o) =>
+            {
+                TextEdit t = (TextEdit)s;
+                if (!string.IsNullOrEmpty(t.Text))
+                {
+                    ItemInfo.BoxWeightBx1A = double.TryParse(t.Text, out double value) ? value : 0;
                 }
             };
             this.txtBoxWeightBx2.TextChanged += (s, o) =>
@@ -163,7 +184,31 @@ namespace WeightChecking
                 TextEdit t = (TextEdit)s;
                 if (!string.IsNullOrEmpty(t.Text))
                 {
-                    ItemInfo.PartitionQty = int.TryParse(t.Text, out int value) ? value : 0;
+                    ItemInfo.PartitionQty = double.TryParse(t.Text, out double value) ? value : 0;
+                }
+            };
+            this.txtPartitionQtyBx1A.TextChanged += (s, o) =>
+            {
+                TextEdit t = (TextEdit)s;
+                if (!string.IsNullOrEmpty(t.Text))
+                {
+                    ItemInfo.PartitionQtyOfBX1A = double.TryParse(t.Text, out double value) ? value : 0;
+                }
+            };
+            this.txtPartitionQtyBx2.TextChanged += (s, o) =>
+            {
+                TextEdit t = (TextEdit)s;
+                if (!string.IsNullOrEmpty(t.Text))
+                {
+                    ItemInfo.PartitionQtyOfBX2 = double.TryParse(t.Text, out double value) ? value : 0;
+                }
+            };
+            this.txtPartitionQtyBx3.TextChanged += (s, o) =>
+            {
+                TextEdit t = (TextEdit)s;
+                if (!string.IsNullOrEmpty(t.Text))
+                {
+                    ItemInfo.PartitionQtyOfBX3 = double.TryParse(t.Text, out double value) ? value : 0;
                 }
             };
             this.txtPlasicBag1Qty.TextChanged += (s, o) =>
@@ -171,7 +216,7 @@ namespace WeightChecking
                 TextEdit t = (TextEdit)s;
                 if (!string.IsNullOrEmpty(t.Text))
                 {
-                    ItemInfo.PlasticBag1Qty = int.TryParse(t.Text, out int value) ? value : 0;
+                    ItemInfo.PlasticBag1Qty = double.TryParse(t.Text, out double value) ? value : 0;
                 }
             };
             this.txtWrapSheetQty.TextChanged += (s, o) =>
@@ -179,7 +224,7 @@ namespace WeightChecking
                 TextEdit t = (TextEdit)s;
                 if (!string.IsNullOrEmpty(t.Text))
                 {
-                    ItemInfo.WrapSheetQty = int.TryParse(t.Text, out int value) ? value : 0;
+                    ItemInfo.WrapSheetQty = double.TryParse(t.Text, out double value) ? value : 0;
                 }
             };
 
@@ -239,6 +284,53 @@ namespace WeightChecking
                     ItemInfo.UpperToleranceOfPlasticBox = double.TryParse(t.Text, out double value) ? value : 0;
                 }
             };
+
+            this.txtPlasicBag2Qty.TextChanged += (s, o) =>
+            {
+                TextEdit t = (TextEdit)s;
+                if (!string.IsNullOrEmpty(t.Text))
+                {
+                    ItemInfo.PlasticBag2Qty = double.TryParse(t.Text, out double value) ? value : 0;
+                }
+            };
+
+            this.txtPlasicBag2Weight.TextChanged += (s, o) =>
+            {
+                TextEdit t = (TextEdit)s;
+                if (!string.IsNullOrEmpty(t.Text))
+                {
+                    ItemInfo.PlasticBag2Weight = double.TryParse(t.Text, out double value) ? value : 0;
+                }
+            };
+
+            this.txtFoarmSheetQty.TextChanged += (s, o) =>
+            {
+                TextEdit t = (TextEdit)s;
+                if (!string.IsNullOrEmpty(t.Text))
+                {
+                    ItemInfo.FoamSheetQty = double.TryParse(t.Text, out double value) ? value : 0;
+                }
+            };
+            this.txtFoarmSheetWeight.TextChanged += (s, o) =>
+            {
+                TextEdit t = (TextEdit)s;
+                if (!string.IsNullOrEmpty(t.Text))
+                {
+                    ItemInfo.FoamSheetWeight = double.TryParse(t.Text, out double value) ? value : 0;
+                }
+            };
+
+            //this.ckDecorarion.CheckedChanged += (s, o) =>
+            //{
+            //    CheckEdit c = (CheckEdit)s;
+            //    _ = c.Checked ? ItemInfo.Decoration = ItemInfo.Printing = 1 : ItemInfo.Decoration = ItemInfo.Printing = 0;
+            //};
+
+            //this.ckMetalScan.CheckedChanged += (s, o) =>
+            //{
+            //    CheckEdit c = (CheckEdit)s;
+            //    _ = c.Checked ? ItemInfo.MetalScan = 1 : ItemInfo.MetalScan = 0;
+            //};
             #endregion
         }
 
@@ -249,7 +341,6 @@ namespace WeightChecking
                 using (var connection = GlobalVariables.GetDbConnection())
                 {
                     var para = new DynamicParameters();
-
                     if (ItemInfo.CodeItemSize != null)
                     {
                         para.Add("@CodeItemSize", ItemInfo.CodeItemSize);
@@ -258,27 +349,32 @@ namespace WeightChecking
                         para.Add("@Color", ItemInfo.Color);
                         para.Add("@Printing", ItemInfo.Printing);
                         para.Add("@Size", ItemInfo.SizeName);
-                        //para.Add("@Date", ItemInfo.date);
+                        //para.Add("@Date", _info.date);
                         para.Add("@AveWeight1Prs", ItemInfo.AveWeight1Prs);
                         para.Add("@BoxQtyBx1", ItemInfo.BoxQtyBx1);
+                        para.Add("@BoxQtyBx1A", ItemInfo.BoxQtyBx1A);
                         para.Add("@BoxQtyBx2", ItemInfo.BoxQtyBx2);
                         para.Add("@BoxQtyBx3", ItemInfo.BoxQtyBx3);
                         para.Add("@BoxQtyBx4", ItemInfo.BoxQtyBx4);
                         para.Add("@BoxWeightBx1", ItemInfo.BoxWeightBx1);
+                        para.Add("@BoxWeightBx1A", ItemInfo.BoxWeightBx1A);
                         para.Add("@BoxWeightBx2", ItemInfo.BoxWeightBx2);
                         para.Add("@BoxWeightBx3", ItemInfo.BoxWeightBx3);
                         para.Add("@BoxWeightBx4", ItemInfo.BoxWeightBx4);
                         para.Add("@PartitionQty", ItemInfo.PartitionQty);
-                        para.Add("@PlasicBag1Qty", ItemInfo.PlasticBag1Qty);
-                        para.Add("@PlasicBag2Qty", ItemInfo.PlasticBag2Qty);
+                        para.Add("@PartitionQtyBX1A", ItemInfo.PartitionQtyOfBX1A);
+                        para.Add("@PartitionQtyBX2", ItemInfo.PartitionQtyOfBX2);
+                        para.Add("@PartitionQtyBX3", ItemInfo.PartitionQtyOfBX3);
+                        para.Add("@PlasticBag1Qty", ItemInfo.PlasticBag1Qty);
+                        para.Add("@PlasticBag2Qty", ItemInfo.PlasticBag2Qty);
                         para.Add("@WrapSheetQty", ItemInfo.WrapSheetQty);
                         para.Add("@FoamSheetQty", ItemInfo.FoamSheetQty);
                         para.Add("@PartitionWeight", ItemInfo.PartitionWeight);
-                        para.Add("@PlasicBag1Weight", ItemInfo.PlasticBag1Weight);
-                        para.Add("@PlasicBag2Weight", ItemInfo.PlasticBag2Weight);
+                        para.Add("@PlasticBag1Weight", ItemInfo.PlasticBag1Weight);
+                        para.Add("@PlasticBag2Weight", ItemInfo.PlasticBag2Weight);
                         para.Add("@WrapSheetWeight", ItemInfo.WrapSheetWeight);
                         para.Add("@FoamSheetWeight", ItemInfo.FoamSheetWeight);
-                        para.Add("@PlasicBoxWeight", ItemInfo.PlasticBoxWeight);
+                        para.Add("@PlasticBoxWeight", ItemInfo.PlasticBoxWeight);
                         para.Add("@LowerToleranceOfCartonBox", ItemInfo.LowerToleranceOfCartonBox);
                         para.Add("@UpperToleranceOfCartonBox", ItemInfo.UpperToleranceOfCartonBox);
                         para.Add("@LowerToleranceOfPlasticBox", ItemInfo.LowerToleranceOfPlasticBox);
@@ -320,21 +416,21 @@ namespace WeightChecking
                         para.Add("@BoxWeightBx3", ItemInfo.BoxWeightBx3);
                         para.Add("@BoxWeightBx4", ItemInfo.BoxWeightBx4);
                         para.Add("@PartitionQty", ItemInfo.PartitionQty);
-                        para.Add("@PlasicBag1Qty", ItemInfo.PlasticBag1Qty);
-                        para.Add("@PlasicBag2Qty", ItemInfo.PlasticBag2Qty);
+                        para.Add("@PlasticBag1Qty", ItemInfo.PlasticBag1Qty);
+                        para.Add("@PlasticBag2Qty", ItemInfo.PlasticBag2Qty);
                         para.Add("@WrapSheetQty", ItemInfo.WrapSheetQty);
                         para.Add("@FoamSheetQty", ItemInfo.FoamSheetQty);
                         para.Add("@PartitionWeight", ItemInfo.PartitionWeight);
-                        para.Add("@PlasicBag1Weight", ItemInfo.PlasticBag1Weight);
-                        para.Add("@PlasicBag2Weight", ItemInfo.PlasticBag2Weight);
+                        para.Add("@PlasticBag1Weight", ItemInfo.PlasticBag1Weight);
+                        para.Add("@PlasticBag2Weight", ItemInfo.PlasticBag2Weight);
                         para.Add("@WrapSheetWeight", ItemInfo.WrapSheetWeight);
                         para.Add("@FoamSheetWeight", ItemInfo.FoamSheetWeight);
-                        para.Add("@PlasicBoxWeight", ItemInfo.PlasticBoxWeight);
+                        para.Add("@PlasticBoxWeight", ItemInfo.PlasticBoxWeight);
                         para.Add("@LowerToleranceOfCartonBox", ItemInfo.LowerToleranceOfPlasticBox);
                         para.Add("@UpperToleranceOfCartonBox", ItemInfo.UpperToleranceOfCartonBox);
                         para.Add("@LowerToleranceOfPlasticBox", ItemInfo.LowerToleranceOfPlasticBox);
                         para.Add("@UpperToleranceOfPlasticBox", ItemInfo.UpperToleranceOfPlasticBox);
-                        connection.Execute("sp_tblCoreDataCodeItemSizeInsert", para, commandType: CommandType.StoredProcedure);
+                        connection.Execute("sp_tblCoreDataCodeitemSizeInsert", para, commandType: CommandType.StoredProcedure);
 
                         para = null;
                         para = new DynamicParameters();
@@ -355,21 +451,21 @@ namespace WeightChecking
                         para.Add("@BoxWeightBx3", ItemInfo.BoxWeightBx3);
                         para.Add("@BoxWeightBx4", ItemInfo.BoxWeightBx4);
                         para.Add("@PartitionQty", ItemInfo.PartitionQty);
-                        para.Add("@PlasicBag1Qty", ItemInfo.PlasticBag1Qty);
-                        para.Add("@PlasicBag2Qty", ItemInfo.PlasticBag2Qty);
+                        para.Add("@PlasticBag1Qty", ItemInfo.PlasticBag1Qty);
+                        para.Add("@PlasticBag2Qty", ItemInfo.PlasticBag2Qty);
                         para.Add("@WrapSheetQty", ItemInfo.WrapSheetQty);
                         para.Add("@FoamSheetQty", ItemInfo.FoamSheetQty);
                         para.Add("@PartitionWeight", ItemInfo.PartitionWeight);
-                        para.Add("@PlasicBag1Weight", ItemInfo.PlasticBag1Weight);
-                        para.Add("@PlasicBag2Weight", ItemInfo.PlasticBag2Weight);
+                        para.Add("@PlasticBag1Weight", ItemInfo.PlasticBag1Weight);
+                        para.Add("@PlasticBag2Weight", ItemInfo.PlasticBag2Weight);
                         para.Add("@WrapSheetWeight", ItemInfo.WrapSheetWeight);
                         para.Add("@FoamSheetWeight", ItemInfo.FoamSheetWeight);
-                        para.Add("@PlasicBoxWeight", ItemInfo.PlasticBoxWeight);
+                        para.Add("@PlasticBoxWeight", ItemInfo.PlasticBoxWeight);
                         para.Add("@LowerToleranceOfCartonBox", ItemInfo.LowerToleranceOfPlasticBox);
                         para.Add("@UpperToleranceOfCartonBox", ItemInfo.UpperToleranceOfCartonBox);
                         para.Add("@LowerToleranceOfPlasticBox", ItemInfo.LowerToleranceOfPlasticBox);
                         para.Add("@UpperToleranceOfPlasticBox", ItemInfo.UpperToleranceOfPlasticBox);
-                        connection.Execute("sp_tblCoreDataCodeItemSizeInsert", para, commandType: CommandType.StoredProcedure);
+                        connection.Execute("sp_tblCoreDataCodeitemSizeInsert", para, commandType: CommandType.StoredProcedure);
                         #endregion
                     }
 
@@ -377,6 +473,18 @@ namespace WeightChecking
 
                     this.Close();
                 }
+
+                //using var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString);
+                //var mesoinfo = dbContext.Database.SqlQuery<MesoInfoModel>($"sp_GetMesoInfo").AsEnumerable().FirstOrDefault();
+
+                //if (ItemInfo.CodeItemSize != null)
+                //{
+
+                //}
+                //else
+                //{
+
+                //}
             }
             catch (Exception ex)
             {
