@@ -855,7 +855,7 @@ namespace WeightChecking
         private void DataEvent_EventHandleStatusChange(object sender, StatusChangeEventArgs e)
         {
             GlobalVariables.CognexCam_2Status = e.Status;
-            Debug.WriteLine($"[{DateTime.Now}]: {e.Status}|{e.Exception?.Message}");
+            Debug.WriteLine($"[{DateTime.Now}] Cognex2 status: {e.Status}|{e.Exception?.Message}");
         }
 
         /// <summary>
@@ -870,7 +870,7 @@ namespace WeightChecking
 
         private void DataEvent_EventHandleValueChange(object sender, ValueChangeEventArgs e)
         {
-            Debug.WriteLine($"[{DateTime.Now}]: {e.NewValue}|{e.OldValue}");
+            Debug.WriteLine($"[{DateTime.Now}] Cognex2: {e.NewValue}|{e.OldValue}");
 
             // Box-info lines must be captured into _boxTypeQR/_boxWeightQR BEFORE the Main QR line
             // is dispatched below, regardless of which order the camera sent them in — otherwise
@@ -935,12 +935,12 @@ namespace WeightChecking
         private void DataEventMetal_EventHandleStatusChange(object sender, StatusChangeEventArgs e)
         {
             GlobalVariables.CognexCam_1Status = e.Status;
-            Debug.WriteLine($"[{DateTime.Now}] Metal Cognex: {e.Status}|{e.Exception?.Message}");
+            Debug.WriteLine($"[{DateTime.Now}] Cognex1 status: {e.Status}|{e.Exception?.Message}");
         }
 
         private void DataEventMetal_EventHandleValueChange(object sender, ValueChangeEventArgs e)
         {
-            Debug.WriteLine($"[{DateTime.Now}] Metal Cognex: {e.NewValue}|{e.OldValue}");
+            Debug.WriteLine($"[{DateTime.Now}] Cognex1: {e.NewValue}|{e.OldValue}");
 
             // Metal station ignores box-info QR2 entirely — only look for the Main QR line among
             // whatever lines the (possibly merged) telegram contains.
@@ -1089,6 +1089,94 @@ namespace WeightChecking
             boxWeightGrams = double.Parse(numericPart.Value, CultureInfo.InvariantCulture);
             _boxWeightQR = boxWeightGrams;
             return true;
+        }
+
+        /// <summary>
+        /// EF LINQ equivalent of sp_vProductItemInfoGet. When specialCase is false the
+        /// tblCoreDataCodeItemSize cross-reference is matched on v.Decoration (ignoring the
+        /// printing parameter); when true it's matched on printing instead (ignoring v.Decoration) -
+        /// this mirrors the stored proc's two branches exactly.
+        /// Under ANSI_NULLS (the SP has SET ANSI_NULLS ON), "@Printing = NULL" never matches any
+        /// row rather than matching rows where Printing IS NULL. The Metal-station call site never
+        /// supplies printing (SqlQuery previously left @Printing at its NULL default), so whenever
+        /// specialCase is true there, this intentionally returns no cross-reference match at all -
+        /// preserved here via the HasValue guard instead of using nullable ==.
+        /// </summary>
+        private ProductInfoModel GetProductItemInfo(ApplicationDbContextSSFG dbContext, string productNumber, bool specialCase, int? printing = null)
+        {
+            var v = dbContext.TblWinlineProductsInfos.FirstOrDefault(x => x.Actived && x.ProductNumber == productNumber);
+            if (v == null)
+                return null;
+
+            tblCoreDataCodeItemSize c;
+            if (!specialCase)
+            {
+                c = dbContext.TblCoreDataCodeItemSizes.FirstOrDefault(x =>
+                    (x.CodeItemSize == v.CodeItemSize || x.CodeItemSize == v.ProductNumber)
+                    && x.IsActived == true
+                    && x.Printing.HasValue && x.Printing.Value == v.Decoration);
+            }
+            else
+            {
+                c = printing.HasValue
+                    ? dbContext.TblCoreDataCodeItemSizes.FirstOrDefault(x =>
+                        (x.CodeItemSize == v.CodeItemSize || x.CodeItemSize == v.ProductNumber)
+                        && x.IsActived == true
+                        && x.Printing.HasValue && x.Printing.Value == printing.Value)
+                    : null;
+            }
+
+            return new ProductInfoModel
+            {
+                CodeItemSize = c?.CodeItemSize,
+                ProductNumber = v.ProductNumber,
+                ProductName = v.ProductName,
+                ProductCategory = v.ProductCategory,
+                Brand = v.Brand,
+                Decoration = v.Decoration,
+                MetalScan = c?.MetalScan,
+                Printing = c?.Printing,
+                MainProductNo = v.MainProductNo,
+                MainProductName = v.MainProductName,
+                Color = v.Color,
+                SizeName = v.SizeName,
+                ToolingNo = v.ToolingNo,
+                MainItemName = c?.MainItemName,
+                AveWeight1Prs = c?.AveWeight1Prs,
+                BoxQtyBx1 = c?.BoxQtyBx1,
+                BoxQtyBx1A = c?.BoxQtyBx1A,
+                BoxQtyBx2 = c?.BoxQtyBx2,
+                BoxQtyBx3 = c?.BoxQtyBx3,
+                BoxQtyBx4 = c?.BoxQtyBx4,
+                BoxQtyBx5 = c?.BoxQtyBx5,
+                BoxQtyBx6 = c?.BoxQtyBx6,
+                BoxWeightBx1 = c?.BoxWeightBx1,
+                BoxWeightBx1A = c?.BoxWeightBx1A,
+                BoxWeightBx2 = c?.BoxWeightBx2,
+                BoxWeightBx3 = c?.BoxWeightBx3,
+                BoxWeightBx4 = c?.BoxWeightBx4,
+                BoxWeightBx5 = c?.BoxWeightBx5,
+                BoxWeightBx6 = c?.BoxWeightBx6,
+                PartitionQty = c?.PartitionQty,
+                PartitionQtyOfBX1A = c?.PartitionQtyOfBX1A,
+                PartitionQtyOfBX2 = c?.PartitionQtyOfBX2,
+                PartitionQtyOfBX3 = c?.PartitionQtyOfBX3,
+                PlasticBag1Qty = c?.PlasticBag1Qty,
+                PlasticBag2Qty = c?.PlasticBag2Qty,
+                WrapSheetQty = c?.WrapSheetQty,
+                FoamSheetQty = c?.FoamSheetQty,
+                PartitionWeight = c?.PartitionWeight,
+                PlasticBag1Weight = c?.PlasticBag1Weight,
+                PlasticBag2Weight = c?.PlasticBag2Weight,
+                WrapSheetWeight = c?.WrapSheetWeight,
+                FoamSheetWeight = c?.FoamSheetWeight,
+                PlasticBoxWeight = c?.PlasticBoxWeight,
+                LowerToleranceOfCartonBox = c?.LowerToleranceOfCartonBox,
+                UpperToleranceOfCartonBox = c?.UpperToleranceOfCartonBox,
+                LowerToleranceOfPlasticBox = c?.LowerToleranceOfPlasticBox,
+                UpperToleranceOfPlasticBox = c?.UpperToleranceOfPlasticBox,
+                CreatedDate = v.CreatedDate,
+            };
         }
 
         private void BarcodeScanner1Handle(int station, string barcodeString)
@@ -1562,11 +1650,7 @@ namespace WeightChecking
                     dbContext.SaveChanges();
 
                     // 2023-07-26:
-                    var res = dbContext.Database.SqlQuery<ProductInfoModel>(
-                        "sp_vProductItemInfoGet @ProductNumber = {0}, @SpecialCase = {1}"
-                        , _scanDataMetal.ProductNumber, specialCaseMetal
-                        )
-                        .FirstOrDefault();
+                    var res = GetProductItemInfo(dbContext, _scanDataMetal.ProductNumber, specialCaseMetal);
 
                     if (res != null)
                     {
@@ -1975,11 +2059,7 @@ namespace WeightChecking
                             printingCheck = 0;
                         }
                     }
-                    var res = dbContextSSFG.Database.SqlQuery<ProductInfoModel>(
-                                "sp_vProductItemInfoGet @ProductNumber= {0}, @SpecialCase = {1}, @Printing = {2}",
-                               _scanDataWeight.ProductNumber, specialCase, printingCheck
-                           )
-                           .FirstOrDefault();
+                    var res = GetProductItemInfo(dbContextSSFG, _scanDataWeight.ProductNumber, specialCase, printingCheck);
 
                     if (res != null)
                     {
@@ -3165,8 +3245,13 @@ namespace WeightChecking
         private async Task TaskCheckResetUIAsync(CancellationToken token)
         {
             var sw = Stopwatch.StartNew();
-            var lastResetAt = sw.Elapsed;
             var intervalSeconds = GlobalVariables.ConfigJson.ResetUiInterval;
+            // Thời điểm _resetUI vừa chuyển false->true (cạnh lên của yêu cầu reset), null = chưa
+            // có yêu cầu đang chờ. Delay được tính từ đây - KHÔNG phải từ lần reset trước đó - để
+            // ResetUiInterval là "đợi N giây sau khi kích rồi mới reset" (giữ kết quả cân trên màn
+            // hình cho người vận hành xem), thay vì "không cho reset quá 1 lần mỗi N giây" (throttle
+            // cũ vô tác dụng vì 2 lần quét thực tế luôn cách nhau hơn N giây).
+            TimeSpan? requestedAt = null;
 
             while (!token.IsCancellationRequested)
             {
@@ -3175,7 +3260,11 @@ namespace WeightChecking
                     if (_resetUI)
                     {
                         var now = sw.Elapsed;
-                        var canReset = (now - lastResetAt).TotalSeconds >= intervalSeconds;
+
+                        if (requestedAt == null)
+                            requestedAt = now;
+
+                        var canReset = (now - requestedAt.Value).TotalSeconds >= intervalSeconds;
 
                         if (canReset)
                         {
@@ -3194,11 +3283,11 @@ namespace WeightChecking
                                 }));
                             }
 
-                            lastResetAt = now;
+                            requestedAt = null;
                             _resetUI = false;   // tiêu thụ yêu cầu reset
                         }
 
-                        // else: KHÔNG xoá _resetUI
+                        // else: KHÔNG xoá _resetUI, tiếp tục đợi đủ intervalSeconds kể từ lúc kích
                     }
 
                     await Task.Delay(200, token);
