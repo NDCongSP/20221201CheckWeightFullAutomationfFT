@@ -78,6 +78,15 @@ namespace CognexLibrary_NETFramework
         private bool isReading = false;
         private Task _task;
 
+        // Multi-code telegrams (e.g. Main QR + box-info QR sent together as one physical scan
+        // event) arrive as several CR/LF-terminated lines. If a ReadLineAsync() started while
+        // draining a telegram doesn't complete within this window, it's treated as belonging to
+        // a future telegram rather than the current one, and is carried over via _pendingLine
+        // instead of being abandoned (StreamReader is not safe for overlapping reads).
+        private const int MultiCodeGraceMs = 50;
+        private const int MaxLinesPerTelegram = 5;
+        private Task<string> _pendingLine;
+
         public async Task ConnectDevices()
         {
             //string host = "192.168.80.4"; // Change to your device IP
@@ -168,6 +177,7 @@ namespace CognexLibrary_NETFramework
                 reader?.Dispose();
                 stream?.Dispose();
                 client?.Close();
+                _pendingLine = null;
 
                 //_dataEvent.ExceptionLog = null;
                 //_dataEvent.Status = "Disconnected";
@@ -189,11 +199,75 @@ namespace CognexLibrary_NETFramework
             {
                 if (reader != null)
                 {
-                    string response = await reader?.ReadLineAsync();
+                    // First line: reuse a read left in-flight from a previous tick's grace
+                    // window, or start a new one. Either way this awaits until a line is
+                    // actually available (unchanged blocking behavior from before).
+                    Task<string> firstLineTask = _pendingLine ?? reader.ReadLineAsync();
+                    _pendingLine = null;
+                    string response = await firstLineTask;
+
                     if (!string.IsNullOrEmpty(response))
                     {
-                        _dataEvent.QRCodeValue = response;
-                        //Debug.WriteLine($"[{DateTime.Now}]: {response}");
+                        var lines = new List<string> { response };
+
+                        // A single physical scan trigger can produce multiple QR codes
+                        // (e.g. Main QR + box-info QR2) sent as separate CR/LF-terminated
+                        // lines back-to-back. Drain any further lines that show up within a
+                        // short grace window so they're delivered as ONE batched event
+                        // instead of being split across separate 100ms timer ticks.
+                        // A failure while OPPORTUNISTICALLY draining extra lines (e.g. the socket
+                        // hiccups) must not discard the line already captured in `response` above,
+                        // nor be mistaken for a hard read error by the outer catch (which would
+                        // reconnect unnecessarily). Treat it the same as "nothing more arrived" —
+                        // whatever real problem caused it will surface again on the next tick's
+                        // primary read.
+                        try
+                        {
+                            while (lines.Count < MaxLinesPerTelegram)
+                            {
+                                var nextLineTask = reader.ReadLineAsync();
+                                var completed = await Task.WhenAny(nextLineTask, Task.Delay(MultiCodeGraceMs));
+
+                                if (completed != nextLineTask)
+                                {
+                                    // Nothing arrived within the grace window. The read itself is
+                                    // still in flight against the shared reader (StreamReader
+                                    // doesn't support overlapping reads), so it must be carried
+                                    // over rather than started again on the next tick.
+                                    _pendingLine = nextLineTask;
+                                    break;
+                                }
+
+                                string nextLine = await nextLineTask;
+                                if (string.IsNullOrEmpty(nextLine))
+                                    break;
+
+                                lines.Add(nextLine);
+                            }
+                        }
+                        catch (Exception drainEx)
+                        {
+                            Debug.WriteLine($"[DriverTelnet] Extra-line drain failed, delivering telegram with {lines.Count} line(s) collected so far: {drainEx}");
+                        }
+
+                        // Dispatching QRCodeValue runs the app's scanner event handler chain
+                        // synchronously (e.g. DataEvent_EventHandleValueChange -> BarcodeScanner2Handle
+                        // -> DB lookups/printing). Exceptions from THAT app-level code (bad QR format,
+                        // missing master data, etc.) must not be caught by the network-error handler
+                        // below: previously they were, which made ReadData treat an application bug as
+                        // a Telnet read error and call Reconnect() — tearing down a perfectly healthy
+                        // connection (dropping any bytes already buffered by the OS for it) just
+                        // because one scan failed to process. That looked like "the scanner event
+                        // fires once and then never again" even though the camera kept sending data.
+                        try
+                        {
+                            _dataEvent.QRCodeValue = string.Join("\r\n", lines);
+                            //Debug.WriteLine($"[{DateTime.Now}]: {_dataEvent.QRCodeValue}");
+                        }
+                        catch (Exception handlerEx)
+                        {
+                            Debug.WriteLine($"[DriverTelnet] QRCodeValue event handler threw (app-level, connection left intact): {handlerEx}");
+                        }
                     }
                 }
             }

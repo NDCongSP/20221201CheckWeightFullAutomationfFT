@@ -264,7 +264,106 @@ const delay = 350; // gán delay bằng 350
 # Cập nhật phần này MỖI KHI kết thúc session làm việc
 active_context:
   current_task: >
-    DONE (Task I) — Thêm QR thứ 2 "box info" trên mỗi thùng (Carton: "BoxType,Supplier,BoxWeight" vd
+    DONE (Task K) — Fix 2 regression phát sinh từ Task J, cả 2 do user báo qua debugger/test thật trong
+    cùng session: (1) `NullReferenceException` tại `frmScaleNewUI.cs:888` (`GlobalVariables.
+    InvokeIfRequired(Owner, ...)` — `Owner` null vì form không show kèm owner; sửa `Owner`→`this`, khớp
+    36/37 call site còn lại trong file); (2) `DataEvent_EventHandleValueChange` "chỉ nhảy vào 1 lần rồi
+    im lặng dù simulator vẫn gửi liên tục" — chẩn đoán: dispatch `_dataEvent.QRCodeValue = ...` (chạy
+    đồng bộ toàn bộ handler chain app-level) trước đây nằm lồng trong khối `try` lỗi mạng/IO của
+    `DriverTelnet.ReadData()`, nên exception app-level (QR test không khớp DB, v.v.) bị hiểu nhầm thành
+    lỗi Telnet và kích hoạt `Reconnect()` phá 1 kết nối đang khoẻ. Đã tách dispatch + vòng lặp
+    opportunistic drain thêm dòng vào 2 khối try/catch riêng, chỉ log `Debug.WriteLine`, không escalate
+    `Reconnect()` nữa. **Lưu ý trung thực:** fix #2 là chẩn đoán tốt nhất dựa trên đọc code kỹ (đã loại
+    trừ `DataEvent.QRCodeValue` value-equality guard và `_scannerIsBussy[1]`), KHÔNG có log debug thật
+    của đúng lần lỗi để xác nhận 100% — xem CHANGELOG entry mới nhất + `next_step` để biết cách verify.
+    Build verify: `MSBuild WeightChecking.sln` → 0 lỗi cho `WeightChecking`(`SSFG.exe`)/
+    `CognexLibrary_NETFramework`/`AnserU2_cSharp`/`WindowsFormsApp1`/`HardwareSimulator`/
+    `CognexScannerTester`; chỉ còn CS0579 pre-existing của `CognexLibrary.csproj`.
+
+    **CẬP NHẬT — root cause THẬT đã xác nhận (không còn là suy đoán):** user tự verify bằng
+    `CognexScannerTester` (kết nối trực tiếp `DriverTelnet` production, bỏ qua toàn bộ `frmScaleNewUI.cs`)
+    — gửi lặp lại nhiều telegram từ `HardwareSimulator`, log RX hiện ĐÚNG mỗi lần gửi, tách đúng 2 dòng
+    mỗi telegram → chứng minh `DriverTelnet.cs`/thư viện Cognex hoàn toàn không phải nguyên nhân (fix ở
+    trên vẫn giữ vì đúng kiến trúc, nhưng KHÔNG phải root cause của triệu chứng "chỉ nhảy 1 lần"). Đọc
+    lại `frmScaleNewUI.cs` xác nhận nguyên nhân thật: `DataEvent_EventHandleValueChange` (dòng ~871) VẪN
+    được gọi mỗi lần (dòng `Debug.WriteLine` đầu hàm luôn chạy), nhưng toàn bộ xử lý thật nằm trong `if
+    (!_scannerIsBussy[1])` (dòng ~905) — cờ này CHỈ được reset `false` trong `S6_ValueChanged` (dòng
+    ~634-649), tức tín hiệu tag PLC "sensor sau trạm cân" (S6). Bộ test của user (`HardwareSimulator` +
+    `CognexScannerTester`) chỉ giả lập Cognex scanner, KHÔNG có PLC/sensor simulator, nên S6 không bao
+    giờ bắn → sau lần scan đầu, `_scannerIsBussy[1]` đứng yên `true` mãi → mọi lần sau bị chặn ngay ở
+    guard, giống hệt "event không nhảy vào nữa" dù thực ra event vẫn fire bình thường.
+
+    **Đây LÀ hành vi có chủ đích, KHÔNG PHẢI bug** — đúng RULE-RT-05 đã ghi ở mục 1 (`_scannerIsBussy[]`
+    không xoá trừ khi sensor out báo hiệu) và trade-off đã ghi nhận từ Task F ("nếu tag này không bắn...
+    guard sẽ đứng yên true mãi... đây là trade-off có chủ đích"). Đã hỏi user qua AskUserQuestion 3
+    hướng xử lý (thêm PLC/sensor simulator / thêm nút reset guard trong IsTest mode / không sửa gì) —
+    **user chọn "không cần sửa gì — chỉ cần xác nhận nguyên nhân".** Không có thay đổi code nào cho phần
+    này. Nếu cần test lại `_scannerIsBussy[1]`/`DataEvent_EventHandleValueChange` trong tương lai mà
+    không có PLC thật, cần 1 cách giả lập tín hiệu S6 (PLC/sensor simulator hoặc nút reset debug-only) —
+    xem lại 2 phương án đã đề xuất nếu user đổi ý sau này.
+
+    ---
+    (Task J — DONE) — Fix `DataEvent_EventHandleValueChange` (trạm Scale) để hoạt động đúng khi Cognex
+    trả về 2 QR (Main QR + box-info QR2) gộp trong CÙNG 1 lần trigger vật lý (`\r\n` giữa 2 mã, xác
+    nhận qua Cognex DataMan Result History và PuTTY capture thật của user). Yêu cầu gốc: "chỉnh lại
+    code cho sự kiện scanner cognex2 để nó hoạt động đúng với trường hợp cognex trả về 2 QR code".
+
+    **Root cause xác nhận được (không phải suy đoán — đọc lại toàn bộ `DriverTelnet.ReadData()` và
+    `TryParseBoxInfoQr()`):** `DriverTelnet.ReadData()` chỉ làm ĐÚNG 1 lần `await
+    reader.ReadLineAsync()` mỗi tick timer 100ms, và biến `isReading` giữ `true` suốt toàn bộ thời
+    gian xử lý ĐỒNG BỘ phía sau (`_dataEvent.QRCodeValue = response` gọi thẳng
+    `EventHandleValueChange`, không qua queue). Vì `DataEvent_EventHandleValueChange` gọi
+    `BarcodeScanner2Handle` đồng bộ (không async — đúng theo RULE-RT của project, không được sửa),
+    và `BarcodeScanner2Handle` làm việc đồng bộ nặng (query DB, đợi cân ổn định, in tem), dòng QR2 thứ
+    2 trong cùng telegram gộp KHÔNG THỂ được đọc khỏi socket cho tới khi TOÀN BỘ pipeline xử lý Main
+    QR (dòng đầu, theo đúng thứ tự thật trên hardware — xác nhận qua PuTTY capture: Main QR luôn đến
+    TRƯỚC QR2) đã chạy xong — nghĩa là khối override box-weight trong `BarcodeScanner2Handle` (đọc
+    `_boxTypeQR`/`_boxWeightQR`) KHÔNG BAO GIỜ có cơ hội áp dụng đúng thùng: field được set quá trễ
+    (sau khi đã cân/in xong) rồi bị reset về null/0 ở khối `finally` trước khi thùng kế tiếp tới.
+
+    **Fix 2 lớp (không dùng `Thread.Sleep`/delay cố định ở app layer — vi phạm RULE-RT-04 và không
+    deterministic; toàn bộ độ phức tạp async nằm trong `DriverTelnet.cs`, nơi ĐÃ dùng async/await sẵn
+    theo đúng ràng buộc "không async/await cho handler scanner" của project):**
+    1. **`CognexLibrary_NETFramework/DriverTelnet.cs` (`ReadData()`)** — sau khi đọc dòng đầu tiên
+       (blocking, hành vi cũ không đổi), thử đọc thêm tối đa 4 dòng nữa (`MaxLinesPerTelegram=5`),
+       mỗi dòng chờ tối đa `MultiCodeGraceMs=50ms` bằng `Task.WhenAny(reader.ReadLineAsync(),
+       Task.Delay(50))`. Nếu hết grace window mà dòng tiếp theo chưa về, Task đọc dở đó được giữ lại
+       trong field mới `_pendingLine` (KHÔNG bỏ — `StreamReader` không an toàn khi đọc chồng lấn) để
+       tick `ReadData` KẾ TIẾP tái sử dụng làm dòng đầu tiên, thay vì gọi `ReadLineAsync()` chồng lên
+       reader đang có 1 read dở dang. Tất cả dòng gom được nối bằng `"\r\n"`, set 1 LẦN DUY NHẤT vào
+       `_dataEvent.QRCodeValue` — gộp cả telegram thành 1 event thay vì rời rạc theo từng tick.
+       `_pendingLine` được clear trong `DisconnectDevices()` để tránh tái sử dụng read cũ sau khi
+       reconnect (reader mới, stale task sẽ không hợp lệ).
+    2. **`WeightChecking/frmScaleNewUI.cs`** — thêm helper `SplitTelegramLines()` (split theo
+       `"\r\n"`/`"\r"`/`"\n"`). Viết lại `DataEvent_EventHandleValueChange` (Scale): duyệt TẤT CẢ dòng
+       trong telegram gộp, bắt hết các dòng box-info QR2 vào `_boxTypeQR`/`_boxWeightQR` TRƯỚC, chỉ
+       dispatch dòng Main QR (dòng không khớp `TryParseBoxInfoQr`) tới `BarcodeScanner2Handle` SAU
+       CÙNG khi vòng lặp kết thúc — đảm bảo box-info luôn sẵn sàng trước khi pipeline Main QR chạy,
+       BẤT KỂ camera gửi QR nào trước (không phụ thuộc thứ tự vật lý, khác với trước đây chỉ xử lý
+       được đúng nếu QR2 đến trước Main QR — mà thực tế hardware lại làm ngược lại). Áp dụng cùng
+       pattern cho `DataEventMetal_EventHandleValueChange` (Metal) — trạm Metal vẫn bỏ qua hoàn toàn
+       mọi dòng box-info QR2 (giữ đúng hành vi cũ), chỉ khác là giờ tách đúng theo dòng thay vì so
+       khớp `TryParseBoxInfoQr` trên cả chuỗi gộp (trước đây nếu Metal cũng nhận telegram gộp nhiều
+       dòng, cách kiểm tra cũ trên toàn chuỗi sẽ luôn fail và dòng Main QR thật cũng bị nuốt theo).
+
+    Nếu > `MaxLinesPerTelegram` dòng lọt vào 1 telegram, hoặc có > 1 dòng không khớp box-info sau khi
+    đã bắt được 1 dòng Main QR, các dòng "Main QR" thừa bị bỏ qua có log cảnh báo (Debug.WriteLine) —
+    không dispatch nhiều lần `BarcodeScanner2Handle`/`BarcodeScanner1Handle` cho cùng 1 sự kiện.
+
+    Không đụng: `TryParseBoxInfoQr()` (giữ nguyên, chỉ nhận 1 dòng — đúng contract cũ), khối early-
+    return QR2 trong `BarcodeScanner2Handle` (giữ nguyên — defense-in-depth + cần cho test harness gọi
+    trực tiếp theo CLAUDE.md §6.2), `CognexScannerTester`/`HardwareSimulator` (đã handle đúng multi-
+    line raw value từ trước, không cần sửa gì thêm cho fix lần này).
+
+    Build verify: `MSBuild WeightChecking.sln /p:Configuration=Release /p:Platform="Any CPU"` → 0 lỗi
+    cho `WeightChecking`(`SSFG.exe`)/`AnserU2_cSharp`/`WindowsFormsApp1`/`HardwareSimulator`/
+    `CognexScannerTester` (dự án cuối cùng phụ thuộc trực tiếp `CognexLibrary_NETFramework` nên xác
+    nhận gián tiếp `DriverTelnet.cs` build sạch); chỉ còn lỗi CS0579 pre-existing của
+    `CognexLibrary.csproj` (không liên quan, đã ghi nhận từ Task H). Chưa test được với hardware thật
+    (không có mạng tới camera Cognex trong sandbox) — xem `next_step`.
+
+    ---
+    (Task I — DONE) — Thêm QR thứ 2 "box info" trên mỗi thùng (Carton: "BoxType,Supplier,BoxWeight" vd
     "BX1,DKP,987.3Gr"; Plastic: "Name,BoxWeight" vd "G250001,1320") để dùng boxWeight/boxType đọc trực
     tiếp từ tem vật lý thay cho giá trị suy ra từ master data (`sp_vProductItemInfoGet`). Chỉ áp dụng ở
     trạm Scale — trạm Metal phải bỏ qua QR này hoàn toàn. Quyết định chốt qua AskUserQuestion (session
@@ -525,7 +624,11 @@ active_context:
     để biết chi tiết, không lặp lại ở đây.)
 
   related_files:
-    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task I: TryParseBoxInfoQr() helper (~dòng 1016), field _boxTypeQR (~141), DataEventMetal_EventHandleValueChange bỏ qua QR2 (~918), DataEvent_EventHandleValueChange bỏ qua QR2 trước khi set guard (~879), BarcodeScanner2Handle bắt QR2 + khối override (~1685, ~2031-2049), reset _boxTypeQR/_boxWeightQR trong finally (~2497)
+    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task K: DataEvent_EventHandleValueChange (nhánh box-info QR, ~dòng 886) — InvokeIfRequired(Owner,...) → InvokeIfRequired(this,...), fix NullReferenceException
+    - "WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs"   # Task K: ReadData() — dispatch _dataEvent.QRCodeValue và vòng lặp opportunistic drain thêm dòng mỗi cái có try/catch riêng, không escalate Reconnect() khi lỗi là app-level (fix "event chỉ nhảy vào 1 lần rồi im lặng")
+    - "WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs"   # Task J: ReadData() gộp nhiều dòng CRLF trong 1 telegram thành 1 QRCodeValue event (grace window 50ms/dòng, tối đa 5 dòng), field _pendingLine giữ read dở dang giữa các tick, clear trong DisconnectDevices()
+    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task J: helper SplitTelegramLines() mới; DataEvent_EventHandleValueChange (Scale) + DataEventMetal_EventHandleValueChange (Metal) viết lại để duyệt hết các dòng trong telegram gộp, bắt QR2 box-info trước khi dispatch Main QR — không phụ thuộc thứ tự dòng camera gửi
+    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task I: TryParseBoxInfoQr() helper (~dòng 1016), field _boxTypeQR (~141), BarcodeScanner2Handle bắt QR2 + khối override (~1685, ~2031-2049), reset _boxTypeQR/_boxWeightQR trong finally (~2497)
     - "WeightChecking/HardwareSimulator/HardwareSimulator.csproj"  # Task H: project mới, .NET Framework 4.7.2, plain WinForms (không DevExpress)
     - "WeightChecking/HardwareSimulator/ScannerSimulatorControl.cs" # Task H: TCP line server giả lập Cognex Telnet (dùng chung cho tab Metal + Scale)
     - "WeightChecking/HardwareSimulator/PrinterSimulatorControl.cs" # Task H: TCP STX/ETX frame server giả lập máy in AnserU2, có Auto ACK
@@ -543,7 +646,13 @@ active_context:
     - "WeightChecking/WeightChecking/StaticClass/AutoPostingHelper.cs" # (Task E) Debug.WriteLine + return string trong AutoTransfer/AutoStockIn/AutoStockOut dịch sang tiếng Anh
 
   blocked_by: >
-    KHÔNG blocked. Task I (2 QR/thùng — QR2 box info tại trạm Scale) đã build verify thành công qua 3
+    KHÔNG blocked. Task J (fix DataEvent_EventHandleValueChange cho trường hợp Cognex trả 2 QR gộp
+    trong 1 lần trigger — batching ở DriverTelnet + reorder ở frmScaleNewUI.cs) đã build verify thành
+    công qua full-solution build (0 lỗi cho WeightChecking/AnserU2_cSharp/WindowsFormsApp1/
+    HardwareSimulator/CognexScannerTester; chỉ còn lỗi CS0579 pre-existing của CognexLibrary.csproj,
+    không liên quan). Chưa test được với hardware Cognex thật (sandbox không có mạng tới camera) — xem
+    next_step, dùng CognexScannerTester + HardwareSimulator (2 tool đã build sẵn từ Task H) để verify.
+    Task I (2 QR/thùng — QR2 box info tại trạm Scale) đã build verify thành công qua 3
     lần rebuild liên tiếp (0 lỗi CS mỗi lần) sau khi áp dụng cả implementation gốc lẫn 4 fix từ 2
     subagent review (`hardware-io-reviewer` + `weight-logic-auditor`, chạy song song theo đúng yêu cầu
     Verification bước 2 của plan). Việc còn lại duy nhất là test thật với `IsTest=true` + fake data
@@ -563,6 +672,33 @@ active_context:
     nhận hardware thật, chưa có phản hồi từ user.
 
   next_step: >
+    - [Task K] "Event chỉ nhảy 1 lần" ĐÃ xác nhận root cause thật (guard `_scannerIsBussy[1]` chỉ reset
+    qua tag PLC S6, bộ test hiện tại không có PLC simulator) và user xác nhận KHÔNG cần sửa gì — xem
+    CHANGELOG + phần "CẬP NHẬT — root cause THẬT" trong `current_task` ở trên. Nếu sau này cần test lại
+    mà không có PLC thật, cân nhắc lại 2 phương án đã đề xuất (PLC/sensor simulator, hoặc nút reset guard
+    debug-only trong IsTest mode) — user đã từ chối cả 2 lần hỏi này, chỉ làm nếu user chủ động yêu cầu
+    lại.
+    - [Task K] Xác nhận không còn văng NullReferenceException tại nhánh box-info QR của
+    `DataEvent_EventHandleValueChange` khi debug qua Visual Studio với breakpoint (fix đã build verify,
+    chỉ cần chạy lại kịch bản debug cũ của user — telegram gộp 2 QR qua `127.0.0.3:23`).
+    - [Task J] Dùng `HardwareSimulator.exe` (tab Scale) + `CognexScannerTester.exe` (tab Scale) — 2
+    tool đã build sẵn từ Task H: gửi 1 telegram gộp thật (Main QR rồi `<0x0D><0x0A>` rồi box-info QR2,
+    đúng thứ tự thật đã xác nhận qua PuTTY capture của user) từ Simulator sang Tester → xác nhận log
+    Tester chỉ hiện ĐÚNG 1 dòng `RX:` chứa cả 2 mã (chứng minh Layer 1 — batching trong
+    `DriverTelnet.ReadData()` — hoạt động đúng, không bị tách thành 2 event rời theo tick 100ms).
+    - [Task J] Test riêng với app `SSFG.exe` thật (`IsTest=true`, theo CLAUDE.md §6.2) hoặc trên
+    hardware thật tại trạm Scale: xác nhận box-weight override (`_boxTypeQR`/`_boxWeightQR` từ QR2) áp
+    dụng ĐÚNG cho thùng đã sinh ra QR2 đó — thử cả 2 thứ tự dòng trong telegram gộp (Main QR trước QR2,
+    và ngược lại) để xác nhận kết quả giống nhau bất kể thứ tự (đây là mục tiêu chính của Layer 2).
+    - [Task J] Verify không có regression so với Task I: lặp lại các test case đã liệt kê ở mục [Task
+    I] bên dưới (mismatch, watchdog reject khi thiếu Main QR, state không rò rỉ giữa các thùng) — vì
+    `BarcodeScanner2Handle`/`TryParseBoxInfoQr`/guard `_scannerIsBussy` không đổi, các test này dự kiến
+    vẫn pass y hệt, nhưng cần xác nhận lại vì đường dẫn dữ liệu vào (`DataEvent_EventHandleValueChange`)
+    đã đổi.
+    - [Task J] Verify trạm Metal không bị ảnh hưởng: gửi 1 telegram gộp giả (Main QR + 1 dòng box-info
+    QR2, dù Metal không dùng QR2) vào `DataEventMetal_EventHandleValueChange` → xác nhận chỉ dòng Main
+    QR được dispatch tới `BarcodeScanner1Handle`, dòng QR2 bị bỏ qua có log, không ảnh hưởng luồng Metal
+    hiện tại.
     - [Task I] Test bằng fake data (`IsTest=true`, theo CLAUDE.md §6.2) trong `FrmScale_Load`: gọi
     `BarcodeScanner2Handle(2, "BX1,DKP,987.3Gr")` một mình → xác nhận không exception, `_boxTypeQR`/
     `_boxWeightQR` được set, UI không đổi gì khác ngoài `labQrScale.Text`; sau đó gọi
@@ -622,7 +758,7 @@ active_context:
     có cần cập nhật theo không.
     - [Task E, còn treo] Xác nhận với hardware địa chỉ DB1 thật cho tag "P4" trên PLC Siemens.
 
-  last_session: "2026-07-09"
+  last_session: "2026-07-16"
 
   open_questions:
     - "[Task I, MEDIUM — từ weight-logic-auditor] `lowerToleranceOfBox`/`upperToleranceOfBox` được
@@ -1328,6 +1464,114 @@ solution (`WeightChecking.sln`) → thành công cho `WeightChecking`/`AnserU2_c
 end-to-end (không có GUI/hardware tương tác trong sandbox này — không thể bấm Listen/Send hay quan sát
 app WeightChecking thật kết nối vào) — xem `active_context.next_step` để biết các bước verify thủ công
 cần làm trên máy có màn hình/hardware thật.
+
+---
+
+### [2026-07-16] — Session: Fix NRE (Owner→this) + fix scanner event "chỉ nhảy vào 1 lần rồi im lặng"
+
+```
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs                 — DataEvent_EventHandleValueChange (nhánh box-info QR): GlobalVariables.InvokeIfRequired(Owner, ...) → InvokeIfRequired(this, ...) — Owner null (form không được show với owner) gây NullReferenceException "control was null" tại GlobalVariables.cs:14, đúng dòng user báo qua debugger (frmScaleNewUI.cs:888). Đây là call site DUY NHẤT trong file dùng Owner thay vì this (36 call site còn lại đều dùng this, xác nhận qua Grep) — lỗi phát sinh từ chính implementation Task J phía dưới.
+[FIX]      WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs      — ReadData(): bọc try/catch RIÊNG quanh việc set _dataEvent.QRCodeValue (dispatch chạy đồng bộ toàn bộ chuỗi handler app-level: DataEvent_EventHandleValueChange → BarcodeScanner2Handle → DB/cân/in) — exception app-level (QR test không khớp master data, v.v.) trước đây lọt vào catch ngoài cùng của ReadData (dành cho lỗi mạng/IO), khiến ReadData hiểu nhầm thành lỗi đọc Telnet và gọi Reconnect() — phá 1 kết nối TCP đang khoẻ mạnh (mất mọi byte OS đã buffer sẵn) chỉ vì 1 lần scan xử lý lỗi. Đây chính là nguyên nhân "event chỉ nhảy vào 1 lần rồi im lặng dù simulator vẫn gửi liên tục". Giờ chỉ log qua Debug.WriteLine, KHÔNG gọi Reconnect(), kết nối được giữ nguyên.
+[FIX]      WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs      — ReadData(): bọc try/catch RIÊNG quanh vòng lặp opportunistic đọc thêm dòng (grace window) — lỗi ở đây trước đây cũng bị catch ngoài cùng nuốt, có nguy cơ làm mất luôn dòng `response` ĐÃ đọc thành công + gọi Reconnect() không cần thiết. Giờ nếu drain lỗi, vẫn dispatch telegram với số dòng đã gom được, chỉ log cảnh báo.
+[DOCS]     CLAUDE.md                                                     — Cập nhật active_context + related_files, thêm entry CHANGELOG này
+```
+
+**Bối cảnh:** 2 report riêng của user trong cùng session, cả 2 đều là regression từ chính implementation
+Task J (multi-QR batching) ở entry ngay phía dưới:
+1. Kèm 3 screenshot debugger: app kết nối `127.0.0.3:23` (Scale, qua `HardwareSimulator`), nhận đúng 1
+   telegram gộp 2 QR thật, chạy tới `frmScaleNewUI.cs:888` thì văng `NullReferenceException — control was
+   null` bên trong `GlobalVariables.InvokeIfRequired`. User: "chạy tới line 888 thì nó văng lỗi".
+2. "fix lỗi sự kiện read qr code DataEvent_EventHandleValueChange chỉ nhảy vào 1 lần, sau đó ko nhảy
+   vào nữa, mặc dù mô phỏng send data lên liên tực."
+
+**Fix #1 (NRE):** Root cause xác nhận trực tiếp — `Owner` là property `Form`, null khi form không được
+show kèm owner (không phải qua `ShowDialog(owner)`). Grep toàn bộ 37 call site `InvokeIfRequired` trong
+`frmScaleNewUI.cs` xác nhận 36/37 dùng `this`, chỉ đúng 1 chỗ (nhánh box-info QR, mới thêm ở Task J) dùng
+nhầm `Owner`. Sửa `Owner` → `this`.
+
+**Fix #2 (event im lặng sau 1 lần) — chẩn đoán tốt nhất có thể, CHƯA có log debug thật của lần lỗi cụ
+thể để xác nhận 100% (đã loại trừ: `DataEvent.QRCodeValue` setter KHÔNG có guard so sánh giá trị cũ/mới —
+đọc `DataEvent.cs` xác nhận dòng check bị comment sẵn `//if (_qrCodeValue != value)` nên telegram trùng
+lặp vẫn fire event bình thường; `_scannerIsBussy[1]` không giải thích được vì Debug.WriteLine đầu hàm
+vẫn phải chạy bất kể guard). Kiến trúc trước fix: `ReadData()` có 1 khối `try` NGOÀI CÙNG dành cho lỗi
+mạng/IO (catch → `Reconnect()`), nhưng dispatch `_dataEvent.QRCodeValue = ...` (chạy đồng bộ TOÀN BỘ
+`DataEvent_EventHandleValueChange` → `BarcodeScanner2Handle` → DB/cân/in) lại nằm LỒNG bên trong cùng
+khối `try` đó — nên bất kỳ exception app-level nào (QR test/giả không khớp OC thật trong DB, v.v.) đều
+bị hiểu nhầm là lỗi Telnet, kích hoạt `Reconnect()` phá kết nối đang khoẻ. Nếu simulator tiếp tục gửi
+data lên connection cũ đã bị đóng, event sẽ không còn fire nữa — đúng triệu chứng user báo. Vòng lặp
+opportunistic đọc thêm dòng (grace window) cũng có cùng vấn đề, thêm rủi ro mất cả dòng đã đọc thành
+công. Đã tách 2 khối này ra try/catch RIÊNG (không escalate `Reconnect()`, chỉ `Debug.WriteLine`), vẫn
+giữ nguyên bên trong vùng được bảo vệ bởi `isReading` (bắt buộc để giữ đúng guarantee thứ tự batching
+của Task J).
+
+**Không đụng:** khối `catch` ngoài cùng của `ReadData()` (vẫn là handler lỗi mạng/IO thật, chỉ còn scope
+lại đúng cho `firstLineTask` + bất kỳ exception nào KHÔNG bị 2 catch mới nuốt), `finally { isReading =
+false; }`, toàn bộ cơ chế `_pendingLine`/batching của Task J.
+
+**Verify:** `MSBuild WeightChecking.sln /p:Configuration=Release /p:Platform="Any CPU"` → 0 lỗi cho
+`WeightChecking`(`SSFG.exe`)/`CognexLibrary_NETFramework`/`AnserU2_cSharp`/`WindowsFormsApp1`/
+`HardwareSimulator`/`CognexScannerTester`; chỉ còn lỗi CS0579 pre-existing của `CognexLibrary.csproj`
+(không liên quan). Fix #1 verify chắc chắn (root cause rõ ràng, đúng pattern 36 call site còn lại). Fix
+#2 CẦN user re-test với simulator gửi liên tục để xác nhận triệt để — nếu vẫn còn im lặng, Debug Output
+giờ sẽ hiện trực tiếp dòng `[DriverTelnet] QRCodeValue event handler threw...` hoặc `[DriverTelnet]
+Extra-line drain failed...` thay vì bị nuốt thành 1 lần `Reconnect()` không rõ nguyên nhân — sẽ lộ ngay
+root cause thật nếu chẩn đoán trên chưa đầy đủ.
+
+---
+
+### [2026-07-16] — Session: Fix DataEvent_EventHandleValueChange cho trường hợp Cognex trả 2 QR gộp trong 1 lần trigger
+
+```
+[FIX]      WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs      — ReadData(): sau dòng đầu tiên, đọc thêm tối đa 4 dòng nữa (MaxLinesPerTelegram=5), mỗi dòng chờ grace window 50ms (Task.WhenAny với Task.Delay) rồi gộp bằng "\r\n" thành 1 QRCodeValue duy nhất — trước đây mỗi tick timer 100ms chỉ đọc đúng 1 dòng, khiến Main QR và QR2 (box info) của cùng 1 lần trigger bị tách thành 2 event rời rạc theo 2 tick khác nhau
+[FIX]      WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs      — Thêm field _pendingLine: 1 read còn dở dang khi hết grace window được giữ lại (không bỏ) để tick ReadData kế tiếp tái sử dụng làm dòng đầu tiên, vì StreamReader không an toàn khi gọi ReadLineAsync() chồng lấn
+[FIX]      WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs      — DisconnectDevices(): clear _pendingLine để tránh tái sử dụng read task cũ (gắn với reader/stream đã đóng) sau khi reconnect
+[FEAT]     WeightChecking/WeightChecking/frmScaleNewUI.cs                 — Thêm helper SplitTelegramLines() (split theo "\r\n"/"\r"/"\n") để tách 1 QRCodeValue đã gộp nhiều dòng trở lại thành từng dòng riêng
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs                 — DataEvent_EventHandleValueChange (Scale): viết lại để duyệt HẾT các dòng trong telegram gộp, bắt tất cả dòng box-info QR2 vào _boxTypeQR/_boxWeightQR TRƯỚC, chỉ dispatch dòng Main QR (dòng còn lại không khớp TryParseBoxInfoQr) SAU CÙNG khi vòng lặp kết thúc — đúng bất kể thứ tự camera gửi 2 QR, khác với trước đây (dù đã tách đúng theo dòng, xử lý theo thứ tự tuần tự nên chỉ đúng nếu QR2 đến trước Main QR)
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs                 — DataEventMetal_EventHandleValueChange (Metal): áp dụng cùng pattern SplitTelegramLines — vẫn bỏ qua hoàn toàn mọi dòng box-info QR2 (giữ đúng hành vi cũ), nhưng giờ tách đúng theo từng dòng thay vì so khớp TryParseBoxInfoQr trên cả chuỗi gộp (trước đây nếu Metal cũng nhận phải telegram gộp, cách so khớp cũ trên toàn chuỗi sẽ luôn fail và dòng Main QR thật bị nuốt theo QR2)
+[DOCS]     CLAUDE.md                                                     — Cập nhật active_context (Task J), thêm entry CHANGELOG này
+```
+
+**Bối cảnh:** Tiếp nối trực tiếp từ Task I (thêm QR2 box-info) và công cụ chẩn đoán Task H
+(`HardwareSimulator`/`CognexScannerTester`). User xác nhận qua Cognex DataMan Result History và PuTTY
+capture thật: camera thật trả về Main QR rồi `<0x0D><0x0A>` rồi QR2 box-info, GỘP trong CÙNG 1 lần
+trigger vật lý. Yêu cầu: "chỉnh lại code cho sự kiện scanner cognex2 để nó hoạt động đúng với trường
+hợp cognex trả về 2 QR code."
+
+**Root cause xác nhận được (đọc lại toàn bộ `DriverTelnet.ReadData()`, không suy đoán):**
+`ReadData()` chỉ làm đúng 1 lần `await reader.ReadLineAsync()` mỗi tick 100ms, và `isReading` giữ
+`true` suốt thời gian xử lý ĐỒNG BỘ phía sau — vì `DataEvent_EventHandleValueChange` gọi
+`BarcodeScanner2Handle` đồng bộ (bắt buộc theo RULE-RT của project, không dùng async/await cho handler
+scanner) và method đó làm việc nặng đồng bộ (query DB, đợi cân ổn định, in tem), dòng QR2 thứ 2 trong
+cùng telegram không thể được đọc khỏi socket cho tới khi TOÀN BỘ pipeline Main QR (kể cả khối override
+box-weight và `finally` reset `_boxTypeQR`/`_boxWeightQR`) đã chạy xong ở tick trước — nghĩa là override
+gần như không bao giờ khớp đúng thùng.
+
+**Fix 2 lớp** (toàn bộ độ phức tạp async nằm trong `DriverTelnet.cs` — nơi đã dùng async/await sẵn —
+không đụng tới ràng buộc "không async/await cho handler scanner" của 2 method trong `frmScaleNewUI.cs`,
+vẫn giữ nguyên `void` đồng bộ):
+1. **Layer 1 (driver-level batching)** — `DriverTelnet.ReadData()` gom nhiều dòng CRLF đến trong cùng
+   1 lần `Write()` vật lý của camera thành 1 event `QRCodeValue` duy nhất, dùng grace window 50ms/dòng
+   thay vì delay cố định — không chặn luồng đọc bình thường khi chỉ có 1 QR (grace window chỉ kích hoạt
+   SAU khi đã có ít nhất 1 dòng).
+2. **Layer 2 (app-level reordering)** — cả 2 handler trong `frmScaleNewUI.cs` duyệt hết các dòng trong
+   telegram gộp trước, bắt QR2 trước, dispatch Main QR sau — làm cho tính đúng đắn không phụ thuộc thứ
+   tự dòng trong telegram (trước đây, ngay cả khi đã tách đúng theo dòng, code vẫn giả định QR2 tới
+   trước Main QR — sai với thứ tự thật trên hardware).
+
+**Không đụng:** `TryParseBoxInfoQr()` (contract cũ giữ nguyên, chỉ nhận 1 dòng), khối early-return QR2
+trong `BarcodeScanner2Handle` (giữ nguyên — defense-in-depth + vẫn cần cho test harness `IsTest=true`
+gọi trực tiếp theo §6.2), `_scannerIsBussy[]`/`_readQrStatus[]` guard (không đổi vị trí kiểm tra so với
+Task I — vẫn đặt SAU khi đã xác định xong dòng Main QR), `CognexScannerTester`/`HardwareSimulator` (đã
+xử lý đúng multi-line raw value từ Task H, không cần sửa thêm).
+
+**Verify:** `MSBuild WeightChecking.sln /p:Configuration=Release /p:Platform="Any CPU"` → 0 lỗi cho
+`WeightChecking`(`SSFG.exe`)/`AnserU2_cSharp`/`WindowsFormsApp1`/`HardwareSimulator`/
+`CognexScannerTester` (project cuối cùng phụ thuộc trực tiếp `CognexLibrary_NETFramework` nên xác nhận
+gián tiếp `DriverTelnet.cs` build sạch); chỉ còn lỗi CS0579 pre-existing của `CognexLibrary.csproj`
+(không liên quan, đã ghi nhận từ Task H). Chưa test được với hardware Cognex thật (sandbox không có
+mạng tới camera) — xem `active_context.next_step` để biết cách dùng `CognexScannerTester` +
+`HardwareSimulator` (2 tool đã có từ Task H) để verify Layer 1, và cách verify Layer 2 qua app thật
+hoặc fake-data harness.
 
 ---
 

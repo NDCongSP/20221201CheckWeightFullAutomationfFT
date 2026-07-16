@@ -370,7 +370,7 @@ namespace WeightChecking
             //}
             #endregion
 
-            ResetControl();
+            ResetControlAll();
 
             #region Connect to PL Seimens
             #region đăng ký các sự kiện ghi giá trị xuống PLC seimens để điều khiển các pusher
@@ -616,7 +616,7 @@ namespace WeightChecking
                 _isStartCountTimerWeight = true;
 
                 //reset các control để qua cân mẻ mới
-                ResetControl();
+                ResetControlForScale();
 
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
@@ -858,22 +858,49 @@ namespace WeightChecking
             Debug.WriteLine($"[{DateTime.Now}]: {e.Status}|{e.Exception?.Message}");
         }
 
+        /// <summary>
+        /// A single physical scan trigger can arrive as several CR/LF-terminated lines merged into
+        /// one telegram (e.g. Main QR + box-info QR2, per DriverTelnet's line-batching).
+        /// </summary>
+        private static string[] SplitTelegramLines(string raw)
+        {
+            if (string.IsNullOrEmpty(raw)) return Array.Empty<string>();
+            return raw.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
         private void DataEvent_EventHandleValueChange(object sender, ValueChangeEventArgs e)
         {
             Debug.WriteLine($"[{DateTime.Now}]: {e.NewValue}|{e.OldValue}");
 
-            if (TryParseBoxInfoQr(e.NewValue, out var boxTypeFromQr, out var boxWeightFromQr))
+            // Box-info lines must be captured into _boxTypeQR/_boxWeightQR BEFORE the Main QR line
+            // is dispatched below, regardless of which order the camera sent them in — otherwise
+            // BarcodeScanner2Handle's box-weight override can run before the box info it needs is
+            // available.
+            string mainQrLine = null;
+            foreach (var line in SplitTelegramLines(e.NewValue))
             {
-                _qrCodeBox = e.NewValue;
-
-                GlobalVariables.InvokeIfRequired(Owner, () =>
+                if (TryParseBoxInfoQr(line, out var boxTypeFromQr, out var boxWeightFromQr))
                 {
-                    labQrBoxInformation.Text = $"QR code: {_qrCodeBox} - Box Type: {boxTypeFromQr} - Box Weight: {boxWeightFromQr} (g)";
-                });
+                    _qrCodeBox = line;
 
-                Debug.WriteLine($"Box info QR ignored at Scale sensor handler (handled separately in BarcodeScanner2Handle): {e.NewValue}");
-                return;
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        labQrBoxInformation.Text = $"QR code: {_qrCodeBox} - Box Type: {boxTypeFromQr} - Box Weight: {boxWeightFromQr.ToString()} (g)";
+                    });
+
+                    Debug.WriteLine($"Box info QR ignored at Scale sensor handler (handled separately in BarcodeScanner2Handle): {line}");
+                }
+                else if (mainQrLine == null)
+                {
+                    mainQrLine = line;
+                }
+                else
+                {
+                    Debug.WriteLine($"Unexpected extra line in Scale telegram, ignored: {line}");
+                }
             }
+
+            if (mainQrLine == null) return;
 
             if (!_scannerIsBussy[1])
             {
@@ -885,7 +912,7 @@ namespace WeightChecking
                 //bật biến báo đọc đc QR code từ label
                 _readQrStatus[1] = true;
 
-                _qrCode2FG = e.NewValue;
+                _qrCode2FG = mainQrLine;
 
                 BarcodeScanner2Handle(2, _qrCode2FG);
 
@@ -915,11 +942,26 @@ namespace WeightChecking
         {
             Debug.WriteLine($"[{DateTime.Now}] Metal Cognex: {e.NewValue}|{e.OldValue}");
 
-            if (TryParseBoxInfoQr(e.NewValue, out _, out _))
+            // Metal station ignores box-info QR2 entirely — only look for the Main QR line among
+            // whatever lines the (possibly merged) telegram contains.
+            string mainQrLine = null;
+            foreach (var line in SplitTelegramLines(e.NewValue))
             {
-                Debug.WriteLine($"Box info QR ignored at Metal station: {e.NewValue}");
-                return;
+                if (TryParseBoxInfoQr(line, out _, out _))
+                {
+                    Debug.WriteLine($"Box info QR ignored at Metal station: {line}");
+                }
+                else if (mainQrLine == null)
+                {
+                    mainQrLine = line;
+                }
+                else
+                {
+                    Debug.WriteLine($"Unexpected extra line in Metal telegram, ignored: {line}");
+                }
             }
+
+            if (mainQrLine == null) return;
 
             if (!_scannerIsBussy[0])
             {
@@ -929,7 +971,7 @@ namespace WeightChecking
                 //bật biến báo đọc đc QR code từ label
                 _readQrStatus[0] = true;
 
-                _qrCode1 = e.NewValue;
+                _qrCode1 = mainQrLine;
 
                 //reset model;
                 _scanDataMetal = null;
@@ -3143,11 +3185,11 @@ namespace WeightChecking
                                 {
                                     try
                                     {
-                                        ResetControl();
+                                        ResetControlForScale();
                                     }
                                     catch (Exception ex)
                                     {
-                                        Log.Error(ex, "ResetControl error.");
+                                        Log.Error(ex, "ResetControlForScale error.");
                                     }
                                 }));
                             }
@@ -3193,12 +3235,12 @@ namespace WeightChecking
                                 {
                                     try
                                     {
-                                        ResetControl(); // đảm bảo hàm này không ném exception
+                                        ResetControlForScale(); // đảm bảo hàm này không ném exception
                                     }
                                     catch (Exception ex)
                                     {
                                         // Log nếu cần
-                                        Log.Error(ex, "ResetControl error.");
+                                        Log.Error(ex, "ResetControlForScale error.");
                                     }
                                 }));
                             }
@@ -3384,7 +3426,7 @@ namespace WeightChecking
             #endregion
         }
 
-        private void ResetControl()
+        private void ResetControlAll()
         {
             GlobalVariables.InvokeIfRequired(this, () =>
             {
@@ -3397,6 +3439,67 @@ namespace WeightChecking
                 labQrScale.Text = string.Empty;
                 labQrBoxInformation.Text = string.Empty;
                 _labResultIdentification.Text = string.Empty;
+                //_labResultIdentification.BackColor = _labResultMessage.ForeColor;
+
+                #region Standard
+                _labBoxId.Text = string.Empty;
+                labOcNo.Text = string.Empty;
+                labProductCode.Text = string.Empty;
+                labProductName.Text = string.Empty;
+                labQuantity.Text = "0";
+                labColor.Text = string.Empty;
+                labSize.Text = string.Empty;
+                labAveWeight.Text = "0";
+                //labLowerTolerance.Text = "0";
+                //labUpperTolerance.Text = "0";
+                labBoxWeight.Text = "0";
+                labAccessoriesWeight.Text = "0";
+                labGrossWeight.Text = "0";
+                _labCheckMetal.Text = "NO";
+                _labPrinting.Text = "NO";
+
+                _labQtyStandard.Text = $"Quantity (-)";
+                _labUnitCalculatQty.Text = $"Calculated Qty (-)";
+                _labUnitDeviation.Text = $"Deviation (-)";
+
+                _labUnitStandard.Text = string.Empty;
+                _labFGW.Text = $"Weight (g)/-";
+
+                _labBoxType.Text = null;
+                _labLableId.Text = string.Empty;
+                #endregion
+
+                #region Scaled
+                labScaleValue.Text = "0";
+                labRealWeight.Text = "0";
+                labNetWeight.Text = "0";
+
+                labNetRealWeight.Text = "0";
+                labDeviation.Text = "0 (g)";
+
+                labCalculatedPairs.Text = "0";
+                labDeviationPairs.Text = "0 (-)";
+
+                _labResultMessage.Text = string.Empty;
+                _labResult.Text = string.Empty;
+                _labResult.BackColor = Color.Gray;
+
+                labDeviationPairs.ForeColor = default;
+                #endregion
+            });
+        }
+
+        private void ResetControlForScale()
+        {
+            GlobalVariables.InvokeIfRequired(this, () =>
+            {
+                _unitLabel = string.Empty;
+                _color = _sizeName = string.Empty;
+
+                _labLastResultMessage.Text = _labResultMessage.Text;
+                _labLastResultMessage.ForeColor = _labResultMessage.ForeColor;
+                labQrScale.Text = string.Empty;
+                labQrBoxInformation.Text = string.Empty;
                 //_labResultIdentification.BackColor = _labResultMessage.ForeColor;
 
                 #region Standard
