@@ -66,6 +66,8 @@
             this.labelControl46 = new DevExpress.XtraEditors.LabelControl();
             this.labelControl29 = new DevExpress.XtraEditors.LabelControl();
             this.groupControl1 = new DevExpress.XtraEditors.GroupControl();
+            this.labQrBoxInformation = new DevExpress.XtraEditors.LabelControl();
+            this.labelControl21 = new DevExpress.XtraEditors.LabelControl();
             this.labelControl7 = new DevExpress.XtraEditors.LabelControl();
             this._labLastResultMessage = new DevExpress.XtraEditors.LabelControl();
             this.labQrScale = new DevExpress.XtraEditors.LabelControl();
@@ -680,6 +682,8 @@
             this.groupControl1.AppearanceCaption.Options.UseFont = true;
             this.groupControl1.AppearanceCaption.Options.UseForeColor = true;
             this.groupControl1.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this.groupControl1.Controls.Add(this.labQrBoxInformation);
+            this.groupControl1.Controls.Add(this.labelControl21);
             this.groupControl1.Controls.Add(this.labelControl7);
             this.groupControl1.Controls.Add(this._labLastResultMessage);
             this.groupControl1.Controls.Add(this.labQrScale);
@@ -693,6 +697,31 @@
             this.groupControl1.Size = new System.Drawing.Size(1016, 405);
             this.groupControl1.TabIndex = 2;
             this.groupControl1.Text = "STATION CHECK";
+            // 
+            // labQrBoxInformation
+            // 
+            this.labQrBoxInformation.Appearance.BackColor = System.Drawing.Color.White;
+            this.labQrBoxInformation.Appearance.Font = new System.Drawing.Font("Tahoma", 15F);
+            this.labQrBoxInformation.Appearance.Options.UseBackColor = true;
+            this.labQrBoxInformation.Appearance.Options.UseFont = true;
+            this.labQrBoxInformation.Appearance.Options.UseTextOptions = true;
+            this.labQrBoxInformation.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
+            this.labQrBoxInformation.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
+            this.labQrBoxInformation.Location = new System.Drawing.Point(10, 315);
+            this.labQrBoxInformation.Name = "labQrBoxInformation";
+            this.labQrBoxInformation.Size = new System.Drawing.Size(976, 54);
+            this.labQrBoxInformation.TabIndex = 41;
+            this.labQrBoxInformation.Text = "PRT1272,6817012201-3517-D258,100,6,P,32/34,190000,2/3|2,526026.2024,1,0,99";
+            // 
+            // labelControl21
+            // 
+            this.labelControl21.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
+            this.labelControl21.Appearance.Options.UseFont = true;
+            this.labelControl21.Location = new System.Drawing.Point(10, 290);
+            this.labelControl21.Name = "labelControl21";
+            this.labelControl21.Size = new System.Drawing.Size(115, 19);
+            this.labelControl21.TabIndex = 40;
+            this.labelControl21.Text = "Box Information";
             // 
             // labelControl7
             // 
@@ -785,7 +814,7 @@
             // 
             this.labelControl1.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl1.Appearance.Options.UseFont = true;
-            this.labelControl1.Location = new System.Drawing.Point(5, 39);
+            this.labelControl1.Location = new System.Drawing.Point(10, 39);
             this.labelControl1.Name = "labelControl1";
             this.labelControl1.Size = new System.Drawing.Size(92, 19);
             this.labelControl1.TabIndex = 0;
@@ -1356,5 +1385,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
         private DevExpress.XtraEditors.LabelControl labelControl13;
+        private DevExpress.XtraEditors.LabelControl labQrBoxInformation;
+        private DevExpress.XtraEditors.LabelControl labelControl21;
     }
 }

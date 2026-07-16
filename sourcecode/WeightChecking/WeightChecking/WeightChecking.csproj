@@ -321,7 +321,6 @@
     <Compile Include="Models\Entities\IDCScanSystem\tblScanDataReject.cs" />
     <Compile Include="Models\ScanDataReport1Model.cs" />
     <Compile Include="Models\ScanDataReportModel.cs" />
-    <Compile Include="Models\tblScanDataCheckModel.cs" />
     <Compile Include="Models\Entities\IDCScanSystem\tblSpecialCase.cs" />
     <Compile Include="rptLabelFail.cs">
       <SubType>Component</SubType>

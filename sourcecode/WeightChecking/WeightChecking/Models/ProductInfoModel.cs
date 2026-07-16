@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,29 +36,29 @@ namespace WeightChecking
         public double? BoxWeightBx2 { get; set; } = 0;
         public double? BoxWeightBx3 { get; set; } = 0;
         public double? BoxWeightBx4 { get; set; } = 0;
+        public double? BoxWeightBx5 { get; set; } = 0;
+        public double? BoxWeightBx6 { get; set; } = 0;
         public double? PartitionQty { get; set; } = 0;
-
-        [Column("PlasicBag1Qty")]
+        public double? PartitionQtyOfBX1A { get; set; } = 0;
+        public double? PartitionQtyOfBX2 { get; set; } = 0;
+        public double? PartitionQtyOfBX3 { get; set; } = 0;
         public double? PlasticBag1Qty { get; set; } = 0;
-        [Column("PlasicBag2Qty")]
         public double? PlasticBag2Qty { get; set; } = 0;
         public double? WrapSheetQty { get; set; } = 0;
         public double? FoamSheetQty { get; set; } = 0;
         public double? PartitionWeight { get; set; } = 0;
-
-        [Column("PlasicBag1Weight")]
         public double? PlasticBag1Weight { get; set; } = 0;
-        [Column("PlasicBag2Weight")]
         public double? PlasticBag2Weight { get; set; } = 0;
-
         public double? WrapSheetWeight { get; set; } = 0;
         public double? FoamSheetWeight { get; set; } = 0;
-
-        [Column("PlasicBoxWeight")]
         public double? PlasticBoxWeight { get; set; } = 0;
+        [DisplayName("LowerToleranceOfTotalCartonBox")]
         public double? LowerToleranceOfCartonBox { get; set; } = 0;
+        [DisplayName("UpperToleranceOfTotalCartonBox")]
         public double? UpperToleranceOfCartonBox { get; set; } = 0;
+        [DisplayName("LowerToleranceOfTotalPlasticBox")]
         public double? LowerToleranceOfPlasticBox { get; set; } = 0;
+        [DisplayName("UpperToleranceOfTotalPlasticBox")]
         public double? UpperToleranceOfPlasticBox { get; set; } = 0;
         public DateTime? CreatedDate { get; set; }//Thời gian item được get từ WL về
     }

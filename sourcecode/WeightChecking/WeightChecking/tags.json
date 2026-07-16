@@ -13,32 +13,32 @@
       {
         "Name": "RJ1",
         "Address": "DB1.DBW2",
-        "DataType": "Word"
+        "DataType": "Int"
       },
       {
         "Name": "S2",
         "Address": "DB1.DBW4",
-        "DataType": "Word"
+        "DataType": "Int"
       },
       {
         "Name": "Metal_Result",
         "Address": "DB1.DBW6",
-        "DataType": "Word"
+        "DataType": "Int"
       },
       {
         "Name": "S_MD_OUT",
         "Address": "DB1.DBW8",
-        "DataType": "Word"
+        "DataType": "Int"
       },
       {
         "Name": "S3",
         "Address": "DB1.DBW10",
-        "DataType": "Word"
+        "DataType": "Int"
       },
       {
         "Name": "S5",
         "Address": "DB1.DBW12",
-        "DataType": "Word"
+        "DataType": "Int"
       },
       {
         "Name": "Scale_Value",
@@ -52,7 +52,7 @@
       {
         "Name": "Scale_Stable_Trigger",
         "Address": "DB1.DBW18",
-        "DataType": "Word"
+        "DataType": "Int"
       },
       {
         "Name": "Scale_Value_Stable",
@@ -66,22 +66,22 @@
       {
         "Name": "Check_Weight_Result",
         "Address": "DB1.DBW24",
-        "DataType": "Word"
+        "DataType": "Int"
       },
       {
         "Name": "S6",
         "Address": "DB1.DBW26",
-        "DataType": "Word"
+        "DataType": "Int"
       },
       {
         "Name": "Delay_Time_To_Print",
         "Address": "DB1.DBW28",
-        "DataType": "Word"
+        "DataType": "Int"
       },
       {
         "Name": "Box_On_Scale",
         "Address": "DB1.DBW30",
-        "DataType": "Word"
+        "DataType": "Int"
       }
     ]
   }
