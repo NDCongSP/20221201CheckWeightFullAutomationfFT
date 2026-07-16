@@ -38,7 +38,7 @@ namespace WeightChecking
 
         //private bool[] _readQrStatus = { false, false, false };//biến báo đọc được QR hay không. metal-weight-print
 
-        //private int _stableScale = 0;//biến báo trạng thái cân ổn định, get khối lượng cân về
+        //private int _stableScaleTrigger = 0;//biến báo trạng thái cân ổn định, get khối lượng cân về
         //private double _scaleValue = 0;//biến chứa giá trị cân realTime đọc từ đầu cân về
         //private double _scaleValueStable = 0;//biến chứa giá trị cân ổn định được đọc về khi biến stable báo on
         //private int _metalCheckResult = 0;//biến chứa giá trị metalCheck 
@@ -57,7 +57,7 @@ namespace WeightChecking
 
         //// Declare CoreScannerClass
         //private CCoreScanner _cCoreScannerClass;
-        //private string _barcodeString1 = null, _barcodeString2 = null, _barcodeString3 = null;//checkMetal--checkWeight--printing
+        //private string _qrCode1 = null, _qrCode2FG = null, _barcodeString3 = null;//checkMetal--checkWeight--printing
         //private bool[] _scannerIsBussy = { false, false, false };
 
         //private SerialPort _serialPort;
@@ -178,7 +178,7 @@ namespace WeightChecking
         //    GlobalVariables.MyEvent.EventHandlerStableScale += (s, o) =>
         //    {
         //        Debug.WriteLine($"Event Scale stable: {o.NewValue}");
-        //        _stableScale = o.NewValue;
+        //        _stableScaleTrigger = o.NewValue;
         //    };
 
         //    //sự kiện ghi nhận thừng đêbs trước vị trí metalScan, lấy cánh xuống để tác động tính thời gian để báo ko đọc đc QR code
@@ -447,14 +447,14 @@ namespace WeightChecking
         //        //bật biến báo đọc đc QR code từ label
         //        //_readQrStatus[1] = true;
 
-        //        _barcodeString2 = e.NewValue;
+        //        _qrCode2FG = e.NewValue;
 
-        //        BarcodeScanner2Handle(2, _barcodeString2);
+        //        BarcodeScanner2Handle(2, _qrCode2FG);
 
         //        using (var connection = GlobalVariables.GetDbConnection())
         //        {
         //            var para = new DynamicParameters();
-        //            para.Add("@Message", $"After2 1|Barcode Id Cognex|{_barcodeString2}");
+        //            para.Add("@Message", $"After2 1|Barcode Id Cognex|{_qrCode2FG}");
         //            para.Add("Level", "Scanner trigger.");
         //            //para.Add("Exception", ex.ToString());
         //            connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
@@ -1341,12 +1341,12 @@ namespace WeightChecking
 
         //        #region truy vấn data và xử lý
         //        //lấy thông tin khối lượng cân sau khi cân đã báo stable
-        //        //Debug.WriteLine($"da vao can,dang doi stable {_stableScale}");
-        //        while (_stableScale == 0 && GlobalVariables.ConfigJson.IsScale)
+        //        //Debug.WriteLine($"da vao can,dang doi stable {_stableScaleTrigger}");
+        //        while (_stableScaleTrigger == 0 && GlobalVariables.ConfigJson.IsScale)
         //        {
         //            Thread.Yield();//cho nó qua 1 luồng khác chạy để tránh làm treo luồng hiện tại
         //        }
-        //        //Debug.WriteLine($"da can xong. stable {_stableScale}");
+        //        //Debug.WriteLine($"da can xong. stable {_stableScaleTrigger}");
 
         //        _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
         //        //truy vấn thông tin 
@@ -2758,10 +2758,10 @@ namespace WeightChecking
 
         //        if (scannerId[0].InnerText == GlobalVariables.ConfigJson.ScannerIdMetal.ToString())//vị trí check metal. đầu chuyền
         //        {
-        //            _barcodeString1 = string.Empty;
+        //            _qrCode1 = string.Empty;
 
         //            para = new DynamicParameters();
-        //            para.Add("@Message", $"After1|Barcode Id {scannerId[0].InnerText}|{_scannerIsBussy[0]}|{_barcodeString1}");
+        //            para.Add("@Message", $"After1|Barcode Id {scannerId[0].InnerText}|{_scannerIsBussy[0]}|{_qrCode1}");
         //            para.Add("Level", "Scanner trigger.");
         //            //para.Add("Exception", ex.ToString());
         //            connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
@@ -2775,10 +2775,10 @@ namespace WeightChecking
         //                _readQrStatus[0] = true;
 
         //                //this?.Invoke((MethodInvoker)delegate { txtDataAscii1.Text = xmlDoc.GetElementsByTagName("datalabel")[0].InnerText; });
-        //                _barcodeString1 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+        //                _qrCode1 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
         //                para = new DynamicParameters();
-        //                para.Add("@Message", $"After1 1|Barcode Id {scannerId[0].InnerText}|{_scannerIsBussy[0]}|{_barcodeString1}");
+        //                para.Add("@Message", $"After1 1|Barcode Id {scannerId[0].InnerText}|{_scannerIsBussy[0]}|{_qrCode1}");
         //                para.Add("Level", "Scanner trigger.");
         //                //para.Add("Exception", ex.ToString());
         //                connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
@@ -2787,10 +2787,10 @@ namespace WeightChecking
         //                _scanDataMetal = null;
         //                _scanDataMetal = new tblScanData();
 
-        //                BarcodeScanner1Handle(1, _barcodeString1);
+        //                BarcodeScanner1Handle(1, _qrCode1);
 
         //                para = new DynamicParameters();
-        //                para.Add("@Message", $"After1 2|Barcode Id {scannerId[0].InnerText}|{_scannerIsBussy[0]}|{_barcodeString1}");
+        //                para.Add("@Message", $"After1 2|Barcode Id {scannerId[0].InnerText}|{_scannerIsBussy[0]}|{_qrCode1}");
         //                para.Add("Level", "Scanner trigger.");
         //                //para.Add("Exception", ex.ToString());
         //                connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
@@ -2808,10 +2808,10 @@ namespace WeightChecking
         //            //    //bật biến báo đọc đc QR code từ label
         //            //    _readQrStatus[1] = true;
 
-        //            //    _barcodeString2 = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
+        //            //    _qrCode2FG = AsciiToString(xmlDoc.GetElementsByTagName("datalabel")[0].InnerText);
 
         //            //    para = new DynamicParameters();
-        //            //    para.Add("@Message", $"After2|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
+        //            //    para.Add("@Message", $"After2|Barcode Id {scannerId[0].InnerText}|{_qrCode2FG}");
         //            //    para.Add("Level", "Scanner trigger.");
         //            //    //para.Add("Exception", ex.ToString());
         //            //    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
@@ -2820,10 +2820,10 @@ namespace WeightChecking
         //            //    //_scanDataWeight = null;
         //            //    //_scanDataWeight = new tblScanDataModel();
 
-        //            //    BarcodeScanner2Handle(2, _barcodeString2);
+        //            //    BarcodeScanner2Handle(2, _qrCode2FG);
 
         //            //    para = new DynamicParameters();
-        //            //    para.Add("@Message", $"After2 1|Barcode Id {scannerId[0].InnerText}|{_barcodeString2}");
+        //            //    para.Add("@Message", $"After2 1|Barcode Id {scannerId[0].InnerText}|{_qrCode2FG}");
         //            //    para.Add("Level", "Scanner trigger.");
         //            //    //para.Add("Exception", ex.ToString());
         //            //    connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
