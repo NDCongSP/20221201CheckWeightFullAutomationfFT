@@ -141,7 +141,8 @@ namespace HardwareSimulator
 
             try
             {
-                var bytes = Encoding.ASCII.GetBytes(txtBarcode.Text + "\r\n");
+                var payload = ExpandControlCharPlaceholders(txtBarcode.Text);
+                var bytes = Encoding.ASCII.GetBytes(payload + "\r\n");
                 _stream.Write(bytes, 0, bytes.Length);
                 _stream.Flush();
                 Log("TX: " + txtBarcode.Text);
@@ -150,6 +151,25 @@ namespace HardwareSimulator
             {
                 Log("Send failed: " + ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Cognex's DataMan Result History panel displays embedded control characters as
+        /// literal placeholder text (e.g. "&lt;0x0D&gt;&lt;0x0A&gt;") rather than actual bytes.
+        /// When testing a merged multi-code telegram, testers copy that placeholder text
+        /// straight out of the panel — so it must be expanded back into real CR/LF bytes here,
+        /// otherwise the whole placeholder is sent as literal text inside a single line.
+        /// </summary>
+        private static string ExpandControlCharPlaceholders(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            return s
+                .Replace("<0x0D><0x0A>", "\r\n")
+                .Replace("<0x0D>", "\r")
+                .Replace("<0x0A>", "\n")
+                .Replace("\\r\\n", "\r\n")
+                .Replace("\\r", "\r")
+                .Replace("\\n", "\n");
         }
 
         private void UpdateButtons()

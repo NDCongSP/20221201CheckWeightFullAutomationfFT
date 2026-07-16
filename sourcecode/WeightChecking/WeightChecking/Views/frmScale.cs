@@ -490,7 +490,7 @@ namespace WeightChecking
         //    GlobalVariables.ScaleStatus = "Disconnect";
         //}
 
-        //private void ResetControl()
+        //private void ResetControlForScale()
         //{
         //    GlobalVariables.InvokeIfRequired(this, () =>
         //    {
@@ -1524,7 +1524,7 @@ namespace WeightChecking
         //                            //ghi giá trị xuống PLC cân reject
         //                            GlobalVariables.MyEvent.WeightPusher = 1;
 
-        //                            ResetControl();
+        //                            ResetControlForScale();
 
         //                            if (this.InvokeRequired)
         //                            {
@@ -1930,7 +1930,7 @@ namespace WeightChecking
         //                                //para.Add("Level", "Log");
         //                                //connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-        //                                //ResetControl();
+        //                                //ResetControlForScale();
         //                                goto returnLoop;
         //                            }
         //                        }
@@ -2095,7 +2095,7 @@ namespace WeightChecking
         //                                //đã tồn tại 965 thì ko transfer
         //                                //...
 
-        //                                //ResetControl();
+        //                                //ResetControlForScale();
         //                                goto returnLoop;
         //                            }
         //                            else// if (statusLogData == 2)
@@ -2112,7 +2112,7 @@ namespace WeightChecking
         //                                    labErrInfoScale.Text = "Thùng này đã ghi nhận khối lượng OK rồi.";
         //                                });
 
-        //                                //ResetControl();
+        //                                //ResetControlForScale();
         //                                goto returnLoop;
         //                            }
         //                        }
@@ -2219,7 +2219,7 @@ namespace WeightChecking
         //                            //para.Add("Level", "Log");
         //                            //connection.Execute("sp_tblLog_Insert", param: para, commandType: CommandType.StoredProcedure);
 
-        //                            //ResetControl();
+        //                            //ResetControlForScale();
         //                            goto returnLoop;
         //                        }
         //                    }
@@ -2310,7 +2310,7 @@ namespace WeightChecking
         //                    //ghi giá trị xuống PLC cân reject
         //                    GlobalVariables.MyEvent.WeightPusher = 1;
 
-        //                    ResetControl();
+        //                    ResetControlForScale();
 
         //                    GlobalVariables.InvokeIfRequired(this, () =>
         //                    {
@@ -2358,7 +2358,7 @@ namespace WeightChecking
         //                //ghi giá trị xuống PLC cân reject
         //                GlobalVariables.MyEvent.WeightPusher = 1;
 
-        //                ResetControl();
+        //                ResetControlForScale();
 
         //                GlobalVariables.InvokeIfRequired(this, () =>
         //                {
