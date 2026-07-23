@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WeightChecking
 {
-    [Table("tblConfig_test")]
+    [Table("tblConfig")]
     public partial class tblConfig
     {
         [Key]

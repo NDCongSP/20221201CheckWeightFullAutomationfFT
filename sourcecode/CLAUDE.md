@@ -264,6 +264,20 @@ const delay = 350; // gán delay bằng 350
 # Cập nhật phần này MỖI KHI kết thúc session làm việc
 active_context:
   current_task: >
+    DONE (Task L) — Fix crash "Nullable object must have a value" khi quét QR ở trạm Scale (Cognex2):
+    `BarcodeScanner2Handle` cast thẳng `(int)`/`(double)` lên các field `res.MetalScan`/
+    `res.AveWeight1Prs`/`res.LowerToleranceOfCartonBox`/`res.BoxWeightBx1-4`/... (dòng ~2071 trở đi) mà
+    không kiểm tra null — các field này đều là `c?.X` trong `GetProductItemInfo` (c = tblCoreDataCodeItemSize),
+    null hết khi sản phẩm có trong `tblWinlineProductsInfo` nhưng KHÔNG có dòng `tblCoreDataCodeItemSize`
+    khớp. Xác nhận đây là bug pre-existing (không phải regression từ lần chuyển SqlQuery→EF của
+    `GetProductItemInfo`) qua git-diff — khối code tiêu thụ không đổi. Fix: thêm guard `res.AveWeight1Prs
+    == null` ngay sau `if (res != null)`, log `tblItemMissingInfo` (đúng shape pattern có sẵn cho case
+    BX1) rồi throw — outer catch tự set `WeightPusher = 2` (reject) + ghi `tblScanDataReject`. Quyết định
+    "log + reject thay vì default 0" do user chọn qua AskUserQuestion (không tự quyết vì rủi ro để lọt
+    thùng lỗi qua trạm cân). Build verify: `MSBuild WeightChecking.sln` → 0 lỗi cho `WeightChecking`
+    (`SSFG.exe`). Xem CHANGELOG entry mới nhất + `next_step` để biết cách verify thủ công qua `IsTest=true`.
+
+    ---
     DONE (Task K) — Fix 2 regression phát sinh từ Task J, cả 2 do user báo qua debugger/test thật trong
     cùng session: (1) `NullReferenceException` tại `frmScaleNewUI.cs:888` (`GlobalVariables.
     InvokeIfRequired(Owner, ...)` — `Owner` null vì form không show kèm owner; sửa `Owner`→`this`, khớp
@@ -624,6 +638,7 @@ active_context:
     để biết chi tiết, không lặp lại ở đây.)
 
   related_files:
+    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task L: BarcodeScanner2Handle, guard `res.AveWeight1Prs == null` ngay sau `if (res != null)` (~dòng 2064) — log tblItemMissingInfo + reject khi thiếu tblCoreDataCodeItemSize, tránh crash "Nullable object must have a value"
     - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task K: DataEvent_EventHandleValueChange (nhánh box-info QR, ~dòng 886) — InvokeIfRequired(Owner,...) → InvokeIfRequired(this,...), fix NullReferenceException
     - "WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs"   # Task K: ReadData() — dispatch _dataEvent.QRCodeValue và vòng lặp opportunistic drain thêm dòng mỗi cái có try/catch riêng, không escalate Reconnect() khi lỗi là app-level (fix "event chỉ nhảy vào 1 lần rồi im lặng")
     - "WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs"   # Task J: ReadData() gộp nhiều dòng CRLF trong 1 telegram thành 1 QRCodeValue event (grace window 50ms/dòng, tối đa 5 dòng), field _pendingLine giữ read dở dang giữa các tick, clear trong DisconnectDevices()
@@ -672,6 +687,13 @@ active_context:
     nhận hardware thật, chưa có phản hồi từ user.
 
   next_step: >
+    - [Task L] Verify thủ công theo §6.2 (sandbox không có DB/PLC/Cognex thật): bật `IsTest = true` trong
+    `ConfigJson`, dùng fake data trong `#region Fake data to debug` (`FrmScale_Load`) với đúng
+    `ProductNumber` từ QR gốc user báo (`3112012401-450H-3101`) để tái hiện case thiếu
+    `tblCoreDataCodeItemSize`, xác nhận: (1) không còn crash "Nullable object must have a value", (2) có
+    dòng mới trong `tblItemMissingInfo` với `Note` đúng nội dung, (3) `WeightPusher` được set về 2
+    (reject) qua outer catch. Cũng nên test lại đường pass bình thường (sản phẩm CÓ đủ
+    `tblCoreDataCodeItemSize`) để xác nhận guard mới không chặn nhầm case hợp lệ.
     - [Task K] "Event chỉ nhảy 1 lần" ĐÃ xác nhận root cause thật (guard `_scannerIsBussy[1]` chỉ reset
     qua tag PLC S6, bộ test hiện tại không có PLC simulator) và user xác nhận KHÔNG cần sửa gì — xem
     CHANGELOG + phần "CẬP NHẬT — root cause THẬT" trong `current_task` ở trên. Nếu sau này cần test lại
@@ -758,9 +780,17 @@ active_context:
     có cần cập nhật theo không.
     - [Task E, còn treo] Xác nhận với hardware địa chỉ DB1 thật cho tag "P4" trên PLC Siemens.
 
-  last_session: "2026-07-16"
+  last_session: "2026-07-23"
 
   open_questions:
+    - "[Task L] Không xác nhận được 100% liệu SP gốc `sp_vProductItemInfoGet` dùng INNER hay LEFT JOIN
+      với tblCoreDataCodeItemSize (SP không có trong repo, không query DB production theo nguyên tắc an
+      toàn của project) — quyết định fix (log + reject khi thiếu) dựa trên bằng chứng gián tiếp hội tụ
+      (ProductInfoModel khai báo nullable từ trước, call site frmMasterData.cs dùng Dapper không cast) +
+      lựa chọn của user, không phải bằng chứng tuyệt đối. Nếu sau này xác nhận được SP gốc dùng INNER
+      JOIN (tức thiếu tblCoreDataCodeItemSize chưa từng xảy ra được ở DB thật trước đây), có thể cần xem
+      lại liệu đây có phải dữ liệu mới/lỗi nhập liệu cần báo bộ phận master data thay vì chỉ log-reject
+      im lặng."
     - "[Task I, MEDIUM — từ weight-logic-auditor] `lowerToleranceOfBox`/`upperToleranceOfBox` được
       chọn dựa trên nhánh Carton-vs-Plastic suy ra từ master data, TRƯỚC khi khối override QR2 chạy —
       nếu QR2 chỉ ra loại bao bì KHÁC HẲN nhóm (vd. master data tính ra Carton nhưng QR2 lại là
@@ -1631,6 +1661,56 @@ trong bất kỳ session dịch nào), trong khi `.csproj` (đã commit từ tr�
 (có `tagsPRD.json` mới, untracked, xuất hiện cùng lúc, có thể là file thay thế). Chưa test chạy thật
 UI/hardware (không có kết nối trong sandbox) — cần verify thủ công: chạy qua các luồng scan/reject/
 report/login/print và xác nhận UI hiển thị tiếng Anh đúng, không ảnh hưởng hành vi nghiệp vụ.
+
+---
+
+### [2026-07-23] — Session: Fix crash "Nullable object must have a value" khi quét QR ở trạm Scale (Cognex2) do thiếu master data tblCoreDataCodeItemSize
+
+```
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs      — BarcodeScanner2Handle: thêm guard ngay sau `if (res != null)` (trước dòng 2071/2072/2074/2075 và mọi cast (double)/(int) phía sau) — kiểm tra `res.AveWeight1Prs == null` (sentinel: field này luôn null khi và chỉ khi không tìm được dòng tblCoreDataCodeItemSize khớp trong GetProductItemInfo, vì mọi field c?.X đều null cùng lúc). Nếu thiếu, log 1 dòng tblItemMissingInfo (đúng shape/pattern đã có sẵn cho case "Quantity exceeds BX1 box limit") rồi throw Exception — outer catch (dòng ~2576) tự set WeightPusher=2 (reject xuống PLC) + ghi tblScanDataReject, không cần set thủ công.
+[DOCS]     CLAUDE.md                                           — Cập nhật active_context + thêm entry CHANGELOG này
+```
+
+**Bối cảnh:** User báo lỗi khi quét QR ở trạm Scale (Cognex2): `InvalidOperationException: "Nullable
+object must have a value."` với QR data
+`PB000006565,3112012401-450H-3101,4,0,P,1/1,12000,1/1|43,569481.2026,0,0,12,BX3`. Yêu cầu: "tìm nguyên
+nhân giúp tôi".
+
+**Root cause:** `GetProductItemInfo` (dòng ~1105) join 2 nguồn: `v` (tblWinlineProductsInfo, luôn có vì
+đã check `v == null` sớm) và `c` (tblCoreDataCodeItemSize, tìm theo `CodeItemSize`/`ProductNumber` +
+`Printing`). Mọi field cân/tolerance/box config (`MetalScan`, `AveWeight1Prs`,
+`LowerToleranceOfCartonBox`, `BoxWeightBx1-4`, `PlasticBoxWeight`, `PartitionWeight`,
+`PlasticBag1/2Weight`, `WrapSheetWeight`, `FoamSheetWeight`, ...) được gán `c?.X` — khi sản phẩm quét
+được có trong `v` nhưng KHÔNG có dòng `c` khớp, `res` vẫn khác null (chỉ `v`-fields có giá trị) nhưng
+TOÀN BỘ `c`-fields đều null. Code tiêu thụ ở `BarcodeScanner2Handle` (dòng ~2071 trở đi) cast thẳng
+`(int)`/`(double)` lên các field này mà không kiểm tra null trước — văng `InvalidOperationException`
+ngay tại `(int)res.MetalScan`/`(double)res.AveWeight1Prs`. Xác nhận đây là bug tiềm ẩn có từ trước
+(pre-existing), KHÔNG phải regression từ lần chuyển `GetProductItemInfo` từ SqlQuery sang EF LINQ trước
+đó (so `git show` — khối code tiêu thụ giữ nguyên byte-for-byte). Bằng chứng củng cố: `ProductInfoModel`
+khai báo sẵn các field này là nullable (`int?`/`double?`) từ trước khi chuyển EF; 1 call site khác
+(`frmMasterData.cs:143`, dùng Dapper) map cùng DTO này mà không cast — cho thấy null ở đây là trạng thái
+dữ liệu có thể xảy ra trong hệ thống, không phải điều kiện không tưởng. KHÔNG truy được 100% liệu SP gốc
+`sp_vProductItemInfoGet` dùng INNER hay LEFT JOIN (SP không có trong repo, không query DB production
+theo nguyên tắc an toàn của project) — đủ bằng chứng gián tiếp để quyết định hướng fix mà không cần
+chứng minh tuyệt đối.
+
+**Quyết định xử lý (do user chọn qua AskUserQuestion, không tự quyết):** khi thiếu master data
+`tblCoreDataCodeItemSize`, KHÔNG cho tiếp tục xử lý với weight/tolerance mặc định 0 (rủi ro để lọt thùng
+lỗi qua trạm cân mà không phát hiện) — thay vào đó log + reject giống hệt pattern "thiếu master data" đã
+có sẵn cho case vượt BX1.
+
+**Không đụng:** `GetProductItemInfo` (giữ nguyên logic join, không đổi INNER/LEFT vì không xác nhận được
+JOIN gốc), pattern log `tblItemMissingInfo` cho case BX1 (chỉ nhân bản đúng shape, không refactor gộp
+chung).
+
+**Verify:** `MSBuild WeightChecking.sln /p:Configuration=Release /p:Platform="Any CPU"` → build
+`WeightChecking` (`SSFG.exe`) thành công, 0 lỗi, chỉ còn warning có sẵn từ trước (không liên quan).
+Chưa test được với QR/data thật gây lỗi ban đầu (sandbox không có kết nối DB/PLC/Cognex thật) — cách
+verify thủ công theo §6.2: bật `IsTest = true` trong `ConfigJson`, dùng fake data trong
+`#region Fake data to debug` (`FrmScale_Load`) với đúng `ProductNumber` từ QR gốc
+(`3112012401-450H-3101`) để tái hiện case thiếu `tblCoreDataCodeItemSize`, xác nhận: (1) không còn crash
+"Nullable object must have a value", (2) có dòng mới trong `tblItemMissingInfo` với `Note` đúng nội
+dung, (3) `WeightPusher` được set về 2 (reject) qua outer catch.
 
 ---
 

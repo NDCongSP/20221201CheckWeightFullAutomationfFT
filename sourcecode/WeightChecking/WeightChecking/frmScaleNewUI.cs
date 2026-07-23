@@ -2063,6 +2063,31 @@ namespace WeightChecking
 
                     if (res != null)
                     {
+                        if (res.AveWeight1Prs == null)
+                        {
+                            // v-tblWinlineProductsInfo matched, but no tblCoreDataCodeItemSize row
+                            // cross-references it (weight/tolerance/box config missing) - reject as
+                            // missing master data instead of letting the casts below throw
+                            // "Nullable object must have a value."
+                            Debug.WriteLine($"Missing tblCoreDataCodeItemSize master data for product {_scanDataWeight.ProductNumber}", "WARNING", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                            var missingLine = new tblItemMissingInfo
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActive = true,
+                                CreatedDate = DateTime.Now,
+                                ProductNumber = _scanDataWeight.ProductNumber,
+                                ProductName = res.ProductName,
+                                OcNum = _scanDataWeight.OcNo,
+                                Note = "Missing tblCoreDataCodeItemSize master data (weight/tolerance/box config).",
+                                QrCode = _scanDataWeight.BarcodeString
+                            };
+                            dbContextSSFG.TblItemMissingInfos.Add(missingLine);
+                            dbContextSSFG.SaveChanges();
+
+                            throw new Exception("Missing tblCoreDataCodeItemSize master data.");
+                        }
+
                         _unitLabel = _scanDataWeight.Unit == "P" ? "prs" : "pcs";
                         _color = res.Color;
                         _sizeName = res.SizeName;
