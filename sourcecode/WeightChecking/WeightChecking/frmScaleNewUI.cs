@@ -825,20 +825,26 @@ namespace WeightChecking
             {
                 if (_s1 == 0)
                 {
+                    GlobalVariables.InvokeIfRequired(this, () =>
+                    {
+                        _labQrIdentification.Text = string.Empty;
+                        _labResultIdentification.Text = string.Empty;
+                    });
+
                     _isStartCountTimer = true;
                     _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.ConfigJson.TimerCheckQrMetal)));
                     _ckQRTask.Start();
                 }
             }
 
-            if (_s1 == 1)
-            {
-                GlobalVariables.InvokeIfRequired(this, () =>
-                {
-                    _labQrIdentification.Text = string.Empty;
-                    _labResultIdentification.Text = string.Empty;
-                });
-            }
+            //if (_s1 == 1)
+            //{
+            //    GlobalVariables.InvokeIfRequired(this, () =>
+            //    {
+            //        _labQrIdentification.Text = string.Empty;
+            //        _labResultIdentification.Text = string.Empty;
+            //    });
+            //}
         }
 
         private void Sub_OnValueChanged(PlcTag obj)
