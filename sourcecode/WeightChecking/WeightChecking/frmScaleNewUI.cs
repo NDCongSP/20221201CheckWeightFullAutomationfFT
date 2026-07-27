@@ -582,6 +582,66 @@ namespace WeightChecking
             _firstLoad = false;
         }
 
+        private void FrmScale_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try
+            {
+                //huy đối tượng máy in
+                PrinterClose();
+
+                if (_ckQRTask != null)
+                {
+                    _ckQRTask.Wait();
+                    _ckQRTask.Dispose();
+                }
+
+                _driverTelnet.DataEvent.EventHandleValueChange -= DataEvent_EventHandleValueChange;
+                _driverTelnet.DataEvent.EventHandleStatusChange -= DataEvent_EventHandleStatusChange;
+
+                _driverTelnet.IsDisconect = true;
+                _driverTelnet?.DisconnectDevices();
+
+                _driverTelnetMetal.DataEvent.EventHandleValueChange -= DataEventMetal_EventHandleValueChange;
+                _driverTelnetMetal.DataEvent.EventHandleStatusChange -= DataEventMetal_EventHandleStatusChange;
+
+                _driverTelnetMetal.IsDisconect = true;
+                _driverTelnetMetal?.DisconnectDevices();
+                //huy doi tuong can
+                //_scaleHelper.StopScale = true;
+                //_ckTask.Wait();
+                //_ckTask.Dispose();
+                //_scaleHelper.Dispose();
+                GlobalVariables.ScaleStatus = "Disconnect";
+
+                _timer?.Cancel();
+                _timerTask?.Wait(1000);
+
+                _resetUiCts?.Cancel();
+                _resetUiTask?.Wait(1000); // đợi nhẹ, tránh treo UI
+
+                // 2. Dừng Polling của Snap7
+                _sub?.Stop();
+
+                // 3. Hủy kết nối PLC (Dừng Watchdog và ngắt TCP)
+                _plc1Client.Dispose(); // Sẽ dừng watchdog và ngắt kết nối
+            }
+            catch
+            {
+
+            }
+            finally
+            {
+                _resetUiCts?.Dispose();
+                _resetUiCts = null;
+                _resetUiTask = null;
+
+                _timer?.Dispose();
+                _timer = null;
+                _timerTask = null;
+            }
+        }
+
+        #region PLC tags value changed
         private void Scale_Value_ValueChanged(PlcTag tag)
         {
             Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
@@ -857,7 +917,9 @@ namespace WeightChecking
             _plcConnectionState = obj;
             Debug.WriteLine($"S7 Client Statuc: {_plcConnectionState}");
         }
+        #endregion
 
+        #region Barcode handle
         private void DataEvent_EventHandleStatusChange(object sender, StatusChangeEventArgs e)
         {
             GlobalVariables.CognexCam_2Status = e.Status;
@@ -993,68 +1055,7 @@ namespace WeightChecking
                 Log.Error("The sensor clears the busy flag, it is not active", "Scale form error at metal station.");
             }
         }
-
-        private void FrmScale_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            try
-            {
-                //huy đối tượng máy in
-                PrinterClose();
-
-                if (_ckQRTask != null)
-                {
-                    _ckQRTask.Wait();
-                    _ckQRTask.Dispose();
-                }
-
-                _driverTelnet.DataEvent.EventHandleValueChange -= DataEvent_EventHandleValueChange;
-                _driverTelnet.DataEvent.EventHandleStatusChange -= DataEvent_EventHandleStatusChange;
-
-                _driverTelnet.IsDisconect = true;
-                _driverTelnet?.DisconnectDevices();
-
-                _driverTelnetMetal.DataEvent.EventHandleValueChange -= DataEventMetal_EventHandleValueChange;
-                _driverTelnetMetal.DataEvent.EventHandleStatusChange -= DataEventMetal_EventHandleStatusChange;
-
-                _driverTelnetMetal.IsDisconect = true;
-                _driverTelnetMetal?.DisconnectDevices();
-                //huy doi tuong can
-                //_scaleHelper.StopScale = true;
-                //_ckTask.Wait();
-                //_ckTask.Dispose();
-                //_scaleHelper.Dispose();
-                GlobalVariables.ScaleStatus = "Disconnect";
-
-                _timer?.Cancel();
-                _timerTask?.Wait(1000);
-
-                _resetUiCts?.Cancel();
-                _resetUiTask?.Wait(1000); // đợi nhẹ, tránh treo UI
-
-                // 2. Dừng Polling của Snap7
-                _sub?.Stop();
-
-                // 3. Hủy kết nối PLC (Dừng Watchdog và ngắt TCP)
-                _plc1Client.Dispose(); // Sẽ dừng watchdog và ngắt kết nối
-            }
-            catch
-            {
-
-            }
-            finally
-            {
-                _resetUiCts?.Dispose();
-                _resetUiCts = null;
-                _resetUiTask = null;
-
-                _timer?.Dispose();
-                _timer = null;
-                _timerTask = null;
-            }
-        }
-
-        #region Barcode handle
-
+        
         /// <summary>
         /// Nhận diện QR thứ 2 (box info) trên thùng: Carton "BoxType,Supplier,BoxWeight" (vd "BX1,DKP,987.3Gr")
         /// hoặc Plastic "Name,BoxWeight" (vd "G250001,1320"). Khác với QR chính (Main QR) luôn có 2 ký tự đầu
@@ -2963,11 +2964,6 @@ namespace WeightChecking
 
                 Log.Error(ex, $"System fail. Error while sending data to the printer. Ex:{ex.ToString()}.");
             }
-        }
-
-        private void simpleButton1_Click(object sender, EventArgs e)
-        {
-            //BarcodeHandle(2, "C100028,6817012205-2397-D243,1,2,P,2/2,1900068,1/1|2,22421.2023,,,");
         }
 
         private void btn_Setspeed_Click(object sender, EventArgs e)
