@@ -95,18 +95,30 @@ namespace AnserU2_cSharp
             string hex = string.Join(" ", rcvArr.Select(b => b.ToString("X2")));
             AppendLog($"RX [{rcvArr.Length} bytes]: {hex}");
 
-            if (rcvArr[4] == 0x30) // in thành công
+            // May in tra ve 2 dang frame khac nhau cho status:
+            //  - Frame ACK/FAIL ngan (5-6 byte, phan hoi lenh StartPrint/SetDynamicString): status nam o byte[2].
+            //    VD ACK:  02 01 4F <chk> 03           (5 byte)
+            //    VD FAIL: 02 02 31 <err> <chk> 03      (6 byte)
+            //  - Frame phan hoi dai (Get Speed/Get Delay/event Print Completed): status nam o byte[4].
+            //    VD: 02 00 06 01 5D <data...> <chk> 03
+            // rcvArr[4] chi dung voi dang dai; voi dang ngan rcvArr[4] roi vao byte ETX (0x03) nen khong bao gio
+            // khop 0x30/0x4F/0x31.
+            bool isShortFrame = rcvArr.Length <= 6;
+            byte statusByte = isShortFrame ? rcvArr[2] : rcvArr[4];
+            int errCodeIdx = isShortFrame ? 3 : 5;
+
+            if (statusByte == 0x30) // in thành công
             {
                 AppendLog("Print successful!");
                 SendDynamicString(" ", " ", " ", " ");
             }
-            else if (rcvArr[4] == 0x4F) // lệnh được chấp nhận
+            else if (statusByte == 0x4F) // lệnh được chấp nhận
             {
                 AppendLog("Command sent successfully.");
             }
-            else if (rcvArr[4] == 0x31) // lỗi
+            else if (statusByte == 0x31) // lỗi
             {
-                string errCode = rcvArr.Length > 5 ? rcvArr[5].ToString() : "?";
+                string errCode = rcvArr.Length > errCodeIdx ? rcvArr[errCodeIdx].ToString() : "?";
                 AppendLog($"Error. Error code: {errCode}");
                 // Stop print không cần UI thread
                 byte[] stopCmd = new byte[] { 0x2, 0x0, 0x6, 0x0, 0x46, 0x0, 0x0, 0x0, 0x0, 0x4C, 0x3 };
@@ -115,13 +127,13 @@ namespace AnserU2_cSharp
                     MessageBox.Show($"Send command error. Error code: {errCode}", "ERROR",
                         MessageBoxButtons.OK, MessageBoxIcon.Error));
             }
-            else if (rcvArr[4] == 0x5D && rcvArr.Length >= 9) // 0x5D = get speed response
+            else if (statusByte == 0x5D && rcvArr.Length >= 9) // 0x5D = get speed response
             {
                 var speedPV = (double)(rcvArr[5] + rcvArr[6] * 0x100 + rcvArr[7] * 0x1000 + rcvArr[8] * 0x10000);
                 speedPV = Math.Round(speedPV / 1000, 2);
                 InvokeIfRequired(() => txt_speedPV.Text = speedPV.ToString());
             }
-            else if (rcvArr[4] == 0x64 && rcvArr.Length >= 9) // 0x64 = get delay response
+            else if (statusByte == 0x64 && rcvArr.Length >= 9) // 0x64 = get delay response
             {
                 var delayPV = (double)(rcvArr[5] + rcvArr[6] * 0x100 + rcvArr[7] * 0x1000 + rcvArr[8] * 0x10000);
                 delayPV = Math.Round(delayPV / 100, 2);
