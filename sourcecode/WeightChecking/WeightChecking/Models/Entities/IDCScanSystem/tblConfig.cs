@@ -21,7 +21,7 @@ namespace WeightChecking
         public DateTime CreatedDate { get; set; }
 
         public string CreatedBy { get; set; } = string.Empty;
-
+      
         public string CreatedMachine { get; set; } = string.Empty;
     }
 
@@ -51,7 +51,7 @@ namespace WeightChecking
         public string IpPrinter { get; set; } = "192.168.4.70";
 
         [Description("The TCP port of Anser U2 printer.")]
-        public int PortPrinter { get; set; } = 4001;
+        public int PortPrinter { get; set; } = 23;
 
         /// <summary>
         /// THời gian đếm từ khi cảm biến S1 trên conveyor kích hoạt, sau khoảng thời gian này mà không nhận được tín hiêu từ scanner trả về thì reject.
