@@ -492,6 +492,14 @@ namespace WeightChecking
             foreach (var tag in _plcRuntime.Tags)
                 tag.RaiseValueChanged();//Tự "bắn" sự kiện để UI cập nhật ngay giá trị ban đầu
 
+            // Tắt cờ _firstLoad ngay sau khi bắn xong sự kiện "seed" ở trên, KHÔNG chờ đến cuối FrmScale_Load.
+            // Lý do: PrinterOpen()/Thread.Sleep(10000) và ConnectDevices() của 2 camera Cognex bên dưới có thể
+            // chạy thêm nhiều giây; trong lúc đó polling PLC (_sub.Subscribe ngay dưới) đã sống và có thể sinh
+            // sự kiện MetalPusher/WeightPusher THẬT (vd: có sẵn thùng trên băng tải khi app vừa khởi động).
+            // Nếu vẫn giữ _firstLoad=true tới hết hàm, các sự kiện thật này bị nuốt lặng lẽ (chỉ Debug.WriteLine,
+            // không ghi xuống PLC), gây ra hiện tượng "thỉnh thoảng không ghi được RJ1/Check_Weight_Result lần đầu chạy".
+            _firstLoad = false;
+
             // 4) BẮT ĐẦU POLLING (rất quan trọng)
             _sub.Subscribe(_plcRuntime.Tags, intervalMs: 200);
 
@@ -580,8 +588,6 @@ namespace WeightChecking
             _labResultMessage.Text = string.Empty;
             _labQrIdentification.Text = string.Empty;
             _labResultIdentification.Text = string.Empty;
-
-            _firstLoad = false;
         }
 
         private void FrmScale_FormClosing(object sender, FormClosingEventArgs e)
@@ -3750,8 +3756,28 @@ namespace WeightChecking
             };
 
             // 2. CHỈ GHI TAG ĐANG CHỌN (Tối ưu cực quan trọng)
-            tag.NewValue = newValue;
-            var tagsToWrite = new List<PlcTag> { tag };
+            // KHÔNG set tag.NewValue rồi ghi thẳng đối tượng "tag" dùng chung với _plcRuntime.Tags:
+            // _sub.Subscribe(...) polling mỗi 200ms (PlcSubscriptionManager) đọc TOÀN BỘ tag trong
+            // _plcRuntime.Tags và gọi tag.ApplyScaling(raw) -> tag.NewValue = <giá trị đọc từ PLC>,
+            // ghi đè lên CHÍNH field NewValue vừa set ở trên. Vì WriteGroupAsync bên dưới chạy trong
+            // Task.Run riêng (có thể bị trễ do thread pool/lock _plc.SyncLock), có 1 khoảng hở: nếu
+            // vòng poll đọc lại tag và ghi đè NewValue TRƯỚC KHI WriteValue() bên trong WriteGroup()
+            // kịp đọc NewValue để build buffer, giá trị thực sự gửi xuống PLC sẽ là giá trị đọc được
+            // (cũ) thay vì giá trị vừa set (vd: RJ1 không được ghi 3 dù code đã set MetalPusher = 3).
+            // Đây là nguyên nhân hiện tượng "thỉnh thoảng không ghi được RJ1" (ngẫu nhiên theo timing,
+            // không liên quan _firstLoad hay nhánh code cụ thể nào).
+            // Fix: dùng 1 PlcTag clone độc lập, không nằm trong _plcRuntime.Tags nên vòng poll không
+            // thể đụng vào. PlcAddressParser.Parse (được WriteGroup gọi lại bên trong) chỉ cần Address/
+            // DataType/StringLength (đều là property public) để tự tính lại Db/Offset/Bit/Size.
+            var writeTag = new PlcTag
+            {
+                Name = tag.Name,
+                Address = tag.Address,
+                DataType = tag.DataType,
+                StringLength = tag.StringLength,
+                NewValue = newValue
+            };
+            var tagsToWrite = new List<PlcTag> { writeTag };
 
             try
             {
