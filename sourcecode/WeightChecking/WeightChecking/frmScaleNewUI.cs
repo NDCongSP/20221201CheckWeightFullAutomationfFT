@@ -146,7 +146,7 @@ namespace WeightChecking
 
         private int _s1 = 0, _s2 = 0, _s3 = 0, _s5 = 0, _s6 = 0, _s_MD_Out = 0;
 
-        //private bool _enableCheckMetal = false;
+        private bool _enableCheckMetal = false;
 
         public frmScaleNewUI()
         {
@@ -438,7 +438,7 @@ namespace WeightChecking
 
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
-                    _labResultIdentification.ForeColor = _metalCheckResult == 0 ? Color.Black : Color.Red;
+                    _labResultIdentification.ForeColor = _metalCheckResult == 1 && _enableCheckMetal ? Color.Red : Color.Black;
                 });
             };
 
@@ -731,7 +731,7 @@ namespace WeightChecking
             Debug.WriteLine($"Event Sensor After metal scan: {_s_MD_Out}");
             GlobalVariables.RememberInfo.CountMetalScan += 1;//đếm số thùng đi qua máy metalScan
 
-            if (_s_MD_Out == 1 && !_firstLoad )//&& _enableCheckMetal)
+            if (_s_MD_Out == 1 && !_firstLoad && _enableCheckMetal)
             {
                 using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
                 {
@@ -866,7 +866,16 @@ namespace WeightChecking
 
                     dbContext.SaveChanges();//lưu các thay đổi vào database
                 }
+
+                //xáo báo bận để cho phép scanner quét tiếp thùng.
+                _scannerIsBussy[0] = false;
+
+                _isStartCountTimer = false;
             }
+
+            _enableCheckMetal = false;
+
+            Debug.WriteLine($"ScannerBussy{_scannerIsBussy[0]}|_isStartCountTimer{_isStartCountTimer}");
         }
 
         private void S2_ValueChanged(PlcTag tag)
@@ -875,7 +884,7 @@ namespace WeightChecking
 
             _s2 = Convert.ToInt16(tag.NewValue);
 
-            if (_s2 == 1 && !_firstLoad)
+            if (_s2 == 1 && !_firstLoad && _enableCheckMetal == false)
             {
                 //xáo báo bận để cho phép scanner quét tiếp thùng.
                 _scannerIsBussy[0] = false;
@@ -884,12 +893,12 @@ namespace WeightChecking
                 //GlobalVariables.MyEvent.MetalPusher = _metalScannerStatus;
             }
 
-            Debug.WriteLine($"Sensor middle metal: {tag.NewValue}|ScannerBussy{_scannerIsBussy[0]}");
+            Debug.WriteLine($"Sensor middle metal: {tag.NewValue}|ScannerBussy{_scannerIsBussy[0]}|_isStartCountTimer{_isStartCountTimer}");
         }
 
         private void S1_ValueChanged(PlcTag tag)
         {
-            Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+            //Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
             _s1 = Convert.ToInt16(tag.NewValue);
 
             Debug.WriteLine($"Event Sensor before metal scan passed the wait loop: {tag.NewValue} |{_isStartCountTimer}");
@@ -920,6 +929,8 @@ namespace WeightChecking
             //        _labResultIdentification.Text = string.Empty;
             //    });
             //}
+
+            Debug.WriteLine($"ScannerBussy{_scannerIsBussy[0]}|_isStartCountTimer{_isStartCountTimer}");
         }
 
         private void Sub_OnValueChanged(PlcTag obj)
@@ -1685,7 +1696,7 @@ namespace WeightChecking
                         {
                             if (res.MetalScan == 1)// && ocFirstCharMetal != "PR")
                             {
-                                //_enableCheckMetal = true;
+                                _enableCheckMetal = true;
                                 GlobalVariables.MyEvent.MetalPusher = 1;
 
                                 Debug.WriteLine($"Product Number: {res.ProductNumber} requires metal detection.");
@@ -1698,6 +1709,8 @@ namespace WeightChecking
                             }
                             else// if (res.MetalScan == 0 || (res.MetalScan == 1 && ocFirstCharMetal == "PR"))
                             {
+                                _enableCheckMetal = false;
+
                                 // gui data xuong PLC để điều khiển băng tải phân luồng chạy vòng qua máy quét kim loại.
                                 GlobalVariables.MyEvent.MetalPusher = 2;
 
@@ -2340,9 +2353,9 @@ namespace WeightChecking
 
                                             var isHc = _scanDataWeight.ProductCategory != 11 ? false : true;
 
-                                            SendDynamicString(string1:$"{idLabel}  {passMetal}"
-                                                               ,string2: $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
-                                                               ,string3: _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                            SendDynamicString(string1: $"{idLabel}  {passMetal}"
+                                                               , string2: $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
+                                                               , string3: _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
                                                                , IsHc: isHc
                                                               );
                                         }
@@ -3756,28 +3769,11 @@ namespace WeightChecking
             };
 
             // 2. CHỈ GHI TAG ĐANG CHỌN (Tối ưu cực quan trọng)
-            // KHÔNG set tag.NewValue rồi ghi thẳng đối tượng "tag" dùng chung với _plcRuntime.Tags:
-            // _sub.Subscribe(...) polling mỗi 200ms (PlcSubscriptionManager) đọc TOÀN BỘ tag trong
-            // _plcRuntime.Tags và gọi tag.ApplyScaling(raw) -> tag.NewValue = <giá trị đọc từ PLC>,
-            // ghi đè lên CHÍNH field NewValue vừa set ở trên. Vì WriteGroupAsync bên dưới chạy trong
-            // Task.Run riêng (có thể bị trễ do thread pool/lock _plc.SyncLock), có 1 khoảng hở: nếu
-            // vòng poll đọc lại tag và ghi đè NewValue TRƯỚC KHI WriteValue() bên trong WriteGroup()
-            // kịp đọc NewValue để build buffer, giá trị thực sự gửi xuống PLC sẽ là giá trị đọc được
-            // (cũ) thay vì giá trị vừa set (vd: RJ1 không được ghi 3 dù code đã set MetalPusher = 3).
-            // Đây là nguyên nhân hiện tượng "thỉnh thoảng không ghi được RJ1" (ngẫu nhiên theo timing,
-            // không liên quan _firstLoad hay nhánh code cụ thể nào).
-            // Fix: dùng 1 PlcTag clone độc lập, không nằm trong _plcRuntime.Tags nên vòng poll không
-            // thể đụng vào. PlcAddressParser.Parse (được WriteGroup gọi lại bên trong) chỉ cần Address/
-            // DataType/StringLength (đều là property public) để tự tính lại Db/Offset/Bit/Size.
-            var writeTag = new PlcTag
-            {
-                Name = tag.Name,
-                Address = tag.Address,
-                DataType = tag.DataType,
-                StringLength = tag.StringLength,
-                NewValue = newValue
-            };
-            var tagsToWrite = new List<PlcTag> { writeTag };
+            // PlcTag giờ tách riêng NewValue (giá trị đọc, do vòng poll 200ms ApplyScaling() ghi đè liên tục)
+            // và PendingWriteValue (giá trị chờ ghi, chỉ WriteGroup/WriteValue đọc) — nên set thẳng lên tag
+            // dùng chung trong _plcRuntime.Tags không còn bị vòng poll ghi đè trước khi kịp gửi xuống PLC.
+            tag.PendingWriteValue = newValue;
+            var tagsToWrite = new List<PlcTag> { tag };
 
             try
             {
