@@ -80,6 +80,24 @@ namespace WeightChecking
                 var ocWL = dbContext.Database.SqlQuery<OcUsingModel>("sp_IdcGetListOcName").ToList();
 
                 GlobalVariables.OcUsingList.AddRange(ocWL);
+
+            }
+
+            using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
+            {
+                var sysOC= dbContext.TblSystemOCs.ToList();
+                if (sysOC != null)
+                {
+                    foreach (var row in sysOC)
+                    {
+                        GlobalVariables.OcUsingList.Add(new OcUsingModel()
+                        {
+                            OcNo = row.FirstChar,
+                            OcFirstChar = row.FirstChar,
+                            Description = row.Description,
+                        });
+                    }
+                }
             }
             #endregion
 

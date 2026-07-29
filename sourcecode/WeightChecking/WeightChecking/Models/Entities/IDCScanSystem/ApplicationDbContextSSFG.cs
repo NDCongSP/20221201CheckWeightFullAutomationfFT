@@ -44,5 +44,7 @@ namespace WeightChecking
         public virtual DbSet<tblWinlineProductsInfo> TblWinlineProductsInfos { get; set; }
 
         public virtual DbSet<tblSpecialCase> TblSpecialCases { get; set; }
+
+        public virtual DbSet<tblSystemOC> TblSystemOCs { get; set; }
     }
 }
