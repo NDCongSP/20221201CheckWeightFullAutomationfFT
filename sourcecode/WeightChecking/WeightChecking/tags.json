@@ -50,18 +50,18 @@
         "NumDecimal": 3
       },
       {
-        "Name": "Scale_Stable_Trigger",
-        "Address": "DB1.DBW18",
-        "DataType": "Int"
-      },
-      {
         "Name": "Scale_Value_Stable",
         "Address": "DB1.DBD20",
         "DataType": "Real",
         "Deadband": 0.00,
         "OffsetValue": 0,
         "GainRate": 1,
-	"NumDecimal": 3
+        "NumDecimal": 3
+      },
+      {
+        "Name": "Scale_Stable_Trigger",
+        "Address": "DB1.DBW18",
+        "DataType": "Int"
       },
       {
         "Name": "Check_Weight_Result",

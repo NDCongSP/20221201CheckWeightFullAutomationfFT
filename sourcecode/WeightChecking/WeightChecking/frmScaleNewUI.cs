@@ -450,13 +450,42 @@ namespace WeightChecking
                 Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
 
                 _scaleValueStable = Convert.ToDouble(tag.NewValue);
+                //_scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
+
+                //GlobalVariables.InvokeIfRequired(this,() =>
+                //{
+                //    labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
+                //});
             };
 
             _plcRuntime.Tags.FirstOrDefault(t => t.Name == "Scale_Stable_Trigger").ValueChanged += (tag) =>
             {
                 Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
 
-                _stableScaleTrigger = Convert.ToInt16(tag.NewValue);
+                var trigger = Convert.ToInt16(tag.NewValue);
+                if (trigger != 0)
+                {
+                    //Scale_Stable_Trigger đứng trước Scale_Value_Stable trong tags.json nên trong cùng 1 vòng poll,
+                    //event tag này raise trước event của Scale_Value_Stable -> nếu chỉ set _stableScaleTrigger ở đây,
+                    //vòng chờ busy-wait (Thread.Yield) ở BarcodeScanner2Handle có thể thoát ra và đọc _scaleValueStable
+                    //TRƯỚC KHI handler của Scale_Value_Stable kịp cập nhật, dẫn đến GrossWeight nhận giá trị cũ (0 do
+                    //S5 reset trước đó). ReadGroupAsync đã đọc xong toàn bộ tag (kể cả Scale_Value_Stable) trước khi
+                    //raise event này nên lấy thẳng NewValue của Scale_Value_Stable ở đây là luôn mới nhất, không phụ
+                    //thuộc thứ tự raise event giữa 2 tag.
+                    var scaleValueStableTag = _plcRuntime.Tags.FirstOrDefault(t => t.Name == "Scale_Value_Stable");
+                    if (scaleValueStableTag != null)
+                    {
+                        _scaleValueStable = Convert.ToDouble(scaleValueStableTag.NewValue);
+                        _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
+
+                        GlobalVariables.InvokeIfRequired(this, () =>
+                        {
+                            labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
+                        });
+                    }
+                }
+
+                _stableScaleTrigger = trigger;
             };
 
             _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S5").ValueChanged += S5_ValueChanged; ;
@@ -2055,8 +2084,10 @@ namespace WeightChecking
                 }
                 //Debug.WriteLine($"da can xong. stable {_stableScaleTrigger}");
 
-                _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
-                //truy vấn thông tin 
+                //GrossWeight/RealWeight đã được gán ngay trong handler Scale_Stable_Trigger.ValueChanged (trước khi
+                //set _stableScaleTrigger) nên KHÔNG gán lại _scaleValueStable ở đây nữa - gán lại tại đây từng gây
+                //race đọc phải giá trị cũ (0) do thứ tự raise event giữa 2 tag Scale_Stable_Trigger/Scale_Value_Stable.
+                //truy vấn thông tin
                 using (var dbContextSSFG = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
                 {
                     #region Kiểm tra xem thùng này đã được log vào scanData chưa
