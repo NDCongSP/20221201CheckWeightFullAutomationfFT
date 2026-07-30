@@ -146,6 +146,8 @@ namespace WeightChecking
 
         private int _s1 = 0, _s2 = 0, _s3 = 0, _s5 = 0, _s6 = 0, _s_MD_Out = 0;
 
+        private bool _enableCheckMetal = false;
+
         public frmScaleNewUI()
         {
             InitializeComponent();
@@ -436,7 +438,7 @@ namespace WeightChecking
 
                 GlobalVariables.InvokeIfRequired(this, () =>
                 {
-                    _labResultIdentification.ForeColor = _metalCheckResult == 0 ? Color.Black : Color.Red;
+                    _labResultIdentification.ForeColor = _metalCheckResult == 1 && _enableCheckMetal ? Color.Red : Color.Black;
                 });
             };
 
@@ -448,13 +450,42 @@ namespace WeightChecking
                 Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
 
                 _scaleValueStable = Convert.ToDouble(tag.NewValue);
+                //_scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
+
+                //GlobalVariables.InvokeIfRequired(this,() =>
+                //{
+                //    labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
+                //});
             };
 
             _plcRuntime.Tags.FirstOrDefault(t => t.Name == "Scale_Stable_Trigger").ValueChanged += (tag) =>
             {
                 Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
 
-                _stableScaleTrigger = Convert.ToInt16(tag.NewValue);
+                var trigger = Convert.ToInt16(tag.NewValue);
+                if (trigger != 0)
+                {
+                    //Scale_Stable_Trigger đứng trước Scale_Value_Stable trong tags.json nên trong cùng 1 vòng poll,
+                    //event tag này raise trước event của Scale_Value_Stable -> nếu chỉ set _stableScaleTrigger ở đây,
+                    //vòng chờ busy-wait (Thread.Yield) ở BarcodeScanner2Handle có thể thoát ra và đọc _scaleValueStable
+                    //TRƯỚC KHI handler của Scale_Value_Stable kịp cập nhật, dẫn đến GrossWeight nhận giá trị cũ (0 do
+                    //S5 reset trước đó). ReadGroupAsync đã đọc xong toàn bộ tag (kể cả Scale_Value_Stable) trước khi
+                    //raise event này nên lấy thẳng NewValue của Scale_Value_Stable ở đây là luôn mới nhất, không phụ
+                    //thuộc thứ tự raise event giữa 2 tag.
+                    var scaleValueStableTag = _plcRuntime.Tags.FirstOrDefault(t => t.Name == "Scale_Value_Stable");
+                    if (scaleValueStableTag != null)
+                    {
+                        _scaleValueStable = Convert.ToDouble(scaleValueStableTag.NewValue);
+                        _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
+
+                        GlobalVariables.InvokeIfRequired(this, () =>
+                        {
+                            labRealWeight.Text = _scanDataWeight.GrossWeight.ToString();
+                        });
+                    }
+                }
+
+                _stableScaleTrigger = trigger;
             };
 
             _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S5").ValueChanged += S5_ValueChanged; ;
@@ -681,6 +712,12 @@ namespace WeightChecking
             {
                 _isStartCountTimerWeight = true;
 
+                //reset tag stable value/trigger trên PLC cho mẻ cân mới, làm ở đây (trước khi cân)
+                //thay vì ở S6 (sau khi cân) để tránh đua với BarcodeScanner2Handle đang đọc
+                //_scaleValueStable/_stableScaleTrigger của thùng vừa cân xong
+                WriteData2PlcSeimens("Scale_Value_Stable", 0);
+                WriteData2PlcSeimens("Scale_Stable_Trigger", 0);
+
                 //reset các control để qua cân mẻ mới
                 ResetControlForScale();
 
@@ -723,7 +760,7 @@ namespace WeightChecking
             Debug.WriteLine($"Event Sensor After metal scan: {_s_MD_Out}");
             GlobalVariables.RememberInfo.CountMetalScan += 1;//đếm số thùng đi qua máy metalScan
 
-            if (_s_MD_Out == 1 && !_firstLoad)
+            if (_s_MD_Out == 1 && !_firstLoad && _enableCheckMetal)
             {
                 using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
                 {
@@ -858,7 +895,16 @@ namespace WeightChecking
 
                     dbContext.SaveChanges();//lưu các thay đổi vào database
                 }
+
+                //xáo báo bận để cho phép scanner quét tiếp thùng.
+                _scannerIsBussy[0] = false;
+
+                _isStartCountTimer = false;
             }
+
+            _enableCheckMetal = false;
+
+            Debug.WriteLine($"ScannerBussy{_scannerIsBussy[0]}|_isStartCountTimer{_isStartCountTimer}");
         }
 
         private void S2_ValueChanged(PlcTag tag)
@@ -867,7 +913,7 @@ namespace WeightChecking
 
             _s2 = Convert.ToInt16(tag.NewValue);
 
-            if (_s2 == 1 && !_firstLoad)
+            if (_s2 == 1 && !_firstLoad && _enableCheckMetal == false)
             {
                 //xáo báo bận để cho phép scanner quét tiếp thùng.
                 _scannerIsBussy[0] = false;
@@ -876,12 +922,12 @@ namespace WeightChecking
                 //GlobalVariables.MyEvent.MetalPusher = _metalScannerStatus;
             }
 
-            Debug.WriteLine($"Sensor middle metal: {tag.NewValue}|ScannerBussy{_scannerIsBussy[0]}");
+            Debug.WriteLine($"Sensor middle metal: {tag.NewValue}|ScannerBussy{_scannerIsBussy[0]}|_isStartCountTimer{_isStartCountTimer}");
         }
 
         private void S1_ValueChanged(PlcTag tag)
         {
-            Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
+            //Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
             _s1 = Convert.ToInt16(tag.NewValue);
 
             Debug.WriteLine($"Event Sensor before metal scan passed the wait loop: {tag.NewValue} |{_isStartCountTimer}");
@@ -897,6 +943,7 @@ namespace WeightChecking
                         _labResultIdentification.Text = string.Empty;
                     });
 
+                    //_enableCheckMetal = false;
                     _isStartCountTimer = true;
                     _ckQRTask = new Task(() => CheckReadQr((int)(GlobalVariables.ConfigJson.TimerCheckQrMetal)));
                     _ckQRTask.Start();
@@ -911,6 +958,8 @@ namespace WeightChecking
             //        _labResultIdentification.Text = string.Empty;
             //    });
             //}
+
+            Debug.WriteLine($"ScannerBussy{_scannerIsBussy[0]}|_isStartCountTimer{_isStartCountTimer}");
         }
 
         private void Sub_OnValueChanged(PlcTag obj)
@@ -1061,7 +1110,7 @@ namespace WeightChecking
                 Log.Error("The sensor clears the busy flag, it is not active", "Scale form error at metal station.");
             }
         }
-        
+
         /// <summary>
         /// Nhận diện QR thứ 2 (box info) trên thùng: Carton "BoxType,Supplier,BoxWeight" (vd "BX1,DKP,987.3Gr")
         /// hoặc Plastic "Name,BoxWeight" (vd "G250001,1320"). Khác với QR chính (Main QR) luôn có 2 ký tự đầu
@@ -1674,8 +1723,9 @@ namespace WeightChecking
 
                         if (res.AveWeight1Prs > 0)
                         {
-                            if (res.MetalScan == 1 && ocFirstCharMetal != "PR")
+                            if (res.MetalScan == 1)// && ocFirstCharMetal != "PR")
                             {
+                                _enableCheckMetal = true;
                                 GlobalVariables.MyEvent.MetalPusher = 1;
 
                                 Debug.WriteLine($"Product Number: {res.ProductNumber} requires metal detection.");
@@ -1686,8 +1736,10 @@ namespace WeightChecking
                                     _labResultIdentification.ForeColor = Color.Black;
                                 });
                             }
-                            else if (res.MetalScan == 0 || (res.MetalScan == 1 && ocFirstCharMetal == "PR"))
+                            else// if (res.MetalScan == 0 || (res.MetalScan == 1 && ocFirstCharMetal == "PR"))
                             {
+                                _enableCheckMetal = false;
+
                                 // gui data xuong PLC để điều khiển băng tải phân luồng chạy vòng qua máy quét kim loại.
                                 GlobalVariables.MyEvent.MetalPusher = 2;
 
@@ -1813,6 +1865,7 @@ namespace WeightChecking
             finally
             {
                 _scannerIsBussy[0] = false;
+                //_enableCheckMetal = false;
             }
         }
 
@@ -2031,8 +2084,10 @@ namespace WeightChecking
                 }
                 //Debug.WriteLine($"da can xong. stable {_stableScaleTrigger}");
 
-                _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
-                //truy vấn thông tin 
+                //GrossWeight/RealWeight đã được gán ngay trong handler Scale_Stable_Trigger.ValueChanged (trước khi
+                //set _stableScaleTrigger) nên KHÔNG gán lại _scaleValueStable ở đây nữa - gán lại tại đây từng gây
+                //race đọc phải giá trị cũ (0) do thứ tự raise event giữa 2 tag Scale_Stable_Trigger/Scale_Value_Stable.
+                //truy vấn thông tin
                 using (var dbContextSSFG = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
                 {
                     #region Kiểm tra xem thùng này đã được log vào scanData chưa
@@ -2079,7 +2134,7 @@ namespace WeightChecking
 
                     //đối với hàng sơn PU, thì trước sơn lấy các giá trị theo printing =0. Sau sơn thì lấy các giá trị theo printing =1
                     //nếu checkOc == null --> hàng sơn- trước sơn (PRT).
-                    var checkOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstChar && ocFirstChar != "PR");
+                    var checkOc = GlobalVariables.OcUsingList.FirstOrDefault(x => x.OcFirstChar == ocFirstChar && !ocFirstChar.StartsWith("S"));
 
                     var printingCheck = 0;
                     if (specialCase)
@@ -2138,7 +2193,7 @@ namespace WeightChecking
                         {
                             #region Fill data from coreData to scanData, tính toán ra NetWeight và GrossWeight
                             //Xét điều kiện để lấy boxWeight. Nếu là hàng đi sơn thì dùng thùng nhựa
-                            if ((_scanDataWeight.Decoration == 0 || (_scanDataWeight.Decoration == 1 && checkOc != null)) && checkOc.OcFirstChar != "BF")
+                            if ((_scanDataWeight.Decoration == 0 || (_scanDataWeight.Decoration == 1 && checkOc != null)) && !checkOc.OcFirstChar.StartsWith("S"))
                             {
                                 _scanDataWeight.Status = 2;//báo trạng thái hàng ko đi sơn, hoặc hàng sơn đã được sơn rồi
 
@@ -2157,7 +2212,7 @@ namespace WeightChecking
                                 lowerToleranceOfBox = (double)res.LowerToleranceOfPlasticBox;
                                 upperToleranceOfBox = (double)res.UpperToleranceOfPlasticBox;
 
-                                if (GlobalVariables.ConfigJson.AfterPrinting == 0 && _scanDataWeight.OcNo.Contains("PR"))
+                                if (GlobalVariables.ConfigJson.AfterPrinting == 0 && _scanDataWeight.OcNo.StartsWith("S"))
                                 {
                                     _scanDataWeight.Status = 1;// báo trạng thái hàng sơn cần đưa đi sơn, trạm SSFG01
                                 }
@@ -2329,9 +2384,9 @@ namespace WeightChecking
 
                                             var isHc = _scanDataWeight.ProductCategory != 11 ? false : true;
 
-                                            SendDynamicString($"{idLabel}  {passMetal}"
-                                                               , $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
-                                                               , _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                            SendDynamicString(string1: $"{idLabel}  {passMetal}"
+                                                               , string2: $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
+                                                               , string3: _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
                                                                , IsHc: isHc
                                                               );
                                         }
@@ -2340,9 +2395,9 @@ namespace WeightChecking
                                             //nếu là hàng sơn thì chỉ in ra khối lượng
                                             var passMetal = "Passed quality check";
                                             var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
-                                            SendDynamicString(" "
-                                                          , $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")}"
-                                                          , " "
+                                            SendDynamicString(string1: " "
+                                                          , string2: $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
+                                                          , string3: " "
                                                          );
                                         }
 
@@ -2693,12 +2748,21 @@ namespace WeightChecking
             {
                 if (rcvArr == null || rcvArr.Length < 5) return;
 
-                //xet phan tu thu 4 trong mang rcvArr[4] de check status
-                //0x4F-79--> OK
-                //0x31-49-->Fail
-                //0x30-48-->may in phan hoi in thanh cong
+                Debug.WriteLine($"[AnserU2 TCP] RX [{rcvArr.Length} bytes]: {string.Join(" ", rcvArr.Select(b => b.ToString("X2")))}");
 
-                if (rcvArr[4] == 0x30)
+                // May in tra ve 2 dang frame khac nhau cho status:
+                //  - Frame ACK/FAIL ngan (5-6 byte, phan hoi lenh StartPrint/SetDynamicString): status nam o byte[2].
+                //    VD ACK:  02 01 4F <chk> 03           (5 byte)
+                //    VD FAIL: 02 02 31 <err> <chk> 03      (6 byte)
+                //  - Frame phan hoi dai (Get Speed/Get Delay/event Print Completed): status nam o byte[4].
+                //    VD: 02 00 06 01 5D <data...> <chk> 03
+                // rcvArr[4] chi dung voi dang dai; voi dang ngan rcvArr[4] roi vao byte ETX (0x03) nen khong bao gio
+                // khop 0x30/0x4F/0x31 -> luon roi vao nhanh else va bi bao FAIL sai cho ca lenh in thanh cong.
+                bool isShortFrame = rcvArr.Length <= 6;
+                byte statusByte = isShortFrame ? rcvArr[2] : rcvArr[4];
+                int errCodeIdx = isShortFrame ? 3 : 5;
+
+                if (statusByte == 0x30)
                 {
                     Console.WriteLine($"Print successful!!!");
                     GlobalVariables.PrintedResult = $"Print successful.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
@@ -2709,16 +2773,17 @@ namespace WeightChecking
                     //xoa string
                     //SendDynamicString(" ", " ", " ");
                 }
-                else if (rcvArr[4] == 0x4F)
+                else if (statusByte == 0x4F)
                 {
                     Console.WriteLine($"Command sent to printer successfully!!!");
                     GlobalVariables.PrintResult = $"Command sent to printer successfully.{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
                 }
-                else if (rcvArr[4] == 0x31)
+                else if (statusByte == 0x31)
                 {
-                    Console.WriteLine($"Error. Error Code: {rcvArr[5]}. Reconnecting to printer.");
-                    // MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    GlobalVariables.PrintResult = $"Print error.{rcvArr[5]}|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
+                    string errCode = rcvArr.Length > errCodeIdx ? rcvArr[errCodeIdx].ToString() : "?";
+                    Console.WriteLine($"Error. Error Code: {errCode}. Reconnecting to printer.");
+                    // MessageBox.Show($"Send command error: Error code: {errCode}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    GlobalVariables.PrintResult = $"Print error.{errCode}|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
 
                     //ghi giá trị xuống PLC cân reject
                     GlobalVariables.MyEvent.WeightPusher = 2;
@@ -2739,7 +2804,7 @@ namespace WeightChecking
                         _labLastResultMessage.ForeColor = Color.Red;
                     });
 
-                    Log.Error("Print not successful.");
+                    Log.Error($"Print not successful. Error code: {errCode}. Raw: {string.Join(" ", rcvArr.Select(b => b.ToString("X2")))}");
 
                     StopPrint();
                     Thread.Sleep(10000);
@@ -2748,9 +2813,10 @@ namespace WeightChecking
                 }
                 else
                 {
-                    //Console.WriteLine($"Loi. Error Code: {rcvArr[5]}. Kết nối lại máy in.");
-                    // MessageBox.Show($"Send command error: Error code: {rcvArr[5]}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    GlobalVariables.PrintResult = $"PRINT NOT SUCCESSFUL.{rcvArr[5]}|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
+                    string errCode = rcvArr.Length > errCodeIdx ? rcvArr[errCodeIdx].ToString() : "?";
+                    //Console.WriteLine($"Loi. Error Code: {errCode}. Kết nối lại máy in.");
+                    // MessageBox.Show($"Send command error: Error code: {errCode}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    GlobalVariables.PrintResult = $"PRINT NOT SUCCESSFUL.{errCode}|{_scanDataWeight.IdLabel}|{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}|{_scanDataWeight.GrossWeight}|{_scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")}";
 
                     //ghi giá trị xuống PLC cân reject
                     GlobalVariables.MyEvent.WeightPusher = 2;
@@ -2898,7 +2964,7 @@ namespace WeightChecking
         /// <param name="grossWeight">Khối lượng cân thực tế.</param>
         /// <param name="createdDate">Thời điểm cân.</param>
         /// <param name="idLabel">'IdLabel' hoặc là 'OC|BoxNo'.</param>
-        private void SendDynamicString(string idLabel, string grossWeight, string createdDate, bool? IsHc = false)
+        private void SendDynamicStringOld(string idLabel, string grossWeight, string createdDate, bool? IsHc = false)
         {
             try
             {
@@ -2970,6 +3036,51 @@ namespace WeightChecking
 
                 Log.Error(ex, $"System fail. Error while sending data to the printer. Ex:{ex.ToString()}.");
             }
+        }
+
+        /// <summary>
+        /// Method truyen noi dung xuong may in.
+        /// </summary>
+        /// <param name="string1">Id_Label</param>
+        /// <param name="string2">Weight</param>
+        /// <param name="string3">Created Date</param>
+        /// <param name="IsHc">default false.</param>
+        private void SendDynamicString(string string1, string string2, string string3, bool? IsHc = false)
+        {
+            string2 = IsHc == false ? string2 : " ";
+
+            int i = 0, j = 0, k = 0, l = 0;
+            int chkSUM = 0;
+
+            byte[] arr = new byte[14 + string1.Length + string2.Length + string3.Length];
+            arr[0] = 0x2;
+            arr[1] = 0x0;
+            arr[2] = (byte)(9 + string1.Length + string2.Length + string3.Length);
+            arr[3] = 0x0;
+            arr[4] = 0xCA;
+            arr[5] = 0;
+            arr[6] = 0;
+            arr[7] = (byte)string1.Length;// Chiều dài của string 1
+            arr[8] = (byte)string2.Length;// Chiều dài của string 2
+            arr[9] = (byte)string3.Length;// Chiều dài của string 3
+            arr[10] = 0;
+            arr[11] = 0;
+
+            byte[] s1 = Encoding.ASCII.GetBytes(string1.ToCharArray());
+            byte[] s2 = Encoding.ASCII.GetBytes(string2.ToCharArray());
+            byte[] s3 = Encoding.ASCII.GetBytes(string3.ToCharArray());
+
+            for (i = 0; i < s1.Length; i++) arr[12 + i] = s1[i];
+            for (j = 0; j < s2.Length; j++) arr[12 + i + j] = s2[j];
+            for (k = 0; k < s3.Length; k++) arr[12 + i + j + k] = s3[k];
+
+            for (var c = 1; c <= i + j + k + l + 12; c++)
+                chkSUM += arr[c];
+            chkSUM &= 0xFF;
+            arr[i + j + k + l + 12] = Convert.ToByte(chkSUM);
+            arr[i + j + k + l + 13] = 0x3;
+
+            _printerDriver?.Write(arr);
         }
 
         private void btn_Setspeed_Click(object sender, EventArgs e)
@@ -3689,28 +3800,11 @@ namespace WeightChecking
             };
 
             // 2. CHỈ GHI TAG ĐANG CHỌN (Tối ưu cực quan trọng)
-            // KHÔNG set tag.NewValue rồi ghi thẳng đối tượng "tag" dùng chung với _plcRuntime.Tags:
-            // _sub.Subscribe(...) polling mỗi 200ms (PlcSubscriptionManager) đọc TOÀN BỘ tag trong
-            // _plcRuntime.Tags và gọi tag.ApplyScaling(raw) -> tag.NewValue = <giá trị đọc từ PLC>,
-            // ghi đè lên CHÍNH field NewValue vừa set ở trên. Vì WriteGroupAsync bên dưới chạy trong
-            // Task.Run riêng (có thể bị trễ do thread pool/lock _plc.SyncLock), có 1 khoảng hở: nếu
-            // vòng poll đọc lại tag và ghi đè NewValue TRƯỚC KHI WriteValue() bên trong WriteGroup()
-            // kịp đọc NewValue để build buffer, giá trị thực sự gửi xuống PLC sẽ là giá trị đọc được
-            // (cũ) thay vì giá trị vừa set (vd: RJ1 không được ghi 3 dù code đã set MetalPusher = 3).
-            // Đây là nguyên nhân hiện tượng "thỉnh thoảng không ghi được RJ1" (ngẫu nhiên theo timing,
-            // không liên quan _firstLoad hay nhánh code cụ thể nào).
-            // Fix: dùng 1 PlcTag clone độc lập, không nằm trong _plcRuntime.Tags nên vòng poll không
-            // thể đụng vào. PlcAddressParser.Parse (được WriteGroup gọi lại bên trong) chỉ cần Address/
-            // DataType/StringLength (đều là property public) để tự tính lại Db/Offset/Bit/Size.
-            var writeTag = new PlcTag
-            {
-                Name = tag.Name,
-                Address = tag.Address,
-                DataType = tag.DataType,
-                StringLength = tag.StringLength,
-                NewValue = newValue
-            };
-            var tagsToWrite = new List<PlcTag> { writeTag };
+            // PlcTag giờ tách riêng NewValue (giá trị đọc, do vòng poll 200ms ApplyScaling() ghi đè liên tục)
+            // và PendingWriteValue (giá trị chờ ghi, chỉ WriteGroup/WriteValue đọc) — nên set thẳng lên tag
+            // dùng chung trong _plcRuntime.Tags không còn bị vòng poll ghi đè trước khi kịp gửi xuống PLC.
+            tag.PendingWriteValue = newValue;
+            var tagsToWrite = new List<PlcTag> { tag };
 
             try
             {

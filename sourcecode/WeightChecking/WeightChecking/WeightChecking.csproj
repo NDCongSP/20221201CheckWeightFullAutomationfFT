@@ -305,6 +305,7 @@
     <Compile Include="Models\Entities\IDCScanSystem\tblItemMissingInfo.cs" />
     <Compile Include="Models\Entities\IDCScanSystem\tblLog.cs" />
     <Compile Include="Models\Entities\IDCScanSystem\tblMetalScanResult.cs" />
+    <Compile Include="Models\Entities\IDCScanSystem\tblSystemOC.cs" />
     <Compile Include="Models\FT050Model.cs" />
     <Compile Include="Models\MesoInfoModel.cs" />
     <Compile Include="Views\frmDeleteBox.cs">
