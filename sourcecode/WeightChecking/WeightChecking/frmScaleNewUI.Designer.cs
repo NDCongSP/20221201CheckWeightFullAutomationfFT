@@ -707,7 +707,7 @@
             this.labQrBoxInformation.Appearance.Options.UseTextOptions = true;
             this.labQrBoxInformation.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
             this.labQrBoxInformation.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this.labQrBoxInformation.Location = new System.Drawing.Point(10, 315);
+            this.labQrBoxInformation.Location = new System.Drawing.Point(10, 329);
             this.labQrBoxInformation.Name = "labQrBoxInformation";
             this.labQrBoxInformation.Size = new System.Drawing.Size(976, 54);
             this.labQrBoxInformation.TabIndex = 41;
@@ -717,7 +717,7 @@
             // 
             this.labelControl21.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl21.Appearance.Options.UseFont = true;
-            this.labelControl21.Location = new System.Drawing.Point(10, 290);
+            this.labelControl21.Location = new System.Drawing.Point(10, 304);
             this.labelControl21.Name = "labelControl21";
             this.labelControl21.Size = new System.Drawing.Size(115, 19);
             this.labelControl21.TabIndex = 40;
@@ -745,7 +745,7 @@
             this._labLastResultMessage.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
             this._labLastResultMessage.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
             this._labLastResultMessage.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
-            this._labLastResultMessage.Location = new System.Drawing.Point(11, 245);
+            this._labLastResultMessage.Location = new System.Drawing.Point(11, 251);
             this._labLastResultMessage.Name = "_labLastResultMessage";
             this._labLastResultMessage.Size = new System.Drawing.Size(976, 29);
             this._labLastResultMessage.TabIndex = 37;
@@ -760,7 +760,7 @@
             this.labQrScale.Appearance.Options.UseTextOptions = true;
             this.labQrScale.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
             this.labQrScale.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
-            this.labQrScale.Location = new System.Drawing.Point(10, 186);
+            this.labQrScale.Location = new System.Drawing.Point(10, 192);
             this.labQrScale.Name = "labQrScale";
             this.labQrScale.Size = new System.Drawing.Size(976, 54);
             this.labQrScale.TabIndex = 4;
@@ -770,7 +770,7 @@
             // 
             this.labelControl4.Appearance.Font = new System.Drawing.Font("Tahoma", 12F);
             this.labelControl4.Appearance.Options.UseFont = true;
-            this.labelControl4.Location = new System.Drawing.Point(10, 161);
+            this.labelControl4.Location = new System.Drawing.Point(10, 167);
             this.labelControl4.Name = "labelControl4";
             this.labelControl4.Size = new System.Drawing.Size(36, 19);
             this.labelControl4.TabIndex = 3;

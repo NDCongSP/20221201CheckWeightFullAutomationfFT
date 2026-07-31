@@ -76,6 +76,13 @@ namespace WeightChecking
         private AnserU2TcpDriver _printerDriver;
 
         /// <summary>
+        /// Chỉ cho phép auto StartPrint() ở lần "Connected" ĐẦU TIÊN sau khi mở app. Nếu sau đó mất kết nối
+        /// mạng/máy in rồi driver tự reconnect lại (trong khi app vẫn đang chạy), KHÔNG gọi lại StartPrint()
+        /// nữa vì máy in vật lý rất có thể vẫn đang chạy bình thường - gọi lại sẽ làm nó bị restart giữa chừng.
+        /// </summary>
+        private bool _printerStartedOnce = false;
+
+        /// <summary>
         /// Biến báo đã khởi tạo xong, chỉ chạy 1 lần khi load form, tránh việc các sự kiện tag bắn ra trước khi form.
         /// </summary>
         private bool _firstLoad = true;
@@ -449,7 +456,7 @@ namespace WeightChecking
             {
                 Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
 
-                _scaleValueStable = Convert.ToDouble(tag.NewValue);
+                _scaleValueStable = Math.Round(Convert.ToDouble(tag.NewValue) * GlobalVariables.ConfigJson.UnitScale, 2);
                 //_scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
 
                 //GlobalVariables.InvokeIfRequired(this,() =>
@@ -475,7 +482,7 @@ namespace WeightChecking
                     var scaleValueStableTag = _plcRuntime.Tags.FirstOrDefault(t => t.Name == "Scale_Value_Stable");
                     if (scaleValueStableTag != null)
                     {
-                        _scaleValueStable = Convert.ToDouble(scaleValueStableTag.NewValue);
+                        _scaleValueStable = Math.Round(Convert.ToDouble(scaleValueStableTag.NewValue) * GlobalVariables.ConfigJson.UnitScale, 2);
                         _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
 
                         GlobalVariables.InvokeIfRequired(this, () =>
@@ -2773,11 +2780,22 @@ namespace WeightChecking
                 {
                     GlobalVariables.PrintConnectionStatus = status == "Connected" ? "Good" : status;
                     Debug.WriteLine($"[AnserU2 TCP] {status}");
+
+                    //Connect() chỉ start background task ConnectAndReceiveLoopAsync, TCP socket thực sự kết nối
+                    //xong (bất đồng bộ) mới raise "Connected" ở đây - StartPrint() gọi ngay sau Connect() trước
+                    //đây sẽ luôn no-op vì Write() check IsConnected == false lúc đó.
+                    //Chỉ auto StartPrint() lần Connected đầu tiên (_printerStartedOnce): các lần reconnect sau
+                    //(do rớt mạng tạm thời trong lúc app vẫn chạy) không gọi lại, tránh làm máy in đang chạy
+                    //bị restart giữa chừng.
+                    //if (status == "Connected" && !_printerStartedOnce)
+                    {
+                        _printerStartedOnce = true;
+                        StartPrint();
+                    }
                 };
                 _printerDriver.Connect();
 
                 GlobalVariables.PrintConnectionStatus = "Connecting...";
-                StartPrint();
             }
             catch (Exception ex)
             {
@@ -3593,37 +3611,47 @@ namespace WeightChecking
         {
             if (args.IsUpdateAvailable)
             {
-                DialogResult dialogResult;
-                dialogResult =
-                        MessageBox.Show(
-                            $@"SSFG App has a new version {args.CurrentVersion}. The current SSFG App version is {args.InstalledVersion}. Do you want to update to the new version?", @"Notice",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Information);
-
-                if (dialogResult.Equals(DialogResult.Yes) || dialogResult.Equals(DialogResult.OK))
+                if (GlobalVariables.IsUpdateCheckInProgress) return;
+                GlobalVariables.IsUpdateCheckInProgress = true;
+                try
                 {
-                    SplashScreenManager.ShowForm(typeof(WaitForm1));
-                    await System.Threading.Tasks.Task.Delay(3000);
-                    //AutoZipFolder();
+                    DialogResult dialogResult;
+                    dialogResult =
+                            MessageBox.Show(
+                                $@"SSFG App has a new version {args.CurrentVersion}. The current SSFG App version is {args.InstalledVersion}. Do you want to update to the new version?", @"Notice",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Information);
 
-                    try
+                    if (dialogResult.Equals(DialogResult.Yes) || dialogResult.Equals(DialogResult.OK))
                     {
-                        if (AutoUpdater.DownloadUpdate(args))
+                        SplashScreenManager.ShowForm(typeof(WaitForm1));
+                        await System.Threading.Tasks.Task.Delay(3000);
+                        //AutoZipFolder();
+
+                        try
+                        {
+                            if (AutoUpdater.DownloadUpdate(args))
+                            {
+                                SplashScreenManager.CloseForm(false);
+                                Application.Exit();
+                            }
+                            else
+                            {
+                                SplashScreenManager.ShowForm(typeof(WaitForm1));
+                            }
+                        }
+                        catch (Exception exception)
                         {
                             SplashScreenManager.CloseForm(false);
-                            Application.Exit();
-                        }
-                        else
-                        {
-                            SplashScreenManager.ShowForm(typeof(WaitForm1));
+                            Log.Error(exception, $"AutoUpdater DownloadUpdate error: {exception}");
+                            MessageBox.Show(exception.ToString(), exception.GetType().ToString(), MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
                         }
                     }
-                    catch (Exception exception)
-                    {
-                        SplashScreenManager.CloseForm(false);
-                        MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                    }
+                }
+                finally
+                {
+                    GlobalVariables.IsUpdateCheckInProgress = false;
                 }
             }
             else
