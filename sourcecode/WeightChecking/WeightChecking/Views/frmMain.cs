@@ -1374,37 +1374,47 @@ namespace WeightChecking
         {
             if (args.IsUpdateAvailable)
             {
-                DialogResult dialogResult;
-                dialogResult =
-                        MessageBox.Show(
-                            $@"SSFG App has a new version {args.CurrentVersion}. The current SSFG App version is {args.InstalledVersion}. Do you want to update to the new version?", @"Notice",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Information);
-
-                if (dialogResult.Equals(DialogResult.Yes) || dialogResult.Equals(DialogResult.OK))
+                if (GlobalVariables.IsUpdateCheckInProgress) return;
+                GlobalVariables.IsUpdateCheckInProgress = true;
+                try
                 {
-                    SplashScreenManager.ShowForm(typeof(WaitForm1));
-                    await System.Threading.Tasks.Task.Delay(3000);
-                    //AutoZipFolder();
+                    DialogResult dialogResult;
+                    dialogResult =
+                            MessageBox.Show(
+                                $@"SSFG App has a new version {args.CurrentVersion}. The current SSFG App version is {args.InstalledVersion}. Do you want to update to the new version?", @"Notice",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Information);
 
-                    try
+                    if (dialogResult.Equals(DialogResult.Yes) || dialogResult.Equals(DialogResult.OK))
                     {
-                        if (AutoUpdater.DownloadUpdate(args))
+                        SplashScreenManager.ShowForm(typeof(WaitForm1));
+                        await System.Threading.Tasks.Task.Delay(3000);
+                        //AutoZipFolder();
+
+                        try
+                        {
+                            if (AutoUpdater.DownloadUpdate(args))
+                            {
+                                SplashScreenManager.CloseForm(false);
+                                Application.Exit();
+                            }
+                            else
+                            {
+                                SplashScreenManager.ShowForm(typeof(WaitForm1));
+                            }
+                        }
+                        catch (Exception exception)
                         {
                             SplashScreenManager.CloseForm(false);
-                            Application.Exit();
-                        }
-                        else
-                        {
-                            SplashScreenManager.ShowForm(typeof(WaitForm1));
+                            Log.Error(exception, $"AutoUpdater DownloadUpdate error: {exception}");
+                            MessageBox.Show(exception.ToString(), exception.GetType().ToString(), MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
                         }
                     }
-                    catch (Exception exception)
-                    {
-                        SplashScreenManager.CloseForm(false);
-                        MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                    }
+                }
+                finally
+                {
+                    GlobalVariables.IsUpdateCheckInProgress = false;
                 }
             }
             else

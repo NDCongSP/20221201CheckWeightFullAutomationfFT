@@ -58,6 +58,12 @@ namespace WeightChecking
         public static bool AutoMan { get; set; } = true;//biến chọn chế độ hoạt động là tự động hoàn toàn hay là bằng tay. True-Auto; False-Man
         public static List<tblSpecialCase> SpecialCaseList { get; set; } = new List<tblSpecialCase>();
 
+        //AutoUpdater.CheckForUpdateEvent đang được subscribe ở cả Program.cs và frmMain.cs, nên mỗi lần
+        //AutoUpdater.Start() chạy thì cả 2 handler đều fire và cùng gọi AutoUpdater.DownloadUpdate() gần như
+        //đồng thời -> gây crash "Collection was modified" bên trong thư viện AutoUpdater.NET. Cờ này dùng để
+        //chỉ cho phép 1 handler xử lý download tại 1 thời điểm, các handler khác bỏ qua.
+        public static volatile bool IsUpdateCheckInProgress = false;
+
         public static string PrintResult { get; set; } = "";//ket qua tra ve khi thuc hien in
         public static string PrintedResult { get; set; } = "";//ket qua tra ve khi thuc hien in
         //public static string  UpdatePath { get; set; }

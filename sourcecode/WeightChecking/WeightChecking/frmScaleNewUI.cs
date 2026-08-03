@@ -76,6 +76,13 @@ namespace WeightChecking
         private AnserU2TcpDriver _printerDriver;
 
         /// <summary>
+        /// Chỉ cho phép auto StartPrint() ở lần "Connected" ĐẦU TIÊN sau khi mở app. Nếu sau đó mất kết nối
+        /// mạng/máy in rồi driver tự reconnect lại (trong khi app vẫn đang chạy), KHÔNG gọi lại StartPrint()
+        /// nữa vì máy in vật lý rất có thể vẫn đang chạy bình thường - gọi lại sẽ làm nó bị restart giữa chừng.
+        /// </summary>
+        private bool _printerStartedOnce = false;
+
+        /// <summary>
         /// Biến báo đã khởi tạo xong, chỉ chạy 1 lần khi load form, tránh việc các sự kiện tag bắn ra trước khi form.
         /// </summary>
         private bool _firstLoad = true;
@@ -449,7 +456,7 @@ namespace WeightChecking
             {
                 Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
 
-                _scaleValueStable = Convert.ToDouble(tag.NewValue);
+                _scaleValueStable = Math.Round(Convert.ToDouble(tag.NewValue) * GlobalVariables.ConfigJson.UnitScale, 2);
                 //_scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
 
                 //GlobalVariables.InvokeIfRequired(this,() =>
@@ -475,7 +482,7 @@ namespace WeightChecking
                     var scaleValueStableTag = _plcRuntime.Tags.FirstOrDefault(t => t.Name == "Scale_Value_Stable");
                     if (scaleValueStableTag != null)
                     {
-                        _scaleValueStable = Convert.ToDouble(scaleValueStableTag.NewValue);
+                        _scaleValueStable = Math.Round(Convert.ToDouble(scaleValueStableTag.NewValue) * GlobalVariables.ConfigJson.UnitScale, 2);
                         _scanDataWeight.GrossWeight = GlobalVariables.RealWeight = _scaleValueStable;
 
                         GlobalVariables.InvokeIfRequired(this, () =>
@@ -683,7 +690,7 @@ namespace WeightChecking
         {
             Debug.WriteLine($"{DateTime.Now:O} [{tag.Name}] {tag.LastValue} -> {tag.NewValue} ({tag.DataType}) -> Deadband:{tag.Deadband}");
 
-            _scaleValue = Convert.ToDouble(tag.NewValue);
+            _scaleValue = Math.Round(Convert.ToDouble(tag.NewValue) * GlobalVariables.ConfigJson.UnitScale, 2);
 
             if (labScaleValue.InvokeRequired)
             {
@@ -1599,7 +1606,7 @@ namespace WeightChecking
                                 if (accept != null)
                                 {
                                     var whTo = 2;
-                                    if (_scanDataMetal.OcNo.Substring(0, 2) == "PR") whTo = 10;
+                                    if (_scanDataMetal.OcNo.Substring(0, 1) == "S") whTo = 10;
 
                                     //nếu tem ko có trong kho nào, hoặc đã có trong kho mà khác kho 4(production) thì stockIn vào kho 1223
                                     GlobalVariables.AutoPostingStatus1 = AutoPostingHelper.AutoTransfer(GlobalVariables.ConfigJson.FlagAutoPost, _scanDataMetal.ProductNumber, barcodeString
@@ -2140,7 +2147,7 @@ namespace WeightChecking
                     if (specialCase)
                     {
                         //after printing
-                        if (checkOc != null || (ocFirstChar == "PR" && GlobalVariables.ConfigJson.AfterPrinting != 0))
+                        if (checkOc != null || (ocFirstChar.StartsWith("S") && GlobalVariables.ConfigJson.AfterPrinting != 0))
                         {
                             printingCheck = 1;
                         }
@@ -2169,14 +2176,17 @@ namespace WeightChecking
                                 ProductNumber = _scanDataWeight.ProductNumber,
                                 ProductName = res.ProductName,
                                 OcNum = _scanDataWeight.OcNo,
-                                Note = "Missing tblCoreDataCodeItemSize master data (weight/tolerance/box config).",
+                                Note = $"Missing tblCoreDataCodeItemSize master data for product {_scanDataWeight.ProductNumber} (weight/tolerance/box config).",
                                 QrCode = _scanDataWeight.BarcodeString
                             };
                             dbContextSSFG.TblItemMissingInfos.Add(missingLine);
                             dbContextSSFG.SaveChanges();
 
-                            throw new Exception("Missing tblCoreDataCodeItemSize master data.");
+                            throw new Exception($"Missing tblCoreDataCodeItemSize master data for product {_scanDataWeight.ProductNumber}");
                         }
+
+
+
 
                         _unitLabel = _scanDataWeight.Unit == "P" ? "prs" : "pcs";
                         _color = res.Color;
@@ -2188,6 +2198,55 @@ namespace WeightChecking
                         _scanDataWeight.Brand = res.Brand;
                         _scanDataWeight.AveWeight1Prs = (double)res.AveWeight1Prs;
                         _scanDataWeight.ProductCategory = (int)res.ProductCategory;
+
+                        #region Kiểm tra xem số lượng đóng gói có đúng với packing unit của loại thùng hay không.
+                        var stdQtyBox = _boxType switch
+                        {
+                            EnumBoxType.BX1 => res.BoxQtyBx1,
+                            EnumBoxType.BX1A => res.BoxQtyBx1A,
+                            EnumBoxType.BX2 => res.BoxQtyBx2,
+                            EnumBoxType.BX3 => res.BoxQtyBx3,
+                            EnumBoxType.BX4 => res.BoxQtyBx4,
+                            EnumBoxType.BX5 => res.BoxQtyBx5,
+                            EnumBoxType.BX6 => res.BoxQtyBx6,
+                            _ => _scanDataWeight.Quantity
+                        };
+
+                        if (_scanDataWeight.Quantity > stdQtyBox)
+                        {
+                            var itemInserrt = new tblItemMissingInfo()
+                            {
+                                Id = Guid.NewGuid(),
+                                CreatedDate = DateTime.Now,
+                                IsActive = true,
+                                ProductNumber = _scanDataWeight.ProductNumber,
+                                ProductName = _scanDataWeight.ProductName,
+                                OcNum = _scanDataWeight.OcNo,
+                                Note = $"Quantity over the BX1 box limit ({res.BoxQtyBx1}).",
+                                QrCode = _scanDataWeight.BarcodeString
+                            };
+
+                            dbContextSSFG.TblItemMissingInfos.Add(itemInserrt);
+                            dbContextSSFG.SaveChanges();
+
+                            #region Auto posting
+                            //hàng từ production qua: decoration = 0 (OC)  và dcoration = 1 (PRT). transfer từ kho 3--> 64
+                            //if (_scanData.Decoration == 0)
+                            //{
+                            //    GlobalVariables.ResultPosting = AutoPostingHelper.AutoTransfer(_scanData.ProductNumber, _scanData.BarcodeString, 3, 64, GlobalVariables.GetDbConnectionDogeWh(), null);
+                            //    GlobalVariables.ResultPosting.Message = $"Hàng Production lỗi đóng gói (Transfer 3-->64): {GlobalVariables.ResultPosting.Message}";
+                            //}
+                            ////hàng sơn-sau sơn
+                            //else if (_scanData.Decoration == 1 && checkOc != null)
+                            //{
+                            //    GlobalVariables.ResultPosting = AutoPostingHelper.AutoTransfer(_scanData.ProductNumber, _scanData.BarcodeString, 32, 64, GlobalVariables.GetDbConnectionDogeWh(), null);
+                            //    GlobalVariables.ResultPosting.Message = $"Hàng QC lỗi đóng gói (Transfer 32-->64): {GlobalVariables.ResultPosting.Message}";
+                            //}
+                            #endregion
+
+                            throw new Exception($"Product number {_scanDataWeight.ProductNumber} has a quantity exceeding the box limit. Quantity to pack in {_boxType.ToString()} box: {stdQtyBox} {_unitLabel}");
+                        }
+                        #endregion
 
                         if (_scanDataWeight.AveWeight1Prs != 0)
                         {
@@ -2376,7 +2435,7 @@ namespace WeightChecking
                                         _approvePrint = true;//cho phép in
 
                                         //truyền nội dùn xuống máy in trước
-                                        if (checkOc != null)//neu khong phai tem OC 'PRT' thì mới in tem
+                                        //if (checkOc != null)//neu khong phai tem OC 'PRT' thì mới in tem
                                         {
                                             //20240202 update cho in tất cả các thùng passes quality check
                                             var passMetal = "Passed quality check";
@@ -2384,22 +2443,22 @@ namespace WeightChecking
 
                                             var isHc = _scanDataWeight.ProductCategory != 11 ? false : true;
 
-                                            SendDynamicString(string1: $"{idLabel}  {passMetal}"
+                                            SendDynamicString(string1: $"{idLabel} {passMetal}"
                                                                , string2: $"{(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
                                                                , string3: _scanDataWeight.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
                                                                , IsHc: isHc
                                                               );
                                         }
-                                        else
-                                        {
-                                            //nếu là hàng sơn thì chỉ in ra khối lượng
-                                            var passMetal = "Passed quality check";
-                                            var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
-                                            SendDynamicString(string1: " "
-                                                          , string2: $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
-                                                          , string3: " "
-                                                         );
-                                        }
+                                        //else
+                                        //{
+                                        //    //nếu là hàng sơn thì chỉ in ra khối lượng
+                                        //    var passMetal = "Passed quality check";
+                                        //    var idLabel = !string.IsNullOrEmpty(_scanDataWeight.IdLabel) ? _scanDataWeight.IdLabel : $"{_scanDataWeight.OcNo}|{_scanDataWeight.BoxNo}";
+                                        //    SendDynamicString(string1: " "
+                                        //                  , string2: $" {(_scanDataWeight.GrossWeight / 1000).ToString("#,#0.00")} Kg"
+                                        //                  , string3: " "
+                                        //                 );
+                                        //}
 
                                         //bat den xanh 
                                         //GlobalVariables.MyEvent.StatusLightPLC = 2;
@@ -2435,7 +2494,7 @@ namespace WeightChecking
                                             var whFrom = Convert.ToInt16(accept.C004);
                                             var whTo = 2;
 
-                                            if (_scanDataWeight.OcNo.Substring(0, 2) == "PR") whTo = 10;
+                                            if (_scanDataWeight.OcNo.Substring(0, 1) == "S") whTo = 10;
 
                                             #region Kiểm tra xem tem có nằm ở kho lỗi trước đó thì chuyển về 1185/1223 rồi mới chuyển vào kho 2/10
                                             if (accept.C004 == "964" || accept.C004 == "965")
@@ -2721,11 +2780,22 @@ namespace WeightChecking
                 {
                     GlobalVariables.PrintConnectionStatus = status == "Connected" ? "Good" : status;
                     Debug.WriteLine($"[AnserU2 TCP] {status}");
+
+                    //Connect() chỉ start background task ConnectAndReceiveLoopAsync, TCP socket thực sự kết nối
+                    //xong (bất đồng bộ) mới raise "Connected" ở đây - StartPrint() gọi ngay sau Connect() trước
+                    //đây sẽ luôn no-op vì Write() check IsConnected == false lúc đó.
+                    //Chỉ auto StartPrint() lần Connected đầu tiên (_printerStartedOnce): các lần reconnect sau
+                    //(do rớt mạng tạm thời trong lúc app vẫn chạy) không gọi lại, tránh làm máy in đang chạy
+                    //bị restart giữa chừng.
+                    //if (status == "Connected" && !_printerStartedOnce)
+                    {
+                        _printerStartedOnce = true;
+                        StartPrint();
+                    }
                 };
                 _printerDriver.Connect();
 
                 GlobalVariables.PrintConnectionStatus = "Connecting...";
-                StartPrint();
             }
             catch (Exception ex)
             {
@@ -3047,7 +3117,7 @@ namespace WeightChecking
         /// <param name="IsHc">default false.</param>
         private void SendDynamicString(string string1, string string2, string string3, bool? IsHc = false)
         {
-            string2 = IsHc == false ? string2 : " ";
+            string3 = IsHc == false ? string3 : " ";
 
             int i = 0, j = 0, k = 0, l = 0;
             int chkSUM = 0;
@@ -3541,37 +3611,47 @@ namespace WeightChecking
         {
             if (args.IsUpdateAvailable)
             {
-                DialogResult dialogResult;
-                dialogResult =
-                        MessageBox.Show(
-                            $@"SSFG App has a new version {args.CurrentVersion}. The current SSFG App version is {args.InstalledVersion}. Do you want to update to the new version?", @"Notice",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Information);
-
-                if (dialogResult.Equals(DialogResult.Yes) || dialogResult.Equals(DialogResult.OK))
+                if (GlobalVariables.IsUpdateCheckInProgress) return;
+                GlobalVariables.IsUpdateCheckInProgress = true;
+                try
                 {
-                    SplashScreenManager.ShowForm(typeof(WaitForm1));
-                    await System.Threading.Tasks.Task.Delay(3000);
-                    //AutoZipFolder();
+                    DialogResult dialogResult;
+                    dialogResult =
+                            MessageBox.Show(
+                                $@"SSFG App has a new version {args.CurrentVersion}. The current SSFG App version is {args.InstalledVersion}. Do you want to update to the new version?", @"Notice",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Information);
 
-                    try
+                    if (dialogResult.Equals(DialogResult.Yes) || dialogResult.Equals(DialogResult.OK))
                     {
-                        if (AutoUpdater.DownloadUpdate(args))
+                        SplashScreenManager.ShowForm(typeof(WaitForm1));
+                        await System.Threading.Tasks.Task.Delay(3000);
+                        //AutoZipFolder();
+
+                        try
+                        {
+                            if (AutoUpdater.DownloadUpdate(args))
+                            {
+                                SplashScreenManager.CloseForm(false);
+                                Application.Exit();
+                            }
+                            else
+                            {
+                                SplashScreenManager.ShowForm(typeof(WaitForm1));
+                            }
+                        }
+                        catch (Exception exception)
                         {
                             SplashScreenManager.CloseForm(false);
-                            Application.Exit();
-                        }
-                        else
-                        {
-                            SplashScreenManager.ShowForm(typeof(WaitForm1));
+                            Log.Error(exception, $"AutoUpdater DownloadUpdate error: {exception}");
+                            MessageBox.Show(exception.ToString(), exception.GetType().ToString(), MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
                         }
                     }
-                    catch (Exception exception)
-                    {
-                        SplashScreenManager.CloseForm(false);
-                        MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                    }
+                }
+                finally
+                {
+                    GlobalVariables.IsUpdateCheckInProgress = false;
                 }
             }
             else
