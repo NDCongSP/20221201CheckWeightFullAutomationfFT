@@ -264,6 +264,32 @@ const delay = 350; // gán delay bằng 350
 # Cập nhật phần này MỖI KHI kết thúc session làm việc
 active_context:
   current_task: >
+    DONE (Task M) — Fix "mỗi lần mở lại SSFG, thùng ĐẦU TIÊN kẹt ở trạm cân (không cân/không tính toán);
+    đẩy tay thùng đó đi thì thùng sau chạy bình thường" (user báo, không kèm debugger). Root cause xác
+    nhận qua đọc code (không suy đoán): `FrmScale_Load` seed toàn bộ tag S7 bằng
+    `tag.RaiseValueChanged()` (dòng ~528) trong khi `_firstLoad` vẫn còn `true` — nếu lúc app khởi động
+    lại đã có sẵn 1 thùng đứng yên ở sensor "before weight scan" (tag `S5`==1, ví dụ do app bị đóng giữa
+    lúc băng tải đang có thùng), lần seed này CÓ set `_s5 = 1` nhưng bị guard `!_firstLoad` trong
+    `S5_ValueChanged` (dòng ~718) chặn không cho spawn `CheckReadQrWeight` watchdog — đây là chủ đích
+    (tránh ghi PLC/spawn watchdog giả từ giá trị seed, xem comment dòng ~531-536 của 1 fix trước liên
+    quan). Vấn đề: `_firstLoad` tắt ngay sau đó (dòng 537), rồi `_sub.Subscribe()` bắt đầu polling —
+    nhưng polling CHỈ raise `ValueChanged` khi giá trị tag THỰC SỰ đổi giữa 2 lần poll (đúng bản chất
+    "ValueChanged"/edge-detection). Vì `S5` đã đứng yên ở `1` từ trước khi `_firstLoad` tắt, sẽ không còn
+    cạnh lên (0→1) nào nữa xảy ra cho tới khi thùng bị đẩy đi (S5 về 0) rồi thùng KẾ TIẾP tới (cạnh lên
+    thật) — nghĩa là cạnh lên hợp lệ của thùng đang chờ sẵn bị bỏ lỡ vĩnh viễn, watchdog cân không bao
+    giờ chạy cho thùng đó → thùng đứng yên ở trạm cân, không cân/tính toán, đúng triệu chứng user báo.
+    Fix (tối thiểu, không đụng kiến trúc `_firstLoad`/edge-detection sẵn có): ngay sau khi `_firstLoad =
+    false` và TRƯỚC khi `_sub.Subscribe()` bắt đầu polling, kiểm tra `_s5` (đã được set đúng từ vòng seed
+    phía trên) — nếu `== 1`, gọi thủ công lại `S5_ValueChanged(tag S5)` để bù lại đúng cạnh lên đã bị
+    guard chặn; lúc này `_firstLoad` đã `false` nên hàm chạy đúng như 1 sự kiện sensor thật, spawn
+    watchdog bình thường cho thùng đang chờ sẵn. Không đụng `S1`/`S2`/`S_MD_OUT` (trạm Metal) — user chỉ
+    báo triệu chứng ở trạm Scale; `S1_ValueChanged` dùng điều kiện trigger khác (`_s1==0`, không phải
+    `==1`) nên KHÔNG chắc bị cùng lớp bug này — cần xác nhận riêng nếu Metal cũng gặp triệu chứng tương
+    tự (xem `open_questions`). Build verify: `MSBuild WeightChecking.csproj /p:Configuration=Release
+    /p:Platform=AnyCPU` → 0 lỗi, sinh `bin\Release\SSFG.exe`. Chưa test được trên PLC/sensor thật (không
+    có kết nối hardware trong sandbox) — xem `next_step`.
+
+    ---
     DONE (Task L) — Fix crash "Nullable object must have a value" khi quét QR ở trạm Scale (Cognex2):
     `BarcodeScanner2Handle` cast thẳng `(int)`/`(double)` lên các field `res.MetalScan`/
     `res.AveWeight1Prs`/`res.LowerToleranceOfCartonBox`/`res.BoxWeightBx1-4`/... (dòng ~2071 trở đi) mà
@@ -638,6 +664,7 @@ active_context:
     để biết chi tiết, không lặp lại ở đây.)
 
   related_files:
+    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task M: FrmScale_Load, ngay sau `_firstLoad = false;` (~dòng 537) và TRƯỚC `_sub.Subscribe()` — nếu `_s5==1` (thùng đã chờ sẵn ở sensor "before weight scan" lúc app khởi động), gọi thủ công lại `S5_ValueChanged(tag S5)` để bù cạnh lên bị guard `!_firstLoad` chặn ở vòng seed, tránh thùng đầu tiên kẹt ở trạm cân không được cân
     - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task L: BarcodeScanner2Handle, guard `res.AveWeight1Prs == null` ngay sau `if (res != null)` (~dòng 2064) — log tblItemMissingInfo + reject khi thiếu tblCoreDataCodeItemSize, tránh crash "Nullable object must have a value"
     - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task K: DataEvent_EventHandleValueChange (nhánh box-info QR, ~dòng 886) — InvokeIfRequired(Owner,...) → InvokeIfRequired(this,...), fix NullReferenceException
     - "WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs"   # Task K: ReadData() — dispatch _dataEvent.QRCodeValue và vòng lặp opportunistic drain thêm dòng mỗi cái có try/catch riêng, không escalate Reconnect() khi lỗi là app-level (fix "event chỉ nhảy vào 1 lần rồi im lặng")
@@ -661,7 +688,12 @@ active_context:
     - "WeightChecking/WeightChecking/StaticClass/AutoPostingHelper.cs" # (Task E) Debug.WriteLine + return string trong AutoTransfer/AutoStockIn/AutoStockOut dịch sang tiếng Anh
 
   blocked_by: >
-    KHÔNG blocked. Task J (fix DataEvent_EventHandleValueChange cho trường hợp Cognex trả 2 QR gộp
+    KHÔNG blocked. Task M (fix thùng đầu tiên kẹt ở trạm cân sau mỗi lần mở lại SSFG) đã build verify
+    thành công (`MSBuild WeightChecking.csproj` → 0 lỗi, sinh `SSFG.exe`). Root cause xác nhận qua đọc
+    code trực tiếp (guard `_firstLoad` chặn cạnh lên S5 trong lúc seed tag, polling sau đó chỉ raise khi
+    giá trị thực sự đổi nên cạnh lên bị lỡ không bao giờ quay lại) — mức tin cậy cao, nhưng CHƯA test
+    được trên PLC/sensor thật (sandbox không có kết nối hardware) — xem next_step.
+    Task J (fix DataEvent_EventHandleValueChange cho trường hợp Cognex trả 2 QR gộp
     trong 1 lần trigger — batching ở DriverTelnet + reorder ở frmScaleNewUI.cs) đã build verify thành
     công qua full-solution build (0 lỗi cho WeightChecking/AnserU2_cSharp/WindowsFormsApp1/
     HardwareSimulator/CognexScannerTester; chỉ còn lỗi CS0579 pre-existing của CognexLibrary.csproj,
@@ -687,6 +719,19 @@ active_context:
     nhận hardware thật, chưa có phản hồi từ user.
 
   next_step: >
+    - [Task M] Verify trên hardware/PLC thật (ưu tiên cao nhất, đây chính là bug user vừa báo): tắt hẳn
+    app, để nguyên 1 thùng đứng chờ tại đúng vị trí sensor "before weight scan" (S5), mở lại SSFG, xác
+    nhận thùng được cân/tính toán ngay (KHÔNG cần đẩy tay) — trước fix, đây là chính xác kịch bản lỗi.
+    Sau đó xác nhận không có regression: mở app khi KHÔNG có thùng nào ở sensor (trường hợp bình thường)
+    → xác nhận không có watchdog "ma" nào bị spawn sai (không có QR nào để đọc, nên sẽ tự reject đúng 1
+    lần sau `TimerCheckQrScale` giây nếu vô tình bị kích hoạt nhầm — cần xác nhận KHÔNG xảy ra khi S5==0
+    lúc mở app). Nếu vẫn còn kẹt sau fix, khả năng cao là `_isStartCountTimerWeight` hoặc guard khác cũng
+    cần soát lại — báo lại kèm Debug Output quanh dòng "Event Sensor before weight scan".
+    - [Task M] Cân nhắc kiểm tra trạm Metal (`S1`) có cùng lớp bug không — `S1_ValueChanged` dùng điều
+    kiện `_s1==0` (khác `S5` dùng `==1`) nên CHƯA chắc bị ảnh hưởng giống hệt, nhưng cùng cấu trúc
+    `_firstLoad` + edge-detection nên vẫn có rủi ro tương tự nếu ý nghĩa vật lý của "cạnh xuống" trùng
+    lúc thùng đã sẵn ở đó lúc khởi động. Chỉ sửa nếu user xác nhận cũng gặp triệu chứng tương tự ở trạm
+    Metal — không tự mở rộng phạm vi khi chưa có báo cáo thật.
     - [Task L] Verify thủ công theo §6.2 (sandbox không có DB/PLC/Cognex thật): bật `IsTest = true` trong
     `ConfigJson`, dùng fake data trong `#region Fake data to debug` (`FrmScale_Load`) với đúng
     `ProductNumber` từ QR gốc user báo (`3112012401-450H-3101`) để tái hiện case thiếu
@@ -780,9 +825,12 @@ active_context:
     có cần cập nhật theo không.
     - [Task E, còn treo] Xác nhận với hardware địa chỉ DB1 thật cho tag "P4" trên PLC Siemens.
 
-  last_session: "2026-07-23"
+  last_session: "2026-08-17"
 
   open_questions:
+    - "[Task M] Trạm Metal (`S1`/`S_MD_OUT`) có gặp cùng triệu chứng 'thùng đầu tiên kẹt, phải đẩy tay'
+      sau khi mở lại SSFG không? Chưa có báo cáo từ user cho trạm này — nếu có, cần soát lại
+      `S1_ValueChanged` (trigger trên `_s1==0`, khác chiều với `S5`) theo đúng cách đã làm cho Task M."
     - "[Task L] Không xác nhận được 100% liệu SP gốc `sp_vProductItemInfoGet` dùng INNER hay LEFT JOIN
       với tblCoreDataCodeItemSize (SP không có trong repo, không query DB production theo nguyên tắc an
       toàn của project) — quyết định fix (log + reject khi thiếu) dựa trên bằng chứng gián tiếp hội tụ
@@ -1661,6 +1709,21 @@ trong bất kỳ session dịch nào), trong khi `.csproj` (đã commit từ tr�
 (có `tagsPRD.json` mới, untracked, xuất hiện cùng lúc, có thể là file thay thế). Chưa test chạy thật
 UI/hardware (không có kết nối trong sandbox) — cần verify thủ công: chạy qua các luồng scan/reject/
 report/login/print và xác nhận UI hiển thị tiếng Anh đúng, không ảnh hưởng hành vi nghiệp vụ.
+
+---
+
+### [2026-08-17] — Session: Fix thùng đầu tiên kẹt ở trạm cân (không cân) mỗi lần mở lại SSFG — missed S5 edge do seed pass bị `_firstLoad` chặn
+
+```
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs   — FrmScale_Load: ngay sau `_firstLoad = false;` (trước khi `_sub.Subscribe(...)` bắt đầu polling), nếu tag S5 đang đọc được giá trị `_s5 == 1` thì gọi lại thủ công `S5_ValueChanged(s5TagAtLoad)` — bù cạnh lên (0→1) bị bỏ lỡ trong lúc seed
+```
+
+**Chi tiết:**
+- **Triệu chứng (user báo):** mỗi lần đóng rồi mở lại SSFG, thùng ĐẦU TIÊN đứng yên tại trạm cân, không được cân/tính toán gì cả — phải đẩy tay thùng đó ra khỏi sensor thì các thùng SAU mới chạy bình thường trở lại.
+- **Root cause:** `PlcSubscriptionManager`/`PlcTag.ValueChanged` (trong `Snap7Scada.Lib.dll`, không có source trong repo) là **edge-triggered theo polling** — chỉ raise `ValueChanged` khi giá trị đọc được ở lần poll hiện tại KHÁC với lần poll trước, không raise nếu giá trị giữ nguyên. `FrmScale_Load` có 1 vòng seed (`foreach (var tag in _plcRuntime.Tags) tag.RaiseValueChanged();`) chạy NGAY SAU khi connect PLC, mục đích chỉ để cập nhật UI ban đầu — nhưng mọi handler (`S5_ValueChanged`, `S6_ValueChanged`, `S1_ValueChanged`, ...) đều có guard `!_firstLoad` để chặn side-effect thật (spawn watchdog, ghi PLC...) trong lượt seed này, và `_firstLoad` chỉ được tắt (`= false`) NGAY SAU vòng seed, trước khi `_sub.Subscribe()` bắt đầu polling thật. Hệ quả: nếu có 1 thùng đã đứng sẵn tại sensor "before weight scan" (S5==1) đúng lúc app khởi động lại (băng tải/thùng không tự lùi ra chỉ vì phần mềm tắt) — lượt seed CÓ chạy `S5_ValueChanged` nhưng bị chặn bởi `_firstLoad`; sau khi polling thật bắt đầu, S5 vẫn giữ nguyên = 1 (thùng không nhúc nhích) nên KHÔNG còn cạnh lên nào nữa để tự kích hoạt lại `S5_ValueChanged` — watchdog `CheckReadQrWeight()` (khởi động toàn bộ luồng cân/tính toán) không bao giờ được spawn cho thùng đó. Chỉ khi thùng bị đẩy tay ra khỏi sensor (S5 về 0) rồi thùng KẾ TIẾP tới tạo cạnh lên THẬT (0→1), mọi thứ mới chạy lại bình thường — khớp chính xác với triệu chứng user mô tả.
+- **Fix:** sau khi `_firstLoad` đã tắt (guard đã mở) nhưng TRƯỚC khi bắt đầu polling, đọc trực tiếp giá trị `_s5` hiện tại (đã được set từ lượt seed) — nếu đang bằng 1, gọi lại chính `S5_ValueChanged()` một lần nữa để nó chạy y hệt như 1 sự kiện sensor thật (guard `!_firstLoad` lúc này đã pass). Không đụng tới cơ chế `_firstLoad`/edge-detection nói chung, không đụng S1/S2/S_MD_OUT (trạm Metal) — chỉ xử lý đúng đường S5 (trạm Scale) theo đúng phạm vi bug được báo.
+- **Không xử lý (để mở, xem open_questions):** trạm Metal (`S1`, trigger khi `_s1 == 0` — polarity ngược lại S5) có khả năng dính cùng class bug này (thùng đã đứng sẵn ở S1==0 lúc khởi động sẽ không tạo cạnh xuống mới) nhưng CHƯA được user xác nhận có xảy ra thật hay không — không tự sửa để tránh đoán sai polarity/side-effect của trạm Metal.
+- **Verify:** `MSBuild WeightChecking.csproj /p:Configuration=Release /p:Platform=AnyCPU` → build thành công, 0 lỗi, sinh `bin\Release\SSFG.exe`, chỉ còn warning có sẵn từ trước không liên quan. Chưa test được trên PLC/hardware thật (sandbox không có kết nối) — cần verify thủ công: để 1 thùng đứng sẵn tại vị trí sensor S5 (before weight scan), khởi động lại SSFG, xác nhận thùng được cân/tính toán NGAY LẬP TỨC (không cần đẩy tay); đồng thời xác nhận trường hợp KHÔNG có thùng nào ở S5 lúc khởi động (giá trị 0) thì không có watchdog nào bị spawn nhầm.
 
 ---
 

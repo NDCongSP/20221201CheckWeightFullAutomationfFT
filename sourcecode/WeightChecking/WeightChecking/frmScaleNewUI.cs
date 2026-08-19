@@ -536,6 +536,22 @@ namespace WeightChecking
             // không ghi xuống PLC), gây ra hiện tượng "thỉnh thoảng không ghi được RJ1/Check_Weight_Result lần đầu chạy".
             _firstLoad = false;
 
+            // 20260817: nếu đã có sẵn 1 thùng đang đứng chờ ở sensor "before weight scan" (S5==1) ngay lúc
+            // app khởi động lại (băng tải/thùng không tự dừng lại chỉ vì app tắt), sự kiện S5_ValueChanged ở
+            // vòng seed phía trên (dòng 528-529) ĐÃ chạy nhưng bị chặn ở guard `!_firstLoad` — không spawn
+            // CheckReadQrWeight watchdog. Sau khi _firstLoad tắt, _sub.Subscribe() bên dưới chỉ raise
+            // ValueChanged khi giá trị tag THỰC SỰ đổi giữa 2 lần poll — nếu thùng vẫn nằm yên (S5 giữ
+            // nguyên = 1), sẽ không còn cạnh lên (0->1) nào nữa để kích hoạt lại, watchdog không bao giờ
+            // chạy cho thùng này -> thùng đứng yên ở trạm cân, không được cân/tính toán, cho tới khi bị đẩy
+            // tay ra khỏi sensor (S5 về 0) rồi thùng KẾ TIẾP tới mới tạo cạnh lên thật, mọi thứ lại chạy bình
+            // thường. Đây đúng là nguyên nhân triệu chứng "mỗi lần mở lại SSFG, thùng đầu tiên kẹt ở trạm cân
+            // (không cân), đẩy tay thùng đó đi thì thùng sau chạy bình thường". Bù lại cạnh lên bị lỡ bằng
+            // cách gọi thủ công đúng logic đã bị chặn, nay _firstLoad đã tắt nên sẽ chạy đúng như 1 sự kiện
+            // sensor thật.
+            var s5TagAtLoad = _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S5");
+            if (s5TagAtLoad != null && _s5 == 1)
+                S5_ValueChanged(s5TagAtLoad);
+
             // 4) BẮT ĐẦU POLLING (rất quan trọng)
             _sub.Subscribe(_plcRuntime.Tags, intervalMs: 200);
 
