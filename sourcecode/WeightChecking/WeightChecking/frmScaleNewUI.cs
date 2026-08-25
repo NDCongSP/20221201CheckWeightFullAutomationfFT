@@ -536,6 +536,22 @@ namespace WeightChecking
             // không ghi xuống PLC), gây ra hiện tượng "thỉnh thoảng không ghi được RJ1/Check_Weight_Result lần đầu chạy".
             _firstLoad = false;
 
+            // 20260817: nếu đã có sẵn 1 thùng đang đứng chờ ở sensor "before weight scan" (S5==1) ngay lúc
+            // app khởi động lại (băng tải/thùng không tự dừng lại chỉ vì app tắt), sự kiện S5_ValueChanged ở
+            // vòng seed phía trên (dòng 528-529) ĐÃ chạy nhưng bị chặn ở guard `!_firstLoad` — không spawn
+            // CheckReadQrWeight watchdog. Sau khi _firstLoad tắt, _sub.Subscribe() bên dưới chỉ raise
+            // ValueChanged khi giá trị tag THỰC SỰ đổi giữa 2 lần poll — nếu thùng vẫn nằm yên (S5 giữ
+            // nguyên = 1), sẽ không còn cạnh lên (0->1) nào nữa để kích hoạt lại, watchdog không bao giờ
+            // chạy cho thùng này -> thùng đứng yên ở trạm cân, không được cân/tính toán, cho tới khi bị đẩy
+            // tay ra khỏi sensor (S5 về 0) rồi thùng KẾ TIẾP tới mới tạo cạnh lên thật, mọi thứ lại chạy bình
+            // thường. Đây đúng là nguyên nhân triệu chứng "mỗi lần mở lại SSFG, thùng đầu tiên kẹt ở trạm cân
+            // (không cân), đẩy tay thùng đó đi thì thùng sau chạy bình thường". Bù lại cạnh lên bị lỡ bằng
+            // cách gọi thủ công đúng logic đã bị chặn, nay _firstLoad đã tắt nên sẽ chạy đúng như 1 sự kiện
+            // sensor thật.
+            var s5TagAtLoad = _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S5");
+            if (s5TagAtLoad != null && _s5 == 1)
+                S5_ValueChanged(s5TagAtLoad);
+
             // 4) BẮT ĐẦU POLLING (rất quan trọng)
             _sub.Subscribe(_plcRuntime.Tags, intervalMs: 200);
 
@@ -2070,11 +2086,29 @@ namespace WeightChecking
                 #endregion
                 #endregion
 
-                if (_boxTypeQR.HasValue)
+                // Snapshot the box-info QR (QR2) fields NOW, before the scale-stability wait + DB
+                // query below (which can take several seconds). DataEvent_EventHandleValueChange
+                // updates _boxTypeQR/_boxWeightQR UNCONDITIONALLY whenever any box-info line arrives
+                // - including one for the NEXT box already sitting in the camera's view while this
+                // box is still mid-flight. Previously the mismatch check below read _boxTypeQR here,
+                // but the later BoxWeight/BoxType override (~line 2307) re-read the live field again
+                // AFTER the wait - if a different box's QR2 overwrote it in between, the override
+                // would silently apply that WRONG box's data with no re-check, even though this check
+                // had validated correctly against the right value at the time. Using one local
+                // snapshot for both the check and the override closes that gap: whatever passes the
+                // check here is guaranteed to be exactly what gets applied later. NOT clearing the
+                // live fields here on purpose - the next box's QR2 may legitimately arrive on
+                // _boxTypeQR/_boxWeightQR while this box is still mid-flight, and it must survive to
+                // be checked/applied for that next box (the existing finally-block reset already
+                // covers the case where this box's own processing fails before reaching the override).
+                var boxTypeQrSnapshot = _boxTypeQR;
+                var boxWeightQrSnapshot = _boxWeightQR;
+
+                if (boxTypeQrSnapshot.HasValue)
                 {
-                    if (_boxTypeQR != EnumBoxType.Plastic && _boxTypeQR.Value != _boxType)
+                    if (boxTypeQrSnapshot != EnumBoxType.Plastic && boxTypeQrSnapshot.Value != _boxType)
                     {
-                        throw new Exception($"Box type mismatch: label/master-data={_boxType}, QR box info={_boxTypeQR.Value}.");
+                        throw new Exception($"Box type mismatch: label/master-data={_boxType}, QR box info={boxTypeQrSnapshot.Value}.");
                     }
                 }
                 else
@@ -2288,10 +2322,14 @@ namespace WeightChecking
                                 });
                             }
 
-                            if (_boxTypeQR.HasValue)
+                            // Apply the SAME snapshot the mismatch check above already validated -
+                            // NOT the live _boxTypeQR/_boxWeightQR fields, which may have since been
+                            // overwritten by a box-info QR belonging to the NEXT box (see comment at
+                            // the snapshot site above).
+                            if (boxTypeQrSnapshot.HasValue)
                             {
-                                _boxType = _boxTypeQR.Value;
-                                _scanDataWeight.BoxWeight = _boxWeightQR;
+                                _boxType = boxTypeQrSnapshot.Value;
+                                _scanDataWeight.BoxWeight = boxWeightQrSnapshot;
 
                                 GlobalVariables.InvokeIfRequired(this, () =>
                                 {

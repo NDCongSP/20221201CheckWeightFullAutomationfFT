@@ -264,6 +264,68 @@ const delay = 350; // gán delay bằng 350
 # Cập nhật phần này MỖI KHI kết thúc session làm việc
 active_context:
   current_task: >
+    DONE (Task N) — Fix "quét QR thông tin thùng in trên thùng (QR2 box-info), boxType khác với
+    boxType trên label nhưng KHÔNG reject" tại `BarcodeScanner2Handle` (user báo cụ thể: "Label is
+    BX3, use BX4"). Xác nhận qua đọc code + `git blame`: logic reject mismatch (`_boxTypeQR` so với
+    `_boxType`) ĐÃ tồn tại từ commit `fef9568f` (2026-07-24, tác giả Cong Nguyen, ngoài phiên Claude,
+    không có trong CHANGELOG trước đó) tại đầu `BarcodeScanner2Handle` — VỀ MẶT LOGIC đã đúng (throw
+    khi `_boxTypeQR.HasValue && _boxTypeQR != Plastic && _boxTypeQR.Value != _boxType`) cho trường hợp
+    xử lý đơn lẻ, không tìm thấy chỗ nào disable/revert nó ở các commit sau. Root cause thật tìm được:
+    **race điều kiện giữa 2 điểm đọc field dùng chung** — `DataEvent_EventHandleValueChange` cập nhật
+    `_boxTypeQR`/`_boxWeightQR` VÔ ĐIỀU KIỆN (ngoài guard `_scannerIsBussy[1]`) mỗi khi có dòng QR2 tới,
+    kể cả QR2 của THÙNG KẾ TIẾP đã lọt vào tầm nhìn camera trong lúc thùng hiện tại còn đang xử lý dở
+    (vòng chờ cân ổn định `while (_stableScaleTrigger == 0...)` + query DB có thể mất vài giây). Check
+    reject (~dòng 2089, chạy SỚM, trước vòng chờ cân) đọc `_boxTypeQR` tại thời điểm ĐÚNG của thùng hiện
+    tại nên validate đúng, KHÔNG throw — nhưng khối override BoxWeight/BoxType sau đó (~dòng 2307, chạy
+    SAU vòng chờ cân + query DB) lại ĐỌC LẠI field `_boxTypeQR` (đã có thể bị GHI ĐÈ bởi QR2 của thùng
+    kế tiếp trong lúc chờ) mà KHÔNG re-validate — áp dụng lặng lẽ giá trị QR2 SAI (của thùng khác) mà
+    không hề reject, dù check ban đầu đã "pass" đúng. Đây khớp chính xác triệu chứng: reject logic tồn
+    tại và validate đúng ở thời điểm nó chạy, nhưng giá trị THỰC SỰ được áp dụng cuối cùng lại khác,
+    không được re-check.
+
+    **Fix:** snapshot `_boxTypeQR`/`_boxWeightQR` vào biến local (`boxTypeQrSnapshot`/
+    `boxWeightQrSnapshot`) NGAY tại điểm check (trước vòng chờ cân), dùng snapshot này cho CẢ check
+    mismatch (~dòng 2089-2113) LẪN khối override sau đó (~dòng 2324-2333) — đảm bảo giá trị được validate
+    và giá trị được áp dụng LUÔN LÀ CÙNG MỘT GIÁ TRỊ, loại bỏ hoàn toàn khả năng field sống bị ghi đè ở
+    giữa 2 điểm đọc. Cố ý KHÔNG xoá `_boxTypeQR`/`_boxWeightQR` về null ngay sau khi snapshot (cân nhắc
+    kỹ, đã tự phát hiện và tự sửa lại 1 lần trong lúc làm) — vì QR2 của thùng KẾ TIẾP có thể hợp lệ đang
+    nằm trên field trong lúc thùng này còn xử lý dở, và cần field đó SỐNG SÓT tới khi thùng kế tiếp tự
+    snapshot cho chính nó; khối `finally` hiện có (từ Task I) vẫn giữ nguyên, tiếp tục xử lý case thùng
+    hiện tại lỗi/throw trước khi tới được override.
+
+    Build verify: `MSBuild WeightChecking.csproj /p:Configuration=Release /p:Platform=AnyCPU` → 0 lỗi
+    CS/MSB, sinh `bin\Release\SSFG.exe` thành công, chỉ còn warning có sẵn từ trước không liên quan.
+    Chưa test được trên PLC/Cognex/conveyor thật (sandbox không có kết nối) — đặc biệt CHƯA thể tái hiện
+    chính xác kịch bản race (2 thùng liên tiếp, QR2 thùng sau tới trong lúc thùng trước còn đang chờ cân)
+    vì cần multi-box timing thật trên băng tải — xem `next_step`.
+
+    ---
+    DONE (Task M) — Fix "mỗi lần mở lại SSFG, thùng ĐẦU TIÊN kẹt ở trạm cân (không cân/không tính toán);
+    đẩy tay thùng đó đi thì thùng sau chạy bình thường" (user báo, không kèm debugger). Root cause xác
+    nhận qua đọc code (không suy đoán): `FrmScale_Load` seed toàn bộ tag S7 bằng
+    `tag.RaiseValueChanged()` (dòng ~528) trong khi `_firstLoad` vẫn còn `true` — nếu lúc app khởi động
+    lại đã có sẵn 1 thùng đứng yên ở sensor "before weight scan" (tag `S5`==1, ví dụ do app bị đóng giữa
+    lúc băng tải đang có thùng), lần seed này CÓ set `_s5 = 1` nhưng bị guard `!_firstLoad` trong
+    `S5_ValueChanged` (dòng ~718) chặn không cho spawn `CheckReadQrWeight` watchdog — đây là chủ đích
+    (tránh ghi PLC/spawn watchdog giả từ giá trị seed, xem comment dòng ~531-536 của 1 fix trước liên
+    quan). Vấn đề: `_firstLoad` tắt ngay sau đó (dòng 537), rồi `_sub.Subscribe()` bắt đầu polling —
+    nhưng polling CHỈ raise `ValueChanged` khi giá trị tag THỰC SỰ đổi giữa 2 lần poll (đúng bản chất
+    "ValueChanged"/edge-detection). Vì `S5` đã đứng yên ở `1` từ trước khi `_firstLoad` tắt, sẽ không còn
+    cạnh lên (0→1) nào nữa xảy ra cho tới khi thùng bị đẩy đi (S5 về 0) rồi thùng KẾ TIẾP tới (cạnh lên
+    thật) — nghĩa là cạnh lên hợp lệ của thùng đang chờ sẵn bị bỏ lỡ vĩnh viễn, watchdog cân không bao
+    giờ chạy cho thùng đó → thùng đứng yên ở trạm cân, không cân/tính toán, đúng triệu chứng user báo.
+    Fix (tối thiểu, không đụng kiến trúc `_firstLoad`/edge-detection sẵn có): ngay sau khi `_firstLoad =
+    false` và TRƯỚC khi `_sub.Subscribe()` bắt đầu polling, kiểm tra `_s5` (đã được set đúng từ vòng seed
+    phía trên) — nếu `== 1`, gọi thủ công lại `S5_ValueChanged(tag S5)` để bù lại đúng cạnh lên đã bị
+    guard chặn; lúc này `_firstLoad` đã `false` nên hàm chạy đúng như 1 sự kiện sensor thật, spawn
+    watchdog bình thường cho thùng đang chờ sẵn. Không đụng `S1`/`S2`/`S_MD_OUT` (trạm Metal) — user chỉ
+    báo triệu chứng ở trạm Scale; `S1_ValueChanged` dùng điều kiện trigger khác (`_s1==0`, không phải
+    `==1`) nên KHÔNG chắc bị cùng lớp bug này — cần xác nhận riêng nếu Metal cũng gặp triệu chứng tương
+    tự (xem `open_questions`). Build verify: `MSBuild WeightChecking.csproj /p:Configuration=Release
+    /p:Platform=AnyCPU` → 0 lỗi, sinh `bin\Release\SSFG.exe`. Chưa test được trên PLC/sensor thật (không
+    có kết nối hardware trong sandbox) — xem `next_step`.
+
+    ---
     DONE (Task L) — Fix crash "Nullable object must have a value" khi quét QR ở trạm Scale (Cognex2):
     `BarcodeScanner2Handle` cast thẳng `(int)`/`(double)` lên các field `res.MetalScan`/
     `res.AveWeight1Prs`/`res.LowerToleranceOfCartonBox`/`res.BoxWeightBx1-4`/... (dòng ~2071 trở đi) mà
@@ -638,6 +700,8 @@ active_context:
     để biết chi tiết, không lặp lại ở đây.)
 
   related_files:
+    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task N: BarcodeScanner2Handle, ~dòng 2089-2113 (snapshot boxTypeQrSnapshot/boxWeightQrSnapshot từ _boxTypeQR/_boxWeightQR + check mismatch dùng snapshot) và ~dòng 2324-2333 (override BoxWeight/BoxType dùng CÙNG snapshot thay vì đọc lại field sống) — fix race giữa check và apply
+    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task M: FrmScale_Load, ngay sau `_firstLoad = false;` (~dòng 537) và TRƯỚC `_sub.Subscribe()` — nếu `_s5==1` (thùng đã chờ sẵn ở sensor "before weight scan" lúc app khởi động), gọi thủ công lại `S5_ValueChanged(tag S5)` để bù cạnh lên bị guard `!_firstLoad` chặn ở vòng seed, tránh thùng đầu tiên kẹt ở trạm cân không được cân
     - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task L: BarcodeScanner2Handle, guard `res.AveWeight1Prs == null` ngay sau `if (res != null)` (~dòng 2064) — log tblItemMissingInfo + reject khi thiếu tblCoreDataCodeItemSize, tránh crash "Nullable object must have a value"
     - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task K: DataEvent_EventHandleValueChange (nhánh box-info QR, ~dòng 886) — InvokeIfRequired(Owner,...) → InvokeIfRequired(this,...), fix NullReferenceException
     - "WeightChecking/CognexLibrary_NETFramework/DriverTelnet.cs"   # Task K: ReadData() — dispatch _dataEvent.QRCodeValue và vòng lặp opportunistic drain thêm dòng mỗi cái có try/catch riêng, không escalate Reconnect() khi lỗi là app-level (fix "event chỉ nhảy vào 1 lần rồi im lặng")
@@ -661,7 +725,18 @@ active_context:
     - "WeightChecking/WeightChecking/StaticClass/AutoPostingHelper.cs" # (Task E) Debug.WriteLine + return string trong AutoTransfer/AutoStockIn/AutoStockOut dịch sang tiếng Anh
 
   blocked_by: >
-    KHÔNG blocked. Task J (fix DataEvent_EventHandleValueChange cho trường hợp Cognex trả 2 QR gộp
+    KHÔNG blocked. Task N (fix reject QR2 box-info mismatch không hoạt động do race giữa check và
+    apply) đã build verify thành công (`MSBuild WeightChecking.csproj` → 0 lỗi, sinh `SSFG.exe`). Root
+    cause xác nhận qua đọc code + git blame trực tiếp (không suy đoán về SỰ TỒN TẠI của check, nhưng
+    race condition là suy luận logic từ cấu trúc code — CHƯA có log debug thật của đúng lần lỗi user
+    báo để xác nhận 100% đây là root cause DUY NHẤT). Chưa test được kịch bản 2 thùng liên tiếp trên
+    conveyor/PLC/Cognex thật (sandbox không có hardware) — xem next_step.
+    Task M (fix thùng đầu tiên kẹt ở trạm cân sau mỗi lần mở lại SSFG) đã build verify
+    thành công (`MSBuild WeightChecking.csproj` → 0 lỗi, sinh `SSFG.exe`). Root cause xác nhận qua đọc
+    code trực tiếp (guard `_firstLoad` chặn cạnh lên S5 trong lúc seed tag, polling sau đó chỉ raise khi
+    giá trị thực sự đổi nên cạnh lên bị lỡ không bao giờ quay lại) — mức tin cậy cao, nhưng CHƯA test
+    được trên PLC/sensor thật (sandbox không có kết nối hardware) — xem next_step.
+    Task J (fix DataEvent_EventHandleValueChange cho trường hợp Cognex trả 2 QR gộp
     trong 1 lần trigger — batching ở DriverTelnet + reorder ở frmScaleNewUI.cs) đã build verify thành
     công qua full-solution build (0 lỗi cho WeightChecking/AnserU2_cSharp/WindowsFormsApp1/
     HardwareSimulator/CognexScannerTester; chỉ còn lỗi CS0579 pre-existing của CognexLibrary.csproj,
@@ -687,6 +762,36 @@ active_context:
     nhận hardware thật, chưa có phản hồi từ user.
 
   next_step: >
+    - [Task N] Verify trên hardware thật (ưu tiên cao, đúng bug user vừa báo): cho 1 thùng có QR2
+    box-info khớp label (BX3 label + QR2 BX3) đi qua trạm Scale bình thường, xác nhận vẫn PASS như cũ
+    (không regression). Sau đó cố ý tạo mismatch: label in BX3 nhưng dán/scan QR2 của thùng BX4, xác
+    nhận `WeightPusher` ghi giá trị reject (2) và có dòng `tblScanDataReject` với `Reason` chứa "Box
+    type mismatch: label/master-data=BX3, QR box info=BX4."
+    - [Task N] Verify riêng kịch bản race đã fix (khó tái hiện, cần 2 thùng liên tiếp thật gần nhau
+    trên băng tải): cho thùng A (QR2 đúng) vào trạm Scale, trong lúc thùng A còn đang chờ cân ổn định
+    (đứng trên bàn cân), cho QR2 của thùng B (khác boxType) lọt vào tầm camera (vd đưa gần ống kính) —
+    xác nhận thùng A vẫn áp dụng ĐÚNG boxType/boxWeight của chính nó (không bị lây từ QR2 của B), và
+    khi thùng B thực sự tới lượt xử lý, QR2 của B vẫn còn hiệu lực (không bị mất do finally của thùng A
+    xoá nhầm) — đây là 2 điều kiện thiết kế đã cân nhắc kỹ khi chọn KHÔNG xoá field ngay sau snapshot.
+    - [Task N] Nếu sau khi fix mà user vẫn báo lại "không reject" trên hardware thật, khả năng cao còn
+    1 nguyên nhân KHÁC ngoài race này (vd. QR2 và Main QR không rơi vào cùng 1 telegram/50ms grace
+    window như Task J giả định, khiến `_boxTypeQR` là null tại thời điểm check → sẽ reject với message
+    "Missing QR code for box information." thay vì "Box type mismatch" — cần đối chiếu chính xác message
+    reject nào xuất hiện trong `tblScanDataReject.Reason` để phân biệt 2 nguyên nhân này) — báo lại kèm
+    đúng nội dung `Reason` ghi được.
+    - [Task M] Verify trên hardware/PLC thật (ưu tiên cao nhất, đây chính là bug user vừa báo): tắt hẳn
+    app, để nguyên 1 thùng đứng chờ tại đúng vị trí sensor "before weight scan" (S5), mở lại SSFG, xác
+    nhận thùng được cân/tính toán ngay (KHÔNG cần đẩy tay) — trước fix, đây là chính xác kịch bản lỗi.
+    Sau đó xác nhận không có regression: mở app khi KHÔNG có thùng nào ở sensor (trường hợp bình thường)
+    → xác nhận không có watchdog "ma" nào bị spawn sai (không có QR nào để đọc, nên sẽ tự reject đúng 1
+    lần sau `TimerCheckQrScale` giây nếu vô tình bị kích hoạt nhầm — cần xác nhận KHÔNG xảy ra khi S5==0
+    lúc mở app). Nếu vẫn còn kẹt sau fix, khả năng cao là `_isStartCountTimerWeight` hoặc guard khác cũng
+    cần soát lại — báo lại kèm Debug Output quanh dòng "Event Sensor before weight scan".
+    - [Task M] Cân nhắc kiểm tra trạm Metal (`S1`) có cùng lớp bug không — `S1_ValueChanged` dùng điều
+    kiện `_s1==0` (khác `S5` dùng `==1`) nên CHƯA chắc bị ảnh hưởng giống hệt, nhưng cùng cấu trúc
+    `_firstLoad` + edge-detection nên vẫn có rủi ro tương tự nếu ý nghĩa vật lý của "cạnh xuống" trùng
+    lúc thùng đã sẵn ở đó lúc khởi động. Chỉ sửa nếu user xác nhận cũng gặp triệu chứng tương tự ở trạm
+    Metal — không tự mở rộng phạm vi khi chưa có báo cáo thật.
     - [Task L] Verify thủ công theo §6.2 (sandbox không có DB/PLC/Cognex thật): bật `IsTest = true` trong
     `ConfigJson`, dùng fake data trong `#region Fake data to debug` (`FrmScale_Load`) với đúng
     `ProductNumber` từ QR gốc user báo (`3112012401-450H-3101`) để tái hiện case thiếu
@@ -780,9 +885,23 @@ active_context:
     có cần cập nhật theo không.
     - [Task E, còn treo] Xác nhận với hardware địa chỉ DB1 thật cho tag "P4" trên PLC Siemens.
 
-  last_session: "2026-07-23"
+  last_session: "2026-08-25"
 
   open_questions:
+    - "[Task N] Toàn bộ chuỗi mismatch giữa 'boxType embedded trong Main QR' (_boxType, gọi là
+      'label/master-data' trong message exception dù thực ra chỉ là dữ liệu nhúng sẵn trong QR lúc in,
+      không phải truy vấn DB mới) vs 'boxType từ QR2 quét trên thùng' (_boxTypeQR) là đúng theo yêu cầu
+      user không, hay 'BoxType đọc từ hệ thống' user muốn nói tới một nguồn khác (vd. suy ra từ
+      Quantity vs BoxQtyBx1-4 trong master data — logic này đã bị XOÁ ở chính commit fef9568f khi thêm
+      QR2, xem diff commit đó)? Đã đọc kỹ commit message + code và kết luận cách hiểu hiện tại khớp với
+      ví dụ cụ thể user đưa ra ('Label is BX3, use BX4'), nhưng chưa được user xác nhận trực tiếp.
+    - "[Task N] Race condition vừa fix có phải root cause DUY NHẤT của báo cáo 'no reject' không, hay
+      chỉ là 1 trong nhiều nguyên nhân (xem thêm giả thuyết về timing >50ms grace window giữa Main QR
+      và QR2 ở next_step)? Cần user test thật và đối chiếu đúng nội dung `Reason` trong
+      `tblScanDataReject` để xác nhận."
+    - "[Task M] Trạm Metal (`S1`/`S_MD_OUT`) có gặp cùng triệu chứng 'thùng đầu tiên kẹt, phải đẩy tay'
+      sau khi mở lại SSFG không? Chưa có báo cáo từ user cho trạm này — nếu có, cần soát lại
+      `S1_ValueChanged` (trigger trên `_s1==0`, khác chiều với `S5`) theo đúng cách đã làm cho Task M."
     - "[Task L] Không xác nhận được 100% liệu SP gốc `sp_vProductItemInfoGet` dùng INNER hay LEFT JOIN
       với tblCoreDataCodeItemSize (SP không có trong repo, không query DB production theo nguyên tắc an
       toàn của project) — quyết định fix (log + reject khi thiếu) dựa trên bằng chứng gián tiếp hội tụ
@@ -884,6 +1003,58 @@ Task hiện tại: [mô tả]. File cần làm việc: [list file].
 > Ghi lại **mọi thay đổi đáng kể** theo thứ tự ngược (mới nhất lên đầu).  
 > Format: `[YYYY-MM-DD] [TYPE] [File/Module] — Mô tả`  
 > Types: `FEAT` · `FIX` · `REFACTOR` · `PERF` · `TEST` · `DOCS` · `CHORE` · `BREAK`
+
+---
+
+### [2026-08-25] — Session: Fix QR2 box-info mismatch không reject (race giữa check và apply)
+
+```
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs   — BarcodeScanner2Handle (~dòng 2089-2113): snapshot _boxTypeQR/_boxWeightQR vào biến local boxTypeQrSnapshot/boxWeightQrSnapshot NGAY tại điểm mismatch-check (trước vòng chờ cân ổn định + query DB), dùng snapshot cho check thay vì đọc trực tiếp field sống
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs   — BarcodeScanner2Handle (~dòng 2324-2333): khối override BoxWeight/BoxType đổi sang dùng CÙNG snapshot ở trên thay vì đọc lại _boxTypeQR/_boxWeightQR (có thể đã bị ghi đè bởi QR2 của thùng kế tiếp trong lúc chờ cân)
+```
+
+**Bối cảnh:** User báo bug qua feedback thực tế: "Kiểm tra lại logic reject khi quét QR thông tin của
+thùng in trên thùng rồi lấy thông tin boxType so sánh với thông tin BoxType đọc từ hệ thống, nếu nó
+khác nhau thì phải reject nhưng hiện tại nó không có reject" — kèm ví dụ cụ thể "Label is BX3, use
+BX4" (nhãn/label in BX3 nhưng thùng vật lý thực tế dùng BX4, không bị reject).
+
+**Điều tra:** `git blame` xác nhận logic mismatch-check (so `_boxTypeQR` — từ QR2 quét trên thùng —
+với `_boxType` — nhúng sẵn trong Main QR lúc in nhãn) đã được thêm từ commit `fef9568f` (2026-07-24,
+tác giả Cong Nguyen, không qua Claude, không có trong CHANGELOG trước đó) và **về logic tại chỗ nó
+chạy là đúng** — throw exception khi `_boxTypeQR.HasValue && _boxTypeQR != Plastic && _boxTypeQR.Value
+!= _boxType`, dẫn tới catch ngoài cùng ghi `WeightPusher=2` + `tblScanDataReject` đầy đủ. Rà soát toàn
+bộ commit sau đó (10 commit) xác nhận không có chỗ nào disable/revert đoạn check này.
+
+**Root cause thật (race condition, không phải thiếu logic):** `DataEvent_EventHandleValueChange` cập
+nhật `_boxTypeQR`/`_boxWeightQR` **vô điều kiện** mỗi khi có dòng QR2 tới trong telegram — không bị
+chặn bởi guard `_scannerIsBussy[1]` (chủ đích từ Task J, để box-info sẵn sàng trước khi Main QR được
+dispatch). Điều này có nghĩa QR2 của **thùng kế tiếp** (đã lọt vào tầm camera trong lúc thùng hiện tại
+còn đang xử lý dở — vòng chờ cân ổn định `while (_stableScaleTrigger == 0...)` + query DB có thể mất
+vài giây) cũng ghi đè lên field này. Mismatch-check (chạy SỚM, trước vòng chờ cân) đọc đúng giá trị
+của thùng hiện tại nên validate đúng, không throw — nhưng khối override BoxWeight/BoxType (chạy SAU
+vòng chờ cân + query DB, ~dòng 2307 cũ) **đọc lại field sống lần nữa** mà không re-validate, nên nếu
+field đã bị ghi đè bởi QR2 của thùng khác trong lúc chờ, nó áp dụng lặng lẽ giá trị SAI mà không hề
+reject — khớp chính xác với triệu chứng "check đã tồn tại, đã pass, nhưng giá trị cuối cùng lại sai".
+
+**Fix:** snapshot cả 2 field vào biến local ngay tại điểm check, dùng snapshot cho cả check lẫn khối
+override phía sau — đảm bảo giá trị được validate và giá trị thực sự áp dụng luôn là MỘT, loại bỏ khả
+năng field sống bị đổi ở giữa. Cân nhắc kỹ và quyết định **không** xoá `_boxTypeQR`/`_boxWeightQR` về
+null ngay sau khi snapshot (tự phát hiện và tự sửa lại trong lúc làm) — vì làm vậy sẽ xoá mất QR2 hợp
+lệ của thùng kế tiếp nếu nó đã tới trong lúc thùng hiện tại còn xử lý dở; khối `finally` sẵn có (Task
+I) vẫn đủ để dọn field khi thùng hiện tại tự lỗi/throw trước khi tới được override.
+
+**Không sửa (ngoài phạm vi, xem open_questions):** cách hiểu "BoxType đọc từ hệ thống" = giá trị nhúng
+trong Main QR lúc in nhãn (không phải truy vấn DB tại thời điểm scan) — khớp với ví dụ cụ thể user đưa
+ra nhưng chưa được xác nhận trực tiếp; khả năng còn 1 nguyên nhân race/timing khác (Main QR và QR2 tới
+thành 2 telegram cách nhau > 50ms grace window của DriverTelnet) khiến check reject với message "Missing
+QR code for box information" thay vì "Box type mismatch" — không phải bug, nhưng cần phân biệt khi user
+test lại.
+
+**Verify:** `MSBuild WeightChecking.csproj /p:Configuration=Release /p:Platform=AnyCPU` → 0 lỗi CS/MSB,
+sinh `bin\Release\SSFG.exe` thành công, chỉ còn warning có sẵn từ trước không liên quan. Chưa test được
+trên PLC/Cognex/conveyor thật (sandbox không có kết nối) — đặc biệt chưa tái hiện được đúng kịch bản
+race (2 thùng liên tiếp đủ gần nhau về thời gian) vì cần timing thật trên băng tải. Xem
+`active_context.next_step` để biết các bước verify thủ công cần làm.
 
 ---
 
@@ -1661,6 +1832,21 @@ trong bất kỳ session dịch nào), trong khi `.csproj` (đã commit từ tr�
 (có `tagsPRD.json` mới, untracked, xuất hiện cùng lúc, có thể là file thay thế). Chưa test chạy thật
 UI/hardware (không có kết nối trong sandbox) — cần verify thủ công: chạy qua các luồng scan/reject/
 report/login/print và xác nhận UI hiển thị tiếng Anh đúng, không ảnh hưởng hành vi nghiệp vụ.
+
+---
+
+### [2026-08-17] — Session: Fix thùng đầu tiên kẹt ở trạm cân (không cân) mỗi lần mở lại SSFG — missed S5 edge do seed pass bị `_firstLoad` chặn
+
+```
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs   — FrmScale_Load: ngay sau `_firstLoad = false;` (trước khi `_sub.Subscribe(...)` bắt đầu polling), nếu tag S5 đang đọc được giá trị `_s5 == 1` thì gọi lại thủ công `S5_ValueChanged(s5TagAtLoad)` — bù cạnh lên (0→1) bị bỏ lỡ trong lúc seed
+```
+
+**Chi tiết:**
+- **Triệu chứng (user báo):** mỗi lần đóng rồi mở lại SSFG, thùng ĐẦU TIÊN đứng yên tại trạm cân, không được cân/tính toán gì cả — phải đẩy tay thùng đó ra khỏi sensor thì các thùng SAU mới chạy bình thường trở lại.
+- **Root cause:** `PlcSubscriptionManager`/`PlcTag.ValueChanged` (trong `Snap7Scada.Lib.dll`, không có source trong repo) là **edge-triggered theo polling** — chỉ raise `ValueChanged` khi giá trị đọc được ở lần poll hiện tại KHÁC với lần poll trước, không raise nếu giá trị giữ nguyên. `FrmScale_Load` có 1 vòng seed (`foreach (var tag in _plcRuntime.Tags) tag.RaiseValueChanged();`) chạy NGAY SAU khi connect PLC, mục đích chỉ để cập nhật UI ban đầu — nhưng mọi handler (`S5_ValueChanged`, `S6_ValueChanged`, `S1_ValueChanged`, ...) đều có guard `!_firstLoad` để chặn side-effect thật (spawn watchdog, ghi PLC...) trong lượt seed này, và `_firstLoad` chỉ được tắt (`= false`) NGAY SAU vòng seed, trước khi `_sub.Subscribe()` bắt đầu polling thật. Hệ quả: nếu có 1 thùng đã đứng sẵn tại sensor "before weight scan" (S5==1) đúng lúc app khởi động lại (băng tải/thùng không tự lùi ra chỉ vì phần mềm tắt) — lượt seed CÓ chạy `S5_ValueChanged` nhưng bị chặn bởi `_firstLoad`; sau khi polling thật bắt đầu, S5 vẫn giữ nguyên = 1 (thùng không nhúc nhích) nên KHÔNG còn cạnh lên nào nữa để tự kích hoạt lại `S5_ValueChanged` — watchdog `CheckReadQrWeight()` (khởi động toàn bộ luồng cân/tính toán) không bao giờ được spawn cho thùng đó. Chỉ khi thùng bị đẩy tay ra khỏi sensor (S5 về 0) rồi thùng KẾ TIẾP tới tạo cạnh lên THẬT (0→1), mọi thứ mới chạy lại bình thường — khớp chính xác với triệu chứng user mô tả.
+- **Fix:** sau khi `_firstLoad` đã tắt (guard đã mở) nhưng TRƯỚC khi bắt đầu polling, đọc trực tiếp giá trị `_s5` hiện tại (đã được set từ lượt seed) — nếu đang bằng 1, gọi lại chính `S5_ValueChanged()` một lần nữa để nó chạy y hệt như 1 sự kiện sensor thật (guard `!_firstLoad` lúc này đã pass). Không đụng tới cơ chế `_firstLoad`/edge-detection nói chung, không đụng S1/S2/S_MD_OUT (trạm Metal) — chỉ xử lý đúng đường S5 (trạm Scale) theo đúng phạm vi bug được báo.
+- **Không xử lý (để mở, xem open_questions):** trạm Metal (`S1`, trigger khi `_s1 == 0` — polarity ngược lại S5) có khả năng dính cùng class bug này (thùng đã đứng sẵn ở S1==0 lúc khởi động sẽ không tạo cạnh xuống mới) nhưng CHƯA được user xác nhận có xảy ra thật hay không — không tự sửa để tránh đoán sai polarity/side-effect của trạm Metal.
+- **Verify:** `MSBuild WeightChecking.csproj /p:Configuration=Release /p:Platform=AnyCPU` → build thành công, 0 lỗi, sinh `bin\Release\SSFG.exe`, chỉ còn warning có sẵn từ trước không liên quan. Chưa test được trên PLC/hardware thật (sandbox không có kết nối) — cần verify thủ công: để 1 thùng đứng sẵn tại vị trí sensor S5 (before weight scan), khởi động lại SSFG, xác nhận thùng được cân/tính toán NGAY LẬP TỨC (không cần đẩy tay); đồng thời xác nhận trường hợp KHÔNG có thùng nào ở S5 lúc khởi động (giá trị 0) thì không có watchdog nào bị spawn nhầm.
 
 ---
 
