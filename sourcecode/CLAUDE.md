@@ -264,6 +264,50 @@ const delay = 350; // gán delay bằng 350
 # Cập nhật phần này MỖI KHI kết thúc session làm việc
 active_context:
   current_task: >
+    DONE (Task O) — Fix "ở trạm cân, Cognex2 không đọc được QR label (FG label = Main QR) nhưng đọc
+    được QR thùng (box-info QR2), dẫn đến không cân được" (user báo kèm video "Weigher No Result -
+    First Box Running" — Scale Value có giá trị 4590g nhưng Calculated Qty/Std Gross Weight đều 0,
+    "Box Information" hiện đúng QR2 (BX2,RP,823.3Gr) nhưng ô "Scale" (Main QR) trống). Root cause xác
+    nhận qua đọc `FrmScale_Load`: watchdog `CheckReadQrWeight()` (đếm ngược `TimerCheckQrScale` giây —
+    default trong `tblConfig.cs` CHỈ 3 giây) được spawn NGAY khi `S5_ValueChanged` chạy (từ Task M —
+    lần bắn thủ công bù cạnh lên bị lỡ cho thùng đã chờ sẵn lúc app khởi động — nằm ở dòng ~551-553),
+    nhưng khối kết nối Cognex2 (`_driverTelnet.ConnectDevices()`, trạm Scale) lại nằm PHÍA SAU một
+    `PrinterOpen(); Thread.Sleep(10000);` (10 giây) — nghĩa là với timeout mặc định 3 giây << 10+ giây,
+    watchdog gần như chắc chắn hết giờ (tự reject "Could not read QR code") HOẶC ít nhất phần lớn ngân
+    sách timeout đã trôi qua TRƯỚC KHI camera Scale kịp mở kết nối TCP để nhận bất kỳ QR nào — khớp
+    đúng triệu chứng: camera chỉ vừa kịp bắt được 1 phần dữ liệu (box-info QR2, có thể do đọc nhanh/dễ
+    hơn) trước/trong lúc watchdog đã/đang hết giờ, Main QR (FG label) không kịp tới. Bug này cũng ảnh
+    hưởng trạm Metal tương tự (`_driverTelnetMetal` bị delay y hệt). Xác nhận `CheckReadQrWeight()`
+    chạy trên background `Task` (`Thread.Sleep(100)` polling, KHÔNG bị block bởi `Thread.Sleep(10000)`
+    của UI thread) nên đồng hồ đếm ngược thật sự chạy song song, không phải giả thuyết suông.
+
+    **Fix:** dời toàn bộ khối `PrinterOpen()`/`Thread.Sleep(10000)`/`SendDynamicString(" "," "," ")` +
+    kết nối cả 2 camera Cognex (`_driverTelnet.ConnectDevices()` trạm Scale, `_driverTelnetMetal.
+    ConnectDevices()` trạm Metal) lên NGAY SAU `_plc1Client.StartWatchdog(2000)` (~dòng 525) — TRƯỚC
+    vòng seed tag / `_firstLoad=false` / lần bắn thủ công `S5_ValueChanged` (Task M) / `_sub.Subscribe()`
+    bắt đầu polling PLC thật. Đảm bảo bất kỳ watchdog QR nào (dù từ lần bắn thủ công cho thùng chờ sẵn,
+    hay từ 1 sự kiện sensor thật xảy ra sớm sau khi polling bắt đầu) chỉ có thể spawn SAU khi cả 2
+    camera đã có đủ thời gian kết nối — không đụng tới cơ chế `_firstLoad`/edge-detection hay mapping
+    `TimerCheckQrScale` nào khác. `ConnectDevices()` là `async Task` gọi kiểu fire-and-forget (không
+    `await`) nên việc dời lên sớm hơn không làm UI thread bị block thêm — TCP connect chạy nền, và
+    `Thread.Sleep(10000)` của máy in (vốn đã có sẵn, không đổi) giờ tình cờ cũng cho camera đủ thời
+    gian kết nối trước khi luồng seed/subscribe tiếp tục.
+
+    **Sự cố ngoài lề trong lúc làm (đã xử lý, không phải bug code):** khi build lại để verify, phát
+    hiện 5 file `.csproj` cần bị "biến mất" khỏi ổ đĩa (`Enums\LocationEnum.cs`, `Class\
+    AnserU2TcpDriver.cs`, `Class\CommonDefs.cs`, `Views\frmScale.Designer.cs/.resx`) — hoá ra do user
+    đang ở branch `fFT_Main_Dev` (thiếu các file này) rồi mới `git checkout` sang lại `fIN_Main_dev`
+    (branch đúng, có đủ file) — IDE tự `git stash` phần uncommitted của `fFT_Main_Dev` (stash đó KHÔNG
+    đụng tới, không liên quan session này). Sau khi user xác nhận đã chuyển branch xong, build lại sạch
+    ngay (0 lỗi) — không phải bug thật, nhưng fix Cognex2 lần đầu (viết trước khi phát hiện branch
+    switch) đã bị mất theo (working tree bị reset về đúng commit `5ded33b`, chưa include fix này) nên
+    phải viết lại y hệt lần 2 sau khi xác nhận build sạch.
+
+    Build verify: `MSBuild WeightChecking.csproj /p:Configuration=Release /p:Platform=AnyCPU` → 0 lỗi,
+    sinh `bin\Release\SSFG.exe`, chỉ còn warning có sẵn từ trước không liên quan. Chưa test được trên
+    PLC/Cognex thật (sandbox không có kết nối) — xem `next_step`.
+
+    ---
     DONE (Task N) — Fix "quét QR thông tin thùng in trên thùng (QR2 box-info), boxType khác với
     boxType trên label nhưng KHÔNG reject" tại `BarcodeScanner2Handle` (user báo cụ thể: "Label is
     BX3, use BX4"). Xác nhận qua đọc code + `git blame`: logic reject mismatch (`_boxTypeQR` so với
@@ -700,6 +744,7 @@ active_context:
     để biết chi tiết, không lặp lại ở đây.)
 
   related_files:
+    - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task O: FrmScale_Load, dời khối PrinterOpen()/Thread.Sleep(10000)/ConnectDevices() của cả 2 camera Cognex lên NGAY SAU _plc1Client.StartWatchdog(2000) (~dòng 525-575) — TRƯỚC vòng seed tag/_firstLoad=false/lần bắn thủ công S5_ValueChanged (Task M)/_sub.Subscribe(), tránh watchdog CheckReadQrWeight (timeout mặc định 3s) hết giờ trước khi camera Scale kịp kết nối
     - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task N: BarcodeScanner2Handle, ~dòng 2089-2113 (snapshot boxTypeQrSnapshot/boxWeightQrSnapshot từ _boxTypeQR/_boxWeightQR + check mismatch dùng snapshot) và ~dòng 2324-2333 (override BoxWeight/BoxType dùng CÙNG snapshot thay vì đọc lại field sống) — fix race giữa check và apply
     - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task M: FrmScale_Load, ngay sau `_firstLoad = false;` (~dòng 537) và TRƯỚC `_sub.Subscribe()` — nếu `_s5==1` (thùng đã chờ sẵn ở sensor "before weight scan" lúc app khởi động), gọi thủ công lại `S5_ValueChanged(tag S5)` để bù cạnh lên bị guard `!_firstLoad` chặn ở vòng seed, tránh thùng đầu tiên kẹt ở trạm cân không được cân
     - "WeightChecking/WeightChecking/frmScaleNewUI.cs"             # Task L: BarcodeScanner2Handle, guard `res.AveWeight1Prs == null` ngay sau `if (res != null)` (~dòng 2064) — log tblItemMissingInfo + reject khi thiếu tblCoreDataCodeItemSize, tránh crash "Nullable object must have a value"
@@ -725,7 +770,12 @@ active_context:
     - "WeightChecking/WeightChecking/StaticClass/AutoPostingHelper.cs" # (Task E) Debug.WriteLine + return string trong AutoTransfer/AutoStockIn/AutoStockOut dịch sang tiếng Anh
 
   blocked_by: >
-    KHÔNG blocked. Task N (fix reject QR2 box-info mismatch không hoạt động do race giữa check và
+    KHÔNG blocked. Task O (fix Cognex2 không đọc được Main QR trên thùng đầu tiên do watchdog QR hết
+    giờ trước khi camera kịp kết nối) đã build verify thành công (`MSBuild WeightChecking.csproj` → 0
+    lỗi, sinh `SSFG.exe`). Root cause xác nhận qua đọc trực tiếp thứ tự code trong `FrmScale_Load` +
+    giá trị default `TimerCheckQrScale=3` trong `tblConfig.cs` — mức tin cậy cao, nhưng CHƯA test được
+    trên PLC/Cognex thật (sandbox không có kết nối) — xem next_step.
+    Task N (fix reject QR2 box-info mismatch không hoạt động do race giữa check và
     apply) đã build verify thành công (`MSBuild WeightChecking.csproj` → 0 lỗi, sinh `SSFG.exe`). Root
     cause xác nhận qua đọc code + git blame trực tiếp (không suy đoán về SỰ TỒN TẠI của check, nhưng
     race condition là suy luận logic từ cấu trúc code — CHƯA có log debug thật của đúng lần lỗi user
@@ -762,6 +812,22 @@ active_context:
     nhận hardware thật, chưa có phản hồi từ user.
 
   next_step: >
+    - [Task O] Verify trên hardware thật (ưu tiên cao nhất, đúng bug user vừa báo qua video): tắt hẳn
+    app, để 1 thùng đứng sẵn tại sensor "before weight scan" (S5) với CẢ 2 tem (Main QR + box-info QR2)
+    trong tầm camera, mở lại SSFG, xác nhận: (1) camera Scale kịp kết nối và đọc được CẢ Main QR lẫn
+    QR2 (không chỉ QR2 như trước fix), (2) thùng được cân/tính toán bình thường (Calculated Qty/Std
+    Gross Weight khác 0), KHÔNG cần đẩy tay hay quét lại. Lặp lại cho trạm Metal (thùng đứng sẵn ở S1)
+    để xác nhận cùng fix cũng giải quyết đúng cho Cognex1.
+    - [Task O] Nếu vẫn thấy "chỉ đọc được QR2, không đọc được Main QR" sau fix, khả năng cao nguyên
+    nhân KHÔNG còn là timing kết nối nữa (đã fix) mà chuyển sang vấn đề quang học/hardware thật (tem
+    Main QR bị mờ/hỏng/góc đọc xấu) hoặc cấu hình Cognex DataMan (số symbol tối đa đọc được mỗi trigger,
+    exposure...) — cần kiểm tra trực tiếp qua Cognex DataMan software (Result History) thay vì tiếp tục
+    sửa code C#.
+    - [Task O] Cân nhắc thêm 1 lớp phòng vệ độc lập (không bắt buộc, có thể để sau nếu fix chính đã đủ):
+    nếu muốn giảm thời gian chờ máy in 10 giây (`Thread.Sleep(10000)`) chặn luồng khởi động app, có thể
+    xem xét chuyển `PrinterOpen()` sang chạy song song (Task riêng) với việc kết nối 2 camera thay vì
+    tuần tự — hiện tại chưa cần vì 10 giây vẫn đủ cho TCP connect LAN, chỉ cân nhắc nếu user muốn giảm
+    thời gian khởi động app.
     - [Task N] Verify trên hardware thật (ưu tiên cao, đúng bug user vừa báo): cho 1 thùng có QR2
     box-info khớp label (BX3 label + QR2 BX3) đi qua trạm Scale bình thường, xác nhận vẫn PASS như cũ
     (không regression). Sau đó cố ý tạo mismatch: label in BX3 nhưng dán/scan QR2 của thùng BX4, xác
@@ -1003,6 +1069,57 @@ Task hiện tại: [mô tả]. File cần làm việc: [list file].
 > Ghi lại **mọi thay đổi đáng kể** theo thứ tự ngược (mới nhất lên đầu).  
 > Format: `[YYYY-MM-DD] [TYPE] [File/Module] — Mô tả`  
 > Types: `FEAT` · `FIX` · `REFACTOR` · `PERF` · `TEST` · `DOCS` · `CHORE` · `BREAK`
+
+---
+
+### [2026-08-25] — Session: Fix Cognex2 không đọc được Main QR (chỉ đọc được QR2) trên thùng đầu tiên
+
+```
+[FIX]      WeightChecking/WeightChecking/frmScaleNewUI.cs   — FrmScale_Load: dời khối PrinterOpen()/Thread.Sleep(10000)/SendDynamicString(" "," "," ") + ConnectDevices() của cả 2 camera Cognex (_driverTelnet trạm Scale, _driverTelnetMetal trạm Metal) lên NGAY SAU _plc1Client.StartWatchdog(2000) — TRƯỚC vòng seed tag/_firstLoad=false/lần bắn thủ công S5_ValueChanged (Task M)/_sub.Subscribe() bắt đầu polling PLC thật
+```
+
+**Bối cảnh:** User báo qua video ("2026-08-25 13-23-39 (Weigher No Result - First Box Running)"): ở
+trạm cân, Cognex2 đọc được QR thùng (box-info QR2 — UI hiện đúng "QR code: BX2,RP,823.3Gr - Box Type:
+BX2 - Box Weight: 823.3 (g)") nhưng KHÔNG đọc được QR label (FG label = Main QR — ô "Scale" trống) —
+dẫn tới Scale Value đo được (4590.00g) nhưng Calculated Qty/Std Gross Weight đều 0 vì
+`BarcodeScanner2Handle` chưa từng được gọi cho thùng đó (không có Main QR để dispatch).
+
+**Root cause:** `FrmScale_Load` spawn watchdog `CheckReadQrWeight()` (đếm ngược `TimerCheckQrScale`
+giây — default trong `tblConfig.cs` CHỈ 3 giây) ngay khi `S5_ValueChanged` chạy — bao gồm cả lần bắn
+THỦ CÔNG cho thùng đã chờ sẵn lúc app khởi động (fix Task M, 2026-08-19). Nhưng khối kết nối Cognex2
+(`_driverTelnet.ConnectDevices()`) lại nằm PHÍA SAU 1 `PrinterOpen(); Thread.Sleep(10000);` (10 giây
+warm-up máy in) — với timeout mặc định 3 giây << 10+ giây, watchdog gần như chắc chắn hết giờ (hoặc ít
+nhất phần lớn ngân sách timeout đã trôi qua) TRƯỚC KHI camera Scale kịp mở kết nối TCP để nhận bất kỳ
+QR nào. Camera chỉ vừa kịp bắt được 1 phần dữ liệu (box-info QR2, khớp đúng triệu chứng) trước/trong
+lúc watchdog đã/đang hết giờ, Main QR không kịp tới. Xác nhận `CheckReadQrWeight()` chạy trên
+background `Task` (polling bằng `Thread.Sleep(100)`, không phải trên UI thread) nên đồng hồ đếm ngược
+thật sự chạy song song trong lúc UI thread bị `Thread.Sleep(10000)` của máy in chặn — không phải giả
+thuyết suông, đã đọc code xác nhận trực tiếp. Bug này ảnh hưởng cả trạm Metal tương tự
+(`_driverTelnetMetal` bị delay y hệt), dù user chỉ báo triệu chứng ở trạm Scale.
+
+**Fix:** dời cả khối (máy in + 2 camera) lên NGAY SAU khi PLC kết nối xong (`_plc1Client.
+StartWatchdog(2000)`), TRƯỚC vòng seed tag/`_firstLoad=false`/lần bắn thủ công `S5_ValueChanged`/
+`_sub.Subscribe()`. `ConnectDevices()` là `async Task` gọi fire-and-forget (không `await`) nên dời sớm
+không làm UI thread bị block thêm — TCP connect chạy nền, và `Thread.Sleep(10000)` sẵn có (không đổi)
+giờ tình cờ cũng cho camera đủ thời gian kết nối trước khi luồng seed/subscribe tiếp tục chạy.
+
+**Sự cố ngoài lề (không phải bug code, ghi lại để tránh nhầm lẫn nếu gặp lại):** lúc build để verify
+fix này, phát hiện 5 file `.csproj` cần (`Enums\LocationEnum.cs`, `Class\AnserU2TcpDriver.cs`, `Class\
+CommonDefs.cs`, `Views\frmScale.Designer.cs/.resx`) tạm thời "biến mất" khỏi ổ đĩa giữa session — hoá
+ra do user đang ở branch `fFT_Main_Dev` (thiếu các file này, có thể là nhánh khác cấu trúc) rồi
+`git checkout` sang lại `fIN_Main_dev` (branch đúng, đủ file) NGAY TRONG LÚC session đang chạy; IDE tự
+`git stash` phần uncommitted của `fFT_Main_Dev` (stash này không thuộc phạm vi/không đụng tới). Sau khi
+user xác nhận đã chuyển branch xong, build lại sạch ngay lập tức (0 lỗi) — không phải bug thật, nhưng
+bản fix Cognex2 viết trước khi phát hiện việc chuyển branch đã bị mất theo (working tree lúc đó bị
+reset về đúng commit đã có, chưa include fix này), phải viết lại y hệt lần 2 sau khi xác nhận build
+sạch trở lại. Nếu tương lai gặp lại tình huống "nhiều file .cs biến mất đột ngột giữa session, không
+nằm trong git", nên hỏi ngay user có đang chuyển branch/checkout gì không, thay vì nghi ngờ file bị hư
+hỏng hay tự ý sửa `.csproj` để vá.
+
+**Verify:** `MSBuild WeightChecking.csproj /p:Configuration=Release /p:Platform=AnyCPU` → 0 lỗi CS/MSB
+(build lại sau khi branch đã đúng), sinh `bin\Release\SSFG.exe` thành công, chỉ còn warning có sẵn từ
+trước không liên quan. Chưa test được trên PLC/Cognex thật (sandbox không có kết nối) — xem
+`active_context.next_step` để biết các bước verify thủ công cần làm.
 
 ---
 
