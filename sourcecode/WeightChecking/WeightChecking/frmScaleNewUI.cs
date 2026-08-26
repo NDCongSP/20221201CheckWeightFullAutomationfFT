@@ -524,48 +524,23 @@ namespace WeightChecking
             await _plc1Client.ConnectAsync();
             _plc1Client.StartWatchdog(2000);
 
-            // 3) (Tuỳ chọn) cập nhật UI lần đầu
-            foreach (var tag in _plcRuntime.Tags)
-                tag.RaiseValueChanged();//Tự "bắn" sự kiện để UI cập nhật ngay giá trị ban đầu
-
-            // Tắt cờ _firstLoad ngay sau khi bắn xong sự kiện "seed" ở trên, KHÔNG chờ đến cuối FrmScale_Load.
-            // Lý do: PrinterOpen()/Thread.Sleep(10000) và ConnectDevices() của 2 camera Cognex bên dưới có thể
-            // chạy thêm nhiều giây; trong lúc đó polling PLC (_sub.Subscribe ngay dưới) đã sống và có thể sinh
-            // sự kiện MetalPusher/WeightPusher THẬT (vd: có sẵn thùng trên băng tải khi app vừa khởi động).
-            // Nếu vẫn giữ _firstLoad=true tới hết hàm, các sự kiện thật này bị nuốt lặng lẽ (chỉ Debug.WriteLine,
-            // không ghi xuống PLC), gây ra hiện tượng "thỉnh thoảng không ghi được RJ1/Check_Weight_Result lần đầu chạy".
-            _firstLoad = false;
-
-            // 20260817: nếu đã có sẵn 1 thùng đang đứng chờ ở sensor "before weight scan" (S5==1) ngay lúc
-            // app khởi động lại (băng tải/thùng không tự dừng lại chỉ vì app tắt), sự kiện S5_ValueChanged ở
-            // vòng seed phía trên (dòng 528-529) ĐÃ chạy nhưng bị chặn ở guard `!_firstLoad` — không spawn
-            // CheckReadQrWeight watchdog. Sau khi _firstLoad tắt, _sub.Subscribe() bên dưới chỉ raise
-            // ValueChanged khi giá trị tag THỰC SỰ đổi giữa 2 lần poll — nếu thùng vẫn nằm yên (S5 giữ
-            // nguyên = 1), sẽ không còn cạnh lên (0->1) nào nữa để kích hoạt lại, watchdog không bao giờ
-            // chạy cho thùng này -> thùng đứng yên ở trạm cân, không được cân/tính toán, cho tới khi bị đẩy
-            // tay ra khỏi sensor (S5 về 0) rồi thùng KẾ TIẾP tới mới tạo cạnh lên thật, mọi thứ lại chạy bình
-            // thường. Đây đúng là nguyên nhân triệu chứng "mỗi lần mở lại SSFG, thùng đầu tiên kẹt ở trạm cân
-            // (không cân), đẩy tay thùng đó đi thì thùng sau chạy bình thường". Bù lại cạnh lên bị lỡ bằng
-            // cách gọi thủ công đúng logic đã bị chặn, nay _firstLoad đã tắt nên sẽ chạy đúng như 1 sự kiện
-            // sensor thật.
-            var s5TagAtLoad = _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S5");
-            if (s5TagAtLoad != null && _s5 == 1)
-                S5_ValueChanged(s5TagAtLoad);
-
-            // 4) BẮT ĐẦU POLLING (rất quan trọng)
-            _sub.Subscribe(_plcRuntime.Tags, intervalMs: 200);
-
-            //override tất cả các tag về giá trị 0
-            foreach (var tag in _plcRuntime.Tags)
-            {
-                if (tag.DataType == PlcDataType.Int || tag.DataType == PlcDataType.DInt || tag.DataType == PlcDataType.Real)
-                {
-                    WriteData2PlcSeimens(tag.Name, 0);
-                }
-            }
-            #endregion
-
-            //Khởi tạo máy in AnserU2 Smart one (TCP)
+            // 20260825: mở máy in + kết nối 2 camera Cognex (Metal/Scale) NGAY TẠI ĐÂY, TRƯỚC vòng seed
+            // tag / _firstLoad=false / lần bắn thủ công S5_ValueChanged (bù cạnh lên bị lỡ, xem comment
+            // 20260817 bên dưới) / _sub.Subscribe() bắt đầu polling PLC thật. Trước đây khối này nằm SAU
+            // toàn bộ phần dưới - nghĩa là nếu có sẵn 1 thùng đứng chờ ở sensor "before weight scan" lúc
+            // app khởi động lại, watchdog CheckReadQrWeight() (đếm ngược TimerCheckQrScale giây, mặc định
+            // CHỈ 3 giây - xem tblConfig.cs) đã bắt đầu đếm TỪ TRƯỚC KHI Cognex2 (_driverTelnet, trạm
+            // Scale) được gọi ConnectDevices() - vì PrinterOpen()/Thread.Sleep(10000) (10 giây) đứng chèn
+            // giữa, và ConnectDevices() của cả 2 camera Cognex chỉ chạy SAU đó. Với timeout mặc định 3
+            // giây << 10+ giây, watchdog gần như chắc chắn hết giờ và tự reject ("Could not read QR code")
+            // trước khi camera Scale kịp kết nối để nhận bất kỳ QR nào - khớp đúng triệu chứng user báo
+            // "Cognex2 không đọc được QR label (Main QR) nhưng đọc được QR thùng (box-info QR2)" trên
+            // thùng đầu tiên sau khi restart app: camera chỉ vừa kịp kết nối và bắt được 1 phần dữ liệu
+            // (box-info) trước khi (hoặc trong lúc) watchdog đã/đang hết giờ, Main QR không kịp tới. Bug
+            // này cũng ảnh hưởng trạm Metal tương tự (Cognex1/_driverTelnetMetal cũng bị delay y hệt).
+            // Fix: kết nối máy in + cả 2 camera TRƯỚC khi bất kỳ watchdog nào có thể được spawn (dù từ
+            // lần bắn thủ công S5 hay từ _sub.Subscribe() bắt đầu polling thật) - đảm bảo camera đã sẵn
+            // sàng lắng nghe trước khi có bất kỳ đồng hồ đếm ngược nào bắt đầu chạy cho thùng đang chờ sẵn.
             if (!GlobalVariables.ConfigJson.IsTest)
             {
                 PrinterOpen();
@@ -598,6 +573,49 @@ namespace WeightChecking
 
                 #endregion
             }
+
+            // 3) (Tuỳ chọn) cập nhật UI lần đầu
+            foreach (var tag in _plcRuntime.Tags)
+                tag.RaiseValueChanged();//Tự "bắn" sự kiện để UI cập nhật ngay giá trị ban đầu
+
+            // Tắt cờ _firstLoad ngay sau khi bắn xong sự kiện "seed" ở trên, KHÔNG chờ đến cuối FrmScale_Load.
+            // Lý do: các Task còn lại phía dưới (TaskTimerAsync, TaskCheckResetUIAsync...) và chính polling
+            // PLC (_sub.Subscribe ngay dưới) có thể sinh sự kiện MetalPusher/WeightPusher THẬT (vd: có sẵn
+            // thùng trên băng tải khi app vừa khởi động). Nếu vẫn giữ _firstLoad=true tới hết hàm, các sự
+            // kiện thật này bị nuốt lặng lẽ (chỉ Debug.WriteLine, không ghi xuống PLC), gây ra hiện tượng
+            // "thỉnh thoảng không ghi được RJ1/Check_Weight_Result lần đầu chạy". (20260825: PrinterOpen()/
+            // Thread.Sleep(10000) + ConnectDevices() của 2 camera Cognex đã được dời lên TRƯỚC đoạn này -
+            // xem comment 20260825 phía trên - để camera kịp sẵn sàng trước khi watchdog QR có thể chạy.)
+            _firstLoad = false;
+
+            // 20260817: nếu đã có sẵn 1 thùng đang đứng chờ ở sensor "before weight scan" (S5==1) ngay lúc
+            // app khởi động lại (băng tải/thùng không tự dừng lại chỉ vì app tắt), sự kiện S5_ValueChanged ở
+            // vòng seed phía trên (dòng 528-529) ĐÃ chạy nhưng bị chặn ở guard `!_firstLoad` — không spawn
+            // CheckReadQrWeight watchdog. Sau khi _firstLoad tắt, _sub.Subscribe() bên dưới chỉ raise
+            // ValueChanged khi giá trị tag THỰC SỰ đổi giữa 2 lần poll — nếu thùng vẫn nằm yên (S5 giữ
+            // nguyên = 1), sẽ không còn cạnh lên (0->1) nào nữa để kích hoạt lại, watchdog không bao giờ
+            // chạy cho thùng này -> thùng đứng yên ở trạm cân, không được cân/tính toán, cho tới khi bị đẩy
+            // tay ra khỏi sensor (S5 về 0) rồi thùng KẾ TIẾP tới mới tạo cạnh lên thật, mọi thứ lại chạy bình
+            // thường. Đây đúng là nguyên nhân triệu chứng "mỗi lần mở lại SSFG, thùng đầu tiên kẹt ở trạm cân
+            // (không cân), đẩy tay thùng đó đi thì thùng sau chạy bình thường". Bù lại cạnh lên bị lỡ bằng
+            // cách gọi thủ công đúng logic đã bị chặn, nay _firstLoad đã tắt nên sẽ chạy đúng như 1 sự kiện
+            // sensor thật.
+            var s5TagAtLoad = _plcRuntime.Tags.FirstOrDefault(t => t.Name == "S5");
+            if (s5TagAtLoad != null && _s5 == 1)
+                S5_ValueChanged(s5TagAtLoad);
+
+            // 4) BẮT ĐẦU POLLING (rất quan trọng)
+            _sub.Subscribe(_plcRuntime.Tags, intervalMs: 200);
+
+            //override tất cả các tag về giá trị 0
+            foreach (var tag in _plcRuntime.Tags)
+            {
+                if (tag.DataType == PlcDataType.Int || tag.DataType == PlcDataType.DInt || tag.DataType == PlcDataType.Real)
+                {
+                    WriteData2PlcSeimens(tag.Name, 0);
+                }
+            }
+            #endregion
 
             this.ActiveControl = null;
             this.ActiveControl = _labResult;
