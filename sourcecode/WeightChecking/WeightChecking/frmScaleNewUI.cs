@@ -343,7 +343,6 @@ namespace WeightChecking
             this.WindowState = FormWindowState.Minimized;
         }
 
-
         private async void FrmScale_Load(object sender, EventArgs e)
         {
             using var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString);
@@ -801,8 +800,9 @@ namespace WeightChecking
             Debug.WriteLine($"Event Sensor After metal scan: {_s_MD_Out}");
             GlobalVariables.RememberInfo.CountMetalScan += 1;//đếm số thùng đi qua máy metalScan
 
-            if (_s_MD_Out == 1 && !_firstLoad && _enableCheckMetal)
+            if (_s_MD_Out == 1 && !_firstLoad)
             {
+                if (_enableCheckMetal)
                 using (var dbContext = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
                 {
                     var para = new DynamicParameters();
@@ -954,14 +954,14 @@ namespace WeightChecking
 
             _s2 = Convert.ToInt16(tag.NewValue);
 
-            if (_s2 == 1 && !_firstLoad && _enableCheckMetal == false)
-            {
-                //xáo báo bận để cho phép scanner quét tiếp thùng.
-                _scannerIsBussy[0] = false;
+            //if (_s2 == 1 && !_firstLoad && _enableCheckMetal == false)
+            //{
+            //    //xáo báo bận để cho phép scanner quét tiếp thùng.
+            //    _scannerIsBussy[0] = false;
 
-                _isStartCountTimer = false;
-                //GlobalVariables.MyEvent.MetalPusher = _metalScannerStatus;
-            }
+            //    _isStartCountTimer = false;
+            //    //GlobalVariables.MyEvent.MetalPusher = _metalScannerStatus;
+            //}
 
             Debug.WriteLine($"Sensor middle metal: {tag.NewValue}|ScannerBussy{_scannerIsBussy[0]}|_isStartCountTimer{_isStartCountTimer}");
         }
@@ -3336,7 +3336,6 @@ namespace WeightChecking
         }
         #endregion
 
-
         #region Task and other methos
         /// <summary>
         /// Chạy method này để tính thời gian quét Qr.
@@ -3375,6 +3374,7 @@ namespace WeightChecking
 
                 _scanDataMetal = null;
                 _scanDataMetal = new tblScanData();
+
                 //log vao bang reject
                 using (var dbContextSSFG = new ApplicationDbContextSSFG(GlobalVariables.ConnectionString))
                 {
@@ -3392,6 +3392,10 @@ namespace WeightChecking
                 }
             }
             _readQrStatus[0] = false;//xóa biến này cho lần đọc kế tiếp
+
+            //xáo báo bận để cho phép scanner quét tiếp thùng.
+            _scannerIsBussy[0] = false;
+            _isStartCountTimer = false;
         }
 
         /// <summary>
