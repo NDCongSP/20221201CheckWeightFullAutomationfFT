@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
+    <ProductVersion>8.0.30704</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{128A07EE-4022-4DD6-9154-F34229C5F7C0}</ProjectGuid>
     <OutputType>WinExe</OutputType>
