@@ -605,7 +605,7 @@
             // 
             // labGrossWeight
             // 
-            this.labGrossWeight.EditValue = "10212.5";
+            this.labGrossWeight.EditValue = "0";
             this.labGrossWeight.Location = new System.Drawing.Point(459, 279);
             this.labGrossWeight.Name = "labGrossWeight";
             this.labGrossWeight.Properties.Appearance.BackColor = System.Drawing.Color.White;
@@ -630,7 +630,7 @@
             // 
             // labNetWeight
             // 
-            this.labNetWeight.EditValue = "8844";
+            this.labNetWeight.EditValue = "0";
             this.labNetWeight.Location = new System.Drawing.Point(459, 465);
             this.labNetWeight.Name = "labNetWeight";
             this.labNetWeight.Properties.Appearance.BackColor = System.Drawing.Color.White;
@@ -1066,7 +1066,7 @@
             // 
             // labNetRealWeight
             // 
-            this.labNetRealWeight.EditValue = "8931.5";
+            this.labNetRealWeight.EditValue = "0";
             this.labNetRealWeight.Location = new System.Drawing.Point(30, 465);
             this.labNetRealWeight.Name = "labNetRealWeight";
             this.labNetRealWeight.Properties.Appearance.BackColor = System.Drawing.Color.White;
@@ -1104,7 +1104,7 @@
             // 
             // labRealWeight
             // 
-            this.labRealWeight.EditValue = "10300";
+            this.labRealWeight.EditValue = "0";
             this.labRealWeight.Location = new System.Drawing.Point(30, 279);
             this.labRealWeight.Name = "labRealWeight";
             this.labRealWeight.Properties.Appearance.BackColor = System.Drawing.Color.White;
@@ -1142,7 +1142,7 @@
             // 
             // labScaleValue
             // 
-            this.labScaleValue.EditValue = "10300";
+            this.labScaleValue.EditValue = "0";
             this.labScaleValue.Location = new System.Drawing.Point(30, 93);
             this.labScaleValue.Name = "labScaleValue";
             this.labScaleValue.Properties.Appearance.BackColor = System.Drawing.Color.White;
@@ -1185,7 +1185,7 @@
             // 
             // labCalculatedPairs
             // 
-            this.labCalculatedPairs.EditValue = "101";
+            this.labCalculatedPairs.EditValue = "0";
             this.labCalculatedPairs.Location = new System.Drawing.Point(459, 93);
             this.labCalculatedPairs.Name = "labCalculatedPairs";
             this.labCalculatedPairs.Properties.Appearance.BackColor = System.Drawing.Color.White;
@@ -1208,7 +1208,7 @@
             // 
             // labDeviation
             // 
-            this.labDeviation.EditValue = "88.44 (g)";
+            this.labDeviation.EditValue = "0 (g)";
             this.labDeviation.Location = new System.Drawing.Point(30, 778);
             this.labDeviation.Name = "labDeviation";
             this.labDeviation.Properties.Appearance.BackColor = System.Drawing.Color.White;
